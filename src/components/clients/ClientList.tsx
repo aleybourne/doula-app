@@ -1,0 +1,87 @@
+
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
+import { useClientsStore } from "./hooks/useClientsStore";
+import ArchiveToggle from "./client-list/ArchiveToggle";
+import ClientListSection from "./client-list/ClientListSection";
+import ArchivedClientList from "./client-list/ArchivedClientList";
+import { useClientFiltering } from "./client-list/useClientFiltering";
+
+interface ClientListProps {
+  searchQuery?: string;
+  filter?: string | null;
+}
+
+const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => {
+  const navigate = useNavigate();
+  const [showArchived, setShowArchived] = useState(false);
+  
+  const { 
+    getActiveClients, 
+    getArchivedClients, 
+    restoreClient,
+  } = useClientsStore();
+  
+  // Log the filter value when it changes
+  useEffect(() => {
+    console.log("ClientList received filter:", filter);
+  }, [filter]);
+  
+  // Get clients based on archived status
+  const allClients = showArchived ? getArchivedClients() : getActiveClients();
+  
+  // Apply filters and search
+  const filteredClients = useClientFiltering(allClients, searchQuery, filter);
+
+  const handleRestoreClient = (clientName: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    restoreClient(clientName);
+    toast({
+      title: "Client Restored",
+      description: `${clientName} has been restored to active status.`,
+    });
+  };
+
+  const handleCardClick = (clientName: string) => {
+    console.log(`Navigating to client: ${clientName}`);
+    navigate(`/clients/${encodeURIComponent(clientName)}`);
+  };
+
+  // Helper function to generate appropriate title
+  const getFilterTitle = () => {
+    if (filter === "new") return "New Clients (Last 3 Weeks)";
+    if (filter === "upcoming") return "Upcoming Births (30+ Weeks)";
+    return "Active Clients";
+  };
+
+  return (
+    <div className="mb-20">
+      <ArchiveToggle 
+        showArchived={showArchived} 
+        onToggle={() => setShowArchived(!showArchived)} 
+      />
+
+      {!showArchived ? (
+        <ClientListSection
+          title={getFilterTitle()}
+          clients={filteredClients}
+          onCardClick={handleCardClick}
+          emptyMessage={
+            filter ? 
+            `No ${filter === "new" ? "new" : "upcoming"} clients found.` :
+            "No active clients found. Add your first client!"
+          }
+        />
+      ) : (
+        <ArchivedClientList
+          clients={filteredClients}
+          onRestore={handleRestoreClient}
+          onCardClick={handleCardClick}
+        />
+      )}
+    </div>
+  );
+};
+
+export default ClientList;
