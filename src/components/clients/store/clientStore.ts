@@ -54,46 +54,20 @@ const defaultClients: ClientData[] = [
   }
 ];
 
-const testClients: ClientData[] = [
-  {
-    name: "Ava Thompson",
-    dueDateISO: "2025-08-10",
-    dueDateLabel: "August 10th, 2025",
-    image: "/lovable-uploads/ava.png",
-    status: "active",
-    createdAt: "2025-05-14T00:00:00.000Z"
-  },
-  {
-    name: "Maya Robinson",
-    dueDateISO: "2025-06-28",
-    dueDateLabel: "June 28th, 2025",
-    image: "/lovable-uploads/maya.png",
-    status: "active",
-    createdAt: "2025-04-01T00:00:00.000Z"
-  },
-  {
-    name: "Olivia Martinez",
-    dueDateISO: "2025-10-01",
-    dueDateLabel: "October 1st, 2025",
-    image: "/lovable-uploads/olivia.png",
-    status: "archived",
-    createdAt: "2025-03-01T00:00:00.000Z"
-  },
-  {
-    name: "Ella Parker",
-    dueDateISO: "2025-09-01",
-    dueDateLabel: "September 1st, 2025",
-    image: "/lovable-uploads/ella.png",
-    status: "active",
-    createdAt: "2025-01-01T00:00:00.000Z"
+export const initializeClients = (): ClientData[] => {
+  try {
+    const savedClients = localStorage.getItem('clients');
+    if (savedClients) {
+      const parsedClients = JSON.parse(savedClients);
+      return parsedClients.length > 0 ? parsedClients : defaultClients;
+    }
+  } catch (error) {
+    console.error("Failed to load clients from localStorage:", error);
   }
-];
+  return [...defaultClients];
+};
 
-// toggle between real and test data
-const USE_TEST_CLIENTS = true;
-const loadSet = USE_TEST_CLIENTS ? testClients : defaultClients;
-
-export const clients: ClientData[] = [...loadSet];
+export const clients: ClientData[] = initializeClients();
 
 export const saveClientsToStorage = () => {
   try {
