@@ -89,24 +89,11 @@ const testClients: ClientData[] = [
   }
 ];
 
+// toggle between real and test data
 const USE_TEST_CLIENTS = true;
-
 const loadSet = USE_TEST_CLIENTS ? testClients : defaultClients;
 
-export const initializeClients = (): ClientData[] => {
-  try {
-    const savedClients = localStorage.getItem('clients');
-    if (savedClients) {
-      const parsedClients = JSON.parse(savedClients);
-      return parsedClients.length > 0 ? parsedClients : loadSet;
-    }
-  } catch (error) {
-    console.error("Failed to load clients from localStorage:", error);
-  }
-  return [...loadSet];
-};
-
-export const clients: ClientData[] = initializeClients();
+export const clients: ClientData[] = [...loadSet];
 
 export const saveClientsToStorage = () => {
   try {
@@ -132,5 +119,3 @@ export const subscribeToClientChanges = (callback: ClientChangeListener): (() =>
     }
   };
 };
-
-
