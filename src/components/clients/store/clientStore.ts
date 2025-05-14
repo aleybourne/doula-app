@@ -15,7 +15,7 @@ const defaultClients: ClientData[] = [
     dueDateLabel: "October 16th, 2025",
     image: "/lovable-uploads/22335ae2-dde6-4f2a-8c5e-4126a65f2590.png",
     status: "active",
-    createdAt: "2025-01-14T00:00:00.000Z",
+    createdAt: "2025-05-14T00:00:00.000Z", // New client
   },
   {
     name: "Julie Hill",
@@ -51,6 +51,14 @@ const defaultClients: ClientData[] = [
     image: "/lovable-uploads/eb028e8e-c38f-4206-ac0d-192b345b0b66.png",
     status: "active",
     createdAt: "2025-03-24T00:00:00.000Z",
+  },
+  {
+    name: "Luna Garcia",
+    dueDateISO: "2025-09-12",
+    dueDateLabel: "September 12th, 2025",
+    image: "/lovable-uploads/luna.png",
+    status: "active",
+    createdAt: "2025-04-05T00:00:00.000Z",
   }
 ];
 
@@ -93,3 +101,4 @@ export const subscribeToClientChanges = (callback: ClientChangeListener): (() =>
     }
   };
 };
+
