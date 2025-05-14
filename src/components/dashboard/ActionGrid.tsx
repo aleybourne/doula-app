@@ -1,14 +1,32 @@
-
 import React from "react";
-import { ActionItem } from "./ActionItem";
-import { bottomActions } from "./actionData";
+import { useNavigate } from "react-router-dom";
 
 export const ActionGrid: React.FC = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="grid grid-cols-3 gap-x-6 gap-y-6 justify-items-center mx-0 my-5">
-      {bottomActions.map((action, index) => (
-        <ActionItem key={index} {...action} />
-      ))}
+      <button
+        className="bg-green-200 rounded-xl h-24 w-24 flex flex-col items-center justify-center"
+        onClick={() => navigate("/clients?filter=new")}
+      >
+        <div className="text-2xl font-bold">1</div>
+        <div className="text-sm">New Clients</div>
+      </button>
+      <button
+        className="bg-red-200 rounded-xl h-24 w-24 flex flex-col items-center justify-center"
+        onClick={() => navigate("/clients?filter=upcoming")}
+      >
+        <div className="text-2xl font-bold">2</div>
+        <div className="text-sm">Upcoming Births</div>
+      </button>
+      <button
+        className="bg-purple-200 rounded-xl h-24 w-24 flex flex-col items-center justify-center"
+        onClick={() => navigate("/clients?filter=active")}
+      >
+        <div className="text-2xl font-bold">7</div>
+        <div className="text-sm">Active Clients</div>
+      </button>
     </section>
   );
 };
