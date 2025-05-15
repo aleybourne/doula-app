@@ -4,7 +4,6 @@ import { Header } from "@/components/dashboard/Header";
 import { Stats } from "@/components/dashboard/Stats";
 import { WeekdayPicker } from "@/components/dashboard/WeekdayPicker";
 import { AppointmentList } from "@/components/dashboard/AppointmentList";
-import { ActionGrid } from "@/components/dashboard/ActionGrid";
 import { BottomActions } from "@/components/dashboard/BottomActions";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -30,7 +29,7 @@ const Index: React.FC = () => {
           <Stats />
           <WeekdayPicker />
           <AppointmentList />
-          <ActionGrid />
+          {/* Removed ActionGrid since it no longer has any content */}
           <BottomActions />
         </main>
       </div>
