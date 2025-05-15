@@ -23,6 +23,7 @@ const Index: React.FC = () => {
         }`}
       >
         <Header />
+        
         <main className={isMobile ? "px-1" : "px-4"}>
           <Stats />
           <WeekdayPicker />

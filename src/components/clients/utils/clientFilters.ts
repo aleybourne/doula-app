@@ -12,6 +12,8 @@ export function filterClientsByType(
 
   if (filter === "new") {
     return clients.filter(client => {
+      console.log("Checking client for new:", client.name, client.createdAt);
+
       if (client.status === 'archived' || client.status === 'deleted') return false;
       if (!client.createdAt) return false;
 
