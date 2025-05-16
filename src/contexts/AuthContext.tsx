@@ -1,35 +1,19 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  initializeApp, 
-  getApps, 
-  getApp 
-} from 'firebase/app';
+import { initializeApp } from 'firebase/app';
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  User as FirebaseUser
 } from 'firebase/auth';
 import { firebaseConfig } from '@/config/firebase';
 
-// Initialize Firebase only once
-const initializeFirebase = () => {
-  try {
-    return getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-  } catch (error) {
-    console.error("Error initializing Firebase:", error);
-    throw error;
-  }
-};
-
-// Initialize Firebase app
-const app = initializeFirebase();
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
 
 interface User {
   id: string;
@@ -43,7 +27,6 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
   signup: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUserProfile: (userData: Partial<User>) => void;
@@ -106,32 +89,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Google login
-  const loginWithGoogle = async () => {
-    setIsLoading(true);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const firebaseUser = result.user;
-      
-      // Extract user data from Google auth result
-      const userData: User = {
-        id: firebaseUser.uid,
-        firstName: firebaseUser.displayName?.split(' ')[0] || 'Google',
-        lastName: firebaseUser.displayName?.split(' ')[1] || 'User',
-        email: firebaseUser.email || 'google.user@example.com',
-        profileComplete: false
-      };
-      
-      localStorage.setItem('push_user', JSON.stringify(userData));
-      setUser(userData);
-    } catch (error) {
-      console.error('Google login error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // Sign up with email/password
   const signup = async (email: string, password: string, firstName: string, lastName: string) => {
     setIsLoading(true);
@@ -188,7 +145,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isLoading,
         login,
-        loginWithGoogle,
         signup,
         logout,
         updateUserProfile

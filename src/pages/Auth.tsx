@@ -4,8 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
-import AuthDivider from '@/components/auth/AuthDivider';
 import LoginForm from '@/components/auth/LoginForm';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
@@ -14,7 +12,7 @@ type AuthMode = 'login' | 'signup';
 const Auth: React.FC = () => {
   const [mode, setMode] = useState<AuthMode>('login');
   const navigate = useNavigate();
-  const { login, loginWithGoogle, signup } = useAuth();
+  const { login, signup } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -33,25 +31,6 @@ const Auth: React.FC = () => {
     form.reset();
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      setIsSubmitting(true);
-      setAuthError(null);
-      await loginWithGoogle();
-      navigate('/onboarding');
-    } catch (error) {
-      console.error('Google login error:', error);
-      setAuthError('Failed to sign in with Google. Please try again later.');
-      toast({
-        title: 'Error',
-        description: 'Failed to sign in with Google. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
@@ -64,7 +43,7 @@ const Auth: React.FC = () => {
         navigate('/onboarding');
       }
     } catch (error: any) {
-      console.error('Signup error:', error);
+      console.error('Authentication error:', error);
       const errorMessage = error?.message || 'Authentication failed. Please check your credentials.';
       setAuthError(errorMessage);
       toast({
@@ -94,13 +73,6 @@ const Auth: React.FC = () => {
         )}
 
         <div className="space-y-6">
-          <GoogleSignInButton 
-            onClick={handleGoogleLogin} 
-            isLoading={isSubmitting} 
-          />
-
-          <AuthDivider />
-
           <LoginForm 
             form={form}
             onSubmit={onSubmit}
