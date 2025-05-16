@@ -1,11 +1,18 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { ClientData } from '../types/ClientTypes';
-import { clients, subscribeToClientChanges } from '../store/clientStore';
+import { clients, subscribeToClientChanges, getCurrentUserId, loadClientsForCurrentUser } from '../store/clientStore';
 import { addClient, updateClient, updateClientStatus, restoreClient } from '../store/clientActions';
 
 export const useClientsStore = () => {
   const [forceUpdate, setForceUpdate] = useState(0);
+  const userId = getCurrentUserId();
+
+  // Load clients for the current user on mount and when userId changes
+  useEffect(() => {
+    console.log("useClientsStore: Loading clients for current user");
+    loadClientsForCurrentUser();
+  }, [userId]);
 
   useEffect(() => {
     console.log("useClientsStore: Setting up subscription");
@@ -19,30 +26,41 @@ export const useClientsStore = () => {
     };
   }, []);
 
+  // Filter clients for the current user
+  const getCurrentUserClients = useCallback(() => {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) return [];
+    
+    return clients.filter(client => client.userId === currentUserId);
+  }, [forceUpdate]);
+
   const getActiveClients = useCallback(() => {
-    console.log(`useClientsStore: Getting active clients (count: ${clients.filter(client => 
+    const userClients = getCurrentUserClients();
+    console.log(`useClientsStore: Getting active clients for user (count: ${userClients.filter(client => 
       client.status === 'active' || 
       client.status === 'delivered' || 
       !client.status
     ).length})`);
-    return clients.filter(client => 
+    
+    return userClients.filter(client => 
       client.status === 'active' || 
       client.status === 'delivered' || 
       !client.status
     );
-  }, [forceUpdate]); // Add forceUpdate dependency so it re-calculates when clients change
+  }, [forceUpdate, getCurrentUserClients]);
 
   const getArchivedClients = useCallback(() => {
-    return clients.filter(client => client.status === 'archived');
-  }, [forceUpdate]); // Add forceUpdate dependency
+    const userClients = getCurrentUserClients();
+    return userClients.filter(client => client.status === 'archived');
+  }, [forceUpdate, getCurrentUserClients]);
 
   return {
-    clients,
-    forceUpdate, // Expose forceUpdate so components can use it for re-rendering
+    clients: getCurrentUserClients(),
+    forceUpdate,
     addClient,
     updateClient,
     updateClientStatus,
-    restoreClient, // Add this line to expose the restoreClient function
+    restoreClient,
     getActiveClients,
     getArchivedClients,
   };

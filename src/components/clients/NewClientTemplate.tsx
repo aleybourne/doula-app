@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import ClientPageTemplate from "./ClientPageTemplate";
 import { clientsTags } from "./clientsTagsData";
 import { useClientStore } from "./clientsData";
+import { getCurrentUserId } from "./store/clientStore";
 
 interface NewClientPageProps {
   clientName: string;
@@ -10,9 +11,15 @@ interface NewClientPageProps {
 
 const NewClientPage: React.FC<NewClientPageProps> = ({ clientName }) => {
   const { clients } = useClientStore();
+  const currentUserId = getCurrentUserId();
   
-  // Find client data from all clients
+  // Find client data from user's clients
   const clientData = clients.find(client => {
+    // Only include clients that belong to this user
+    if (client.userId !== currentUserId) {
+      return false;
+    }
+    
     // Normalize both strings for comparison
     const normalizedName = client.name.toLowerCase().replace(/\s+/g, ' ').trim();
     const normalizedSearch = decodeURIComponent(clientName).toLowerCase().replace(/\s+/g, ' ').trim();

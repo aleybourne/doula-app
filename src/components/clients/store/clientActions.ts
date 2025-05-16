@@ -1,29 +1,64 @@
 import { ClientData } from '../types/ClientTypes';
-import { clients, notifyClientsChanged } from './clientStore';
+import { clients, notifyClientsChanged, getCurrentUserId } from './clientStore';
 import { addWeeks } from 'date-fns';
 import { POSTPARTUM_WEEKS } from '../utils/gestationUtils';
 
 export const addClient = (client: ClientData) => {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    console.error("Cannot add client - user not logged in");
+    return;
+  }
+  
+  // Ensure the client has the current user's ID
   if (!client.status) client.status = "active";
   if (!client.createdAt) {
     client.createdAt = new Date().toISOString();
   }
+  client.userId = userId;
+  
   clients.unshift(client);
   notifyClientsChanged();
 };
 
 export const updateClient = (updatedClient: ClientData) => {
-  const clientIndex = clients.findIndex(client => client.name === updatedClient.name);
+  const userId = getCurrentUserId();
+  if (!userId) {
+    console.error("Cannot update client - user not logged in");
+    return;
+  }
+  
+  // Only update if the client belongs to the current user
+  const clientIndex = clients.findIndex(client => 
+    client.name === updatedClient.name && client.userId === userId
+  );
+  
   if (clientIndex !== -1) {
-    clients[clientIndex] = updatedClient;
+    // Ensure we keep the userId in the updated client
+    clients[clientIndex] = {
+      ...updatedClient,
+      userId
+    };
     notifyClientsChanged();
+  } else {
+    console.warn(`Client ${updatedClient.name} not found or doesn't belong to current user`);
   }
 };
 
 export const updateClientStatus = (clientName: string, status: ClientData['status'], reason: string): void => {
-  const clientIndex = clients.findIndex(client => client.name === clientName);
+  const userId = getCurrentUserId();
+  if (!userId) {
+    console.error("Cannot update client status - user not logged in");
+    return;
+  }
+  
+  // Only update if the client belongs to the current user
+  const clientIndex = clients.findIndex(client => 
+    client.name === clientName && client.userId === userId
+  );
+  
   if (clientIndex === -1) {
-    console.error(`Client ${clientName} not found`);
+    console.error(`Client ${clientName} not found or doesn't belong to current user`);
     return;
   }
   
@@ -46,9 +81,19 @@ export const updateClientStatus = (clientName: string, status: ClientData['statu
 };
 
 export const markClientDelivered = (clientName: string, deliveryDate: Date) => {
-  const clientIndex = clients.findIndex(client => client.name === clientName);
+  const userId = getCurrentUserId();
+  if (!userId) {
+    console.error("Cannot mark client delivered - user not logged in");
+    return;
+  }
+  
+  // Only update if the client belongs to the current user
+  const clientIndex = clients.findIndex(client => 
+    client.name === clientName && client.userId === userId
+  );
+  
   if (clientIndex === -1) {
-    console.error(`Client ${clientName} not found`);
+    console.error(`Client ${clientName} not found or doesn't belong to current user`);
     return;
   }
   

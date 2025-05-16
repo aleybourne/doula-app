@@ -16,6 +16,7 @@ export interface ClientData {
   postpartumDate?: string;
   deliveryDate?: string; // New field to track when client delivered
   createdAt?: string; // Timestamp of when client was created
+  userId?: string; // ID of the user who owns this client
   preferredName?: string;
   pronouns?: string;
   phone?: string;

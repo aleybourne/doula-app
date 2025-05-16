@@ -7,6 +7,7 @@ import ArchiveToggle from "./client-list/ArchiveToggle";
 import ClientListSection from "./client-list/ClientListSection";
 import ArchivedClientList from "./client-list/ArchivedClientList";
 import { useClientFiltering } from "./client-list/useClientFiltering";
+import { getCurrentUserId } from "./store/clientStore";
 
 interface ClientListProps {
   searchQuery?: string;
@@ -16,6 +17,7 @@ interface ClientListProps {
 const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => {
   const navigate = useNavigate();
   const [showArchived, setShowArchived] = useState(false);
+  const userId = getCurrentUserId();
   
   const { 
     getActiveClients, 
@@ -68,9 +70,11 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
           clients={filteredClients}
           onCardClick={handleCardClick}
           emptyMessage={
-            filter ? 
-            `No ${filter === "new" ? "new" : "upcoming"} clients found.` :
-            "No active clients found. Add your first client!"
+            userId ? (
+              filter ? 
+              `No ${filter === "new" ? "new" : "upcoming"} clients found.` :
+              "No active clients found. Add your first client!"
+            ) : "Please log in to view your clients."
           }
         />
       ) : (

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { StatCardProps } from "./types";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +5,7 @@ import { useClientsStore } from "@/components/clients/hooks/useClientsStore";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { filterClientsByType } from "@/components/clients/utils/clientFilters";
+import { getCurrentUserId } from "@/components/clients/store/clientStore";
 
 const StatCard: React.FC<StatCardProps & { onClick?: () => void, isLoading?: boolean }> = ({ 
   count, 
@@ -50,6 +50,7 @@ export const Stats: React.FC = () => {
   
   // Get access to the client store
   const { clients } = useClientsStore();
+  const userId = getCurrentUserId();
 
   useEffect(() => {
     const calculateStats = () => {
@@ -57,10 +58,13 @@ export const Stats: React.FC = () => {
         console.log("Stats component calculating client statistics...");
         setIsLoading(true);
         
+        // Filter clients for the current user first
+        const userClients = userId ? clients.filter(client => client.userId === userId) : [];
+        
         // Use the centralized filtering function to get counts
-        const newClientsCount = filterClientsByType(clients, "new").length;
-        const upcomingBirthsCount = filterClientsByType(clients, "upcoming").length;
-        const activeClientsCount = clients.filter(client => 
+        const newClientsCount = filterClientsByType(userClients, "new").length;
+        const upcomingBirthsCount = filterClientsByType(userClients, "upcoming").length;
+        const activeClientsCount = userClients.filter(client => 
           client.status === 'active' || 
           client.status === 'delivered' || 
           !client.status
@@ -86,7 +90,7 @@ export const Stats: React.FC = () => {
     };
 
     calculateStats();
-  }, [clients]);
+  }, [clients, userId]);
 
   const handleNavigateToNewClients = () => {
     if (isNavigating) return;

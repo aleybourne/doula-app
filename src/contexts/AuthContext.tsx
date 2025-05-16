@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { firebaseConfig } from '@/config/firebase';
+import { loadClientsForCurrentUser } from '@/components/clients/store/clientStore';
 
 interface User {
   id: string;
@@ -38,6 +39,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedUser = localStorage.getItem('push_user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
+      // Load clients for this user
+      loadClientsForCurrentUser();
     }
     setIsLoading(false);
   }, []);
@@ -58,6 +61,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       localStorage.setItem('push_user', JSON.stringify(mockUser));
       setUser(mockUser);
+      
+      // Load clients for this user after login
+      loadClientsForCurrentUser();
     } catch (error) {
       console.error('Login error:', error);
       throw new Error('Login failed. Please check your credentials.');
@@ -82,6 +88,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       localStorage.setItem('push_user', JSON.stringify(mockUser));
       setUser(mockUser);
+      
+      // Load clients for this user after signup
+      loadClientsForCurrentUser();
     } catch (error) {
       console.error('Signup error:', error);
       throw new Error('Signup failed. Please try again with different credentials.');

@@ -1,4 +1,6 @@
+
 import { ClientData, ClientChangeListener } from '../types/ClientTypes';
+import { cleanupClientImageData } from '../utils/storageUtils';
 
 const defaultClients: ClientData[] = [
   {
@@ -15,7 +17,7 @@ const defaultClients: ClientData[] = [
     dueDateLabel: "October 16th, 2025",
     image: "/lovable-uploads/22335ae2-dde6-4f2a-8c5e-4126a65f2590.png",
     status: "active",
-    createdAt: "2025-05-14T00:00:00.000Z", // New client
+    createdAt: "2025-05-14T00:00:00.000Z",
   },
   {
     name: "Julie Hill",
@@ -62,26 +64,67 @@ const defaultClients: ClientData[] = [
   }
 ];
 
-export const initializeClients = (): ClientData[] => {
+// Get the current user ID from localStorage
+export const getCurrentUserId = (): string | null => {
   try {
-    const savedClients = localStorage.getItem('clients');
-    if (savedClients) {
-      const parsedClients = JSON.parse(savedClients);
-      return parsedClients.length > 0 ? parsedClients : defaultClients;
+    const userDataStr = localStorage.getItem('push_user');
+    if (userDataStr) {
+      const userData = JSON.parse(userDataStr);
+      return userData.id || null;
     }
   } catch (error) {
-    console.error("Failed to load clients from localStorage:", error);
+    console.error("Failed to get current user ID:", error);
   }
-  return [...defaultClients];
+  return null;
 };
 
-export const clients: ClientData[] = initializeClients();
-
-export const saveClientsToStorage = () => {
+// Initialize clients for a specific user
+export const initializeClients = (): ClientData[] => {
+  const userId = getCurrentUserId();
+  
+  if (!userId) {
+    console.warn("No user ID found, returning empty client list");
+    return [];
+  }
+  
+  const storageKey = `clients_${userId}`;
+  
   try {
-    localStorage.setItem('clients', JSON.stringify(clients));
+    const savedClients = localStorage.getItem(storageKey);
+    if (savedClients) {
+      const parsedClients = JSON.parse(savedClients);
+      return parsedClients.length > 0 ? parsedClients : addUserIdToClients(defaultClients, userId);
+    } else {
+      // First time user - give them the default clients with their userId
+      return addUserIdToClients(defaultClients, userId);
+    }
   } catch (error) {
-    console.error("Failed to save clients to localStorage:", error);
+    console.error(`Failed to load clients from localStorage for user ${userId}:`, error);
+  }
+  return [];
+};
+
+// Helper function to add userId to client data
+function addUserIdToClients(clients: ClientData[], userId: string): ClientData[] {
+  return clients.map(client => ({ ...client, userId }));
+}
+
+export let clients: ClientData[] = []; // Start empty and populate in the useEffect below
+
+// Save clients to storage for the current user
+export const saveClientsToStorage = () => {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    console.error("Cannot save clients - no user ID found");
+    return;
+  }
+  
+  const storageKey = `clients_${userId}`;
+  
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(clients));
+  } catch (error) {
+    console.error(`Failed to save clients to localStorage for user ${userId}:`, error);
   }
 };
 
@@ -102,3 +145,10 @@ export const subscribeToClientChanges = (callback: ClientChangeListener): (() =>
   };
 };
 
+// Load clients when user changes
+export const loadClientsForCurrentUser = () => {
+  const loadedClients = initializeClients();
+  clients.length = 0; // Clear the array
+  clients.push(...loadedClients); // Add the loaded clients
+  notifyClientsChanged();
+};

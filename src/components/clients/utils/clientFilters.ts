@@ -1,51 +1,43 @@
+
 import { ClientData } from '../types/ClientTypes';
-import { differenceInDays, parseISO } from 'date-fns';
-import { calculateGestationAndTrimester } from './gestationUtils';
+import { differenceInWeeks, isAfter, parseISO } from 'date-fns';
+import { getCurrentUserId } from '../store/clientStore';
 
-export function filterClientsByType(
-  clients: ClientData[],
-  filter?: string | null
-): ClientData[] {
-  if (!filter) return clients;
-
-  const today = new Date();
-
-  if (filter === "new") {
-    return clients.filter(client => {
-      console.log("Checking client for new:", client.name, client.createdAt);
-
-      if (client.status === 'archived' || client.status === 'deleted') return false;
-      if (!client.createdAt) return false;
-
-      const createdDate = parseISO(client.createdAt);
-      const dayDiff = differenceInDays(today, createdDate);
-      return dayDiff <= 21;
-    });
+// Filter clients based on different criteria
+export function filterClientsByType(clients: ClientData[], filter?: string | null): ClientData[] {
+  const userId = getCurrentUserId();
+  
+  // First, filter by user ID
+  const userClients = userId ? clients.filter(client => client.userId === userId) : [];
+  
+  if (!filter) return userClients;
+  
+  const now = new Date();
+  
+  switch (filter) {
+    case 'new':
+      // Clients added in the last 3 weeks
+      return userClients.filter(client => {
+        if (!client.createdAt) return false;
+        const createDate = parseISO(client.createdAt);
+        return differenceInWeeks(now, createDate) <= 3;
+      });
+      
+    case 'upcoming':
+      // Clients with due dates approaching (30+ weeks pregnant)
+      return userClients.filter(client => {
+        if (!client.dueDateISO) return false;
+        const dueDate = parseISO(client.dueDateISO);
+        // If due date is in the future
+        if (isAfter(dueDate, now)) {
+          const weeksToDue = differenceInWeeks(dueDate, now);
+          // Less than 10 weeks to due date (i.e., 30+ weeks pregnant in a 40-week pregnancy)
+          return weeksToDue <= 10;
+        }
+        return false;
+      });
+      
+    default:
+      return userClients;
   }
-
-  if (filter === "upcoming") {
-    return clients.filter(client => {
-      if (
-        client.status === 'archived' ||
-        client.status === 'deleted' ||
-        client.status === 'delivered'
-      ) return false;
-
-      if (!client.dueDateISO) return false;
-
-      const { gestation } = calculateGestationAndTrimester(client.dueDateISO, client.status);
-      const weeks = parseInt(gestation.split('w')[0], 10);
-      return weeks >= 30;
-    });
-  }
-
-  if (filter === "active") {
-    return clients.filter(client =>
-      client.status !== "archived" &&
-      client.status !== "deleted" &&
-      client.status !== "delivered"
-    );
-  }
-
-  return clients;
 }
