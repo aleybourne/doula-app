@@ -1,11 +1,19 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Header: React.FC = () => {
   const isMobile = useIsMobile();
@@ -14,9 +22,10 @@ export const Header: React.FC = () => {
   const todayStr = format(new Date(), "M/d/yyyy");
   const isHomePage = location.pathname === '/home';
   const isClientsPage = location.pathname === '/clients';
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   
   const displayName = user?.firstName || "Doula";
+  const userInitials = user?.firstName ? user.firstName.charAt(0) : "D";
 
   const handleBack = () => {
     if (isClientsPage) {
@@ -26,6 +35,11 @@ export const Header: React.FC = () => {
       // From other pages, go back one step
       navigate(-1);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/auth");
   };
 
   return (
@@ -51,7 +65,33 @@ export const Header: React.FC = () => {
         >
           Hello, {displayName}!
         </div>
-        <div className="w-8"></div> {/* Empty div for balance */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full"
+              aria-label="User menu"
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-blue-500 text-white text-sm">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem className="cursor-pointer">
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="cursor-pointer text-red-500" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
