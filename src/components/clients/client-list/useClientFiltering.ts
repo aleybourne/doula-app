@@ -4,7 +4,7 @@ import { ClientData } from '../types/ClientTypes';
 import { filterClientsByType } from '../utils/clientFilters';
 
 export function useClientFiltering(
-  clients: ClientData[],
+  clients: ClientData[] = [],
   searchQuery: string = "",
   filter?: string
 ) {
@@ -18,7 +18,12 @@ export function useClientFiltering(
 
   useEffect(() => {
     console.log(`useClientFiltering: processing filter: ${filter || "none"} (version ${filterVersion})`);
-    console.log("Total clients before filtering:", clients.length);
+    console.log("Total clients before filtering:", clients?.length || 0);
+
+    if (!clients || clients.length === 0) {
+      setFilteredClients([]);
+      return;
+    }
 
     // First apply type filter (new, upcoming, etc)
     let filtered = filterClientsByType(clients, filter);

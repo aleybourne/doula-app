@@ -2,8 +2,10 @@ import { ClientData } from '../types/ClientTypes';
 import { clients, notifyClientsChanged, getCurrentUserId } from './clientStore';
 import { addWeeks } from 'date-fns';
 import { POSTPARTUM_WEEKS } from '../utils/gestationUtils';
+import { db } from '../../../config/firebase';
+import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-export const addClient = (client: ClientData) => {
+export const addClient = async (client: ClientData) => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot add client - user not logged in");
@@ -17,11 +19,23 @@ export const addClient = (client: ClientData) => {
   }
   client.userId = userId;
   
-  clients.unshift(client);
-  notifyClientsChanged();
+  // Add to Firestore
+  try {
+    const clientDocRef = doc(db, 'clients', `${userId}_${client.name}`);
+    await setDoc(clientDocRef, client);
+    
+    // Also update local array
+    clients.unshift(client);
+    notifyClientsChanged();
+  } catch (error) {
+    console.error("Error adding client to Firestore:", error);
+    // Add to local array anyway to ensure UI updates
+    clients.unshift(client);
+    notifyClientsChanged();
+  }
 };
 
-export const updateClient = (updatedClient: ClientData) => {
+export const updateClient = async (updatedClient: ClientData) => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot update client - user not logged in");
@@ -35,17 +49,28 @@ export const updateClient = (updatedClient: ClientData) => {
   
   if (clientIndex !== -1) {
     // Ensure we keep the userId in the updated client
-    clients[clientIndex] = {
-      ...updatedClient,
-      userId
-    };
-    notifyClientsChanged();
+    updatedClient.userId = userId;
+    
+    try {
+      // Update in Firestore
+      const clientDocRef = doc(db, 'clients', `${userId}_${updatedClient.name}`);
+      await setDoc(clientDocRef, updatedClient);
+      
+      // Also update local array
+      clients[clientIndex] = updatedClient;
+      notifyClientsChanged();
+    } catch (error) {
+      console.error("Error updating client in Firestore:", error);
+      // Update local array anyway to ensure UI updates
+      clients[clientIndex] = updatedClient;
+      notifyClientsChanged();
+    }
   } else {
     console.warn(`Client ${updatedClient.name} not found or doesn't belong to current user`);
   }
 };
 
-export const updateClientStatus = (clientName: string, status: ClientData['status'], reason: string): void => {
+export const updateClientStatus = async (clientName: string, status: ClientData['status'], reason: string): Promise<void> => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot update client status - user not logged in");
@@ -63,7 +88,7 @@ export const updateClientStatus = (clientName: string, status: ClientData['statu
   }
   
   const currentDate = new Date();
-  clients[clientIndex] = {
+  const updatedClient = {
     ...clients[clientIndex],
     status,
     statusReason: reason,
@@ -74,13 +99,26 @@ export const updateClientStatus = (clientName: string, status: ClientData['statu
     const dueDate = new Date(clients[clientIndex].dueDateISO);
     const postpartumEndDate = new Date(dueDate);
     postpartumEndDate.setDate(dueDate.getDate() + 42);
-    clients[clientIndex].postpartumDate = postpartumEndDate.toISOString();
+    updatedClient.postpartumDate = postpartumEndDate.toISOString();
   }
   
-  notifyClientsChanged();
+  try {
+    // Update in Firestore
+    const clientDocRef = doc(db, 'clients', `${userId}_${clientName}`);
+    await setDoc(clientDocRef, updatedClient);
+    
+    // Also update local array
+    clients[clientIndex] = updatedClient;
+    notifyClientsChanged();
+  } catch (error) {
+    console.error("Error updating client status in Firestore:", error);
+    // Update local array anyway to ensure UI updates
+    clients[clientIndex] = updatedClient;
+    notifyClientsChanged();
+  }
 };
 
-export const markClientDelivered = (clientName: string, deliveryDate: Date) => {
+export const markClientDelivered = async (clientName: string, deliveryDate: Date) => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot mark client delivered - user not logged in");
@@ -99,7 +137,7 @@ export const markClientDelivered = (clientName: string, deliveryDate: Date) => {
   
   const postpartumEndDate = addWeeks(deliveryDate, POSTPARTUM_WEEKS);
   
-  clients[clientIndex] = {
+  const updatedClient = {
     ...clients[clientIndex],
     status: 'delivered',
     statusReason: 'Client has delivered',
@@ -108,15 +146,43 @@ export const markClientDelivered = (clientName: string, deliveryDate: Date) => {
     postpartumDate: postpartumEndDate.toISOString(),
   };
   
-  notifyClientsChanged();
+  try {
+    // Update in Firestore
+    const clientDocRef = doc(db, 'clients', `${userId}_${clientName}`);
+    await setDoc(clientDocRef, updatedClient);
+    
+    // Also update local array
+    clients[clientIndex] = updatedClient;
+    notifyClientsChanged();
+  } catch (error) {
+    console.error("Error marking client delivered in Firestore:", error);
+    // Update local array anyway to ensure UI updates
+    clients[clientIndex] = updatedClient;
+    notifyClientsChanged();
+  }
 };
 
 export const archiveClient = (clientName: string, reason: string) => {
   updateClientStatus(clientName, 'archived', reason);
 };
 
-export const deleteClient = (clientName: string, reason: string) => {
+export const deleteClient = async (clientName: string, reason: string) => {
+  const userId = getCurrentUserId();
+  if (!userId) {
+    console.error("Cannot delete client - user not logged in");
+    return;
+  }
+  
+  // First mark as deleted in the local array
   updateClientStatus(clientName, 'deleted', reason);
+  
+  // Attempt to remove from Firestore
+  try {
+    const clientDocRef = doc(db, 'clients', `${userId}_${clientName}`);
+    await deleteDoc(clientDocRef);
+  } catch (error) {
+    console.error(`Error deleting client ${clientName} from Firestore:`, error);
+  }
 };
 
 export const restoreClient = (clientName: string) => {

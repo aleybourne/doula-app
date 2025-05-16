@@ -1,11 +1,19 @@
 
 // Firebase configuration
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+
 export const firebaseConfig = {
-  apiKey: "AIzaSyBkO5S1YLw4UFppSKDHNKsc9h8QHOxlXO0",
-  authDomain: "push-doula-app.firebaseapp.com",
-  projectId: "push-doula-app",
-  storageBucket: "push-doula-app.appspot.com",
-  messagingSenderId: "921677339690",
-  appId: "1:921677339690:web:c968f8e4e0e6b9a7123af2",
-  measurementId: "G-FP30PYTNSJ"
+  apiKey: "AIzaSyBDb-vJQQpkgJJyz0FycaLPnhGxEvSX0y0",
+  authDomain: "push-environment.firebaseapp.com",
+  projectId: "push-environment",
+  storageBucket: "push-environment.firebasestorage.app",
+  messagingSenderId: "440765036828",
+  appId: "1:440765036828:web:3a30d24500a254705422d9"
 };
+
+// Initialize Firebase
+export const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
+export const auth = getAuth(app);

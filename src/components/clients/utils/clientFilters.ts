@@ -4,7 +4,11 @@ import { differenceInWeeks, isAfter, parseISO } from 'date-fns';
 import { getCurrentUserId } from '../store/clientStore';
 
 // Filter clients based on different criteria
-export function filterClientsByType(clients: ClientData[], filter?: string | null): ClientData[] {
+export function filterClientsByType(clients: ClientData[] = [], filter?: string | null): ClientData[] {
+  if (!clients || clients.length === 0) {
+    return [];
+  }
+  
   const userId = getCurrentUserId();
   
   // First, filter by user ID

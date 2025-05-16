@@ -6,12 +6,20 @@ import { addClient, updateClient, updateClientStatus, restoreClient } from '../s
 
 export const useClientsStore = () => {
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const userId = getCurrentUserId();
 
   // Load clients for the current user on mount and when userId changes
   useEffect(() => {
     console.log("useClientsStore: Loading clients for current user");
-    loadClientsForCurrentUser();
+    
+    const loadClients = async () => {
+      setIsLoading(true);
+      await loadClientsForCurrentUser();
+      setIsLoading(false);
+    };
+    
+    loadClients();
   }, [userId]);
 
   useEffect(() => {
@@ -57,6 +65,7 @@ export const useClientsStore = () => {
   return {
     clients: getCurrentUserClients(),
     forceUpdate,
+    isLoading,
     addClient,
     updateClient,
     updateClientStatus,

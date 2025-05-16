@@ -8,6 +8,7 @@ import ClientListSection from "./client-list/ClientListSection";
 import ArchivedClientList from "./client-list/ArchivedClientList";
 import { useClientFiltering } from "./client-list/useClientFiltering";
 import { getCurrentUserId } from "./store/clientStore";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ClientListProps {
   searchQuery?: string;
@@ -25,6 +26,7 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
     getActiveClients, 
     getArchivedClients, 
     restoreClient,
+    isLoading
   } = useClientsStore();
   
   // Log the filter value when it changes
@@ -69,6 +71,19 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
     if (filter === "upcoming") return "Upcoming Births (30+ Weeks)";
     return "Active Clients";
   };
+
+  if (isLoading) {
+    return (
+      <div className="mb-20">
+        <Skeleton className="h-10 w-full mb-4" />
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-20">
