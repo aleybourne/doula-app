@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton';
 import AuthDivider from '@/components/auth/AuthDivider';
 import LoginForm from '@/components/auth/LoginForm';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 type AuthMode = 'login' | 'signup';
 
@@ -15,6 +16,7 @@ const Auth: React.FC = () => {
   const navigate = useNavigate();
   const { login, loginWithGoogle, signup } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -27,15 +29,19 @@ const Auth: React.FC = () => {
 
   const toggleMode = () => {
     setMode(mode === 'login' ? 'signup' : 'login');
+    setAuthError(null);
     form.reset();
   };
 
   const handleGoogleLogin = async () => {
     try {
       setIsSubmitting(true);
+      setAuthError(null);
       await loginWithGoogle();
       navigate('/onboarding');
     } catch (error) {
+      console.error('Google login error:', error);
+      setAuthError('Failed to sign in with Google. Please try again later.');
       toast({
         title: 'Error',
         description: 'Failed to sign in with Google. Please try again.',
@@ -49,6 +55,7 @@ const Auth: React.FC = () => {
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
+      setAuthError(null);
       if (mode === 'login') {
         await login(data.email, data.password);
         navigate('/onboarding');
@@ -56,7 +63,10 @@ const Auth: React.FC = () => {
         await signup(data.email, data.password, data.firstName, data.lastName);
         navigate('/onboarding');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      const errorMessage = error?.message || 'Authentication failed. Please check your credentials.';
+      setAuthError(errorMessage);
       toast({
         title: 'Authentication Error',
         description: 'Failed to authenticate. Please check your credentials.',
@@ -73,6 +83,15 @@ const Auth: React.FC = () => {
         <h1 className="text-4xl font-custom text-center mb-8">
           {mode === 'login' ? 'Welcome to Push' : 'Join Push'}
         </h1>
+
+        {authError && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTitle>Authentication Error</AlertTitle>
+            <AlertDescription>
+              {authError}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="space-y-6">
           <GoogleSignInButton 
