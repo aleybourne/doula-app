@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { DialogClose } from "@/components/ui/dialog";
-import { addClient } from "./clientsData";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ImageUpload } from "./ImageUpload";
@@ -15,6 +14,7 @@ import { PersonalInfoFields } from "./PersonalInfoFields";
 import { PregnancyDetailsSection } from "./form-sections/PregnancyDetailsSection";
 import { AdminSection } from "./form-sections/AdminSection";
 import { BirthType, ClientStatus, PaymentStatus } from "./types/ClientTypes";
+import { addClient } from "./store/clientActions"; // Fixed import path
 
 const phoneRegex = /^([+]?\d{1,2}[-\s]?|)\d{3}[-\s]?\d{3}[-\s]?\d{4}$/;
 
@@ -93,8 +93,10 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
       contractSigned: values.contractSigned,
       paymentStatus: values.paymentStatus as PaymentStatus,
       notes: values.notes,
+      createdAt: new Date().toISOString(), // Ensure createdAt is an ISO string
     };
     
+    console.log("Adding new client with data:", newClient);
     addClient(newClient);
     
     toast({

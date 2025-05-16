@@ -9,9 +9,15 @@ export function useClientFiltering(
   filter?: string
 ) {
   const [filteredClients, setFilteredClients] = useState<ClientData[]>([]);
+  const [filterVersion, setFilterVersion] = useState(0);
+
+  // Force a re-filter when clients array changes
+  useEffect(() => {
+    setFilterVersion(prev => prev + 1);
+  }, [clients]);
 
   useEffect(() => {
-    console.log(`useClientFiltering: processing filter: ${filter || "none"}`);
+    console.log(`useClientFiltering: processing filter: ${filter || "none"} (version ${filterVersion})`);
     console.log("Total clients before filtering:", clients.length);
 
     // First apply type filter (new, upcoming, etc)
@@ -33,7 +39,7 @@ export function useClientFiltering(
     }
     
     setFilteredClients(filtered);
-  }, [clients, filter, searchQuery]);
+  }, [clients, filter, searchQuery, filterVersion]);
 
   return filteredClients;
 }

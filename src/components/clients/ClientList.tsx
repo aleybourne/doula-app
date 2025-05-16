@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useClientsStore } from "./hooks/useClientsStore";
 import ArchiveToggle from "./client-list/ArchiveToggle";
@@ -16,8 +16,10 @@ interface ClientListProps {
 
 const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showArchived, setShowArchived] = useState(false);
   const userId = getCurrentUserId();
+  const [forceRefresh, setForceRefresh] = useState(0);
   
   const { 
     getActiveClients, 
@@ -29,12 +31,23 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
   useEffect(() => {
     console.log("ClientList received filter:", filter);
   }, [filter]);
+
+  // Force a refresh when the location (URL) changes to ensure filters apply correctly
+  useEffect(() => {
+    console.log("Location changed, forcing refresh");
+    setForceRefresh(prev => prev + 1);
+  }, [location]);
   
   // Get clients based on archived status
   const allClients = showArchived ? getArchivedClients() : getActiveClients();
   
-  // Apply filters and search
+  // Apply filters and search (with key that includes forceRefresh)
   const filteredClients = useClientFiltering(allClients, searchQuery, filter);
+
+  // Log the number of clients after filtering
+  useEffect(() => {
+    console.log(`ClientList: After filtering, found ${filteredClients.length} clients`);
+  }, [filteredClients]);
 
   const handleRestoreClient = (clientName: string, event: React.MouseEvent) => {
     event.stopPropagation();
