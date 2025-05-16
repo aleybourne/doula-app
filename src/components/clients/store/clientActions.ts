@@ -1,4 +1,3 @@
-
 import { ClientData, ClientStatus } from '../types/ClientTypes';
 import { clients, notifyClientsChanged, getCurrentUserId } from './clientStore';
 import { addWeeks } from 'date-fns';
@@ -6,11 +5,11 @@ import { POSTPARTUM_WEEKS } from '../utils/gestationUtils';
 import { db } from '../../../config/firebase';
 import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 
-export const addClient = async (client: ClientData) => {
+export const addClient = async (client: ClientData): Promise<ClientData> => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot add client - user not logged in");
-    return;
+    return Promise.reject("User not logged in");
   }
   
   // Ensure the client has the current user's ID
@@ -28,11 +27,14 @@ export const addClient = async (client: ClientData) => {
     // Also update local array
     clients.unshift(client);
     notifyClientsChanged();
+    
+    return client; // Return the client object after successful addition
   } catch (error) {
     console.error("Error adding client to Firestore:", error);
     // Add to local array anyway to ensure UI updates
     clients.unshift(client);
     notifyClientsChanged();
+    return client; // Still return the client even if Firestore update fails
   }
 };
 

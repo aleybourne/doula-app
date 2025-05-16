@@ -14,7 +14,8 @@ import { PersonalInfoFields } from "./PersonalInfoFields";
 import { PregnancyDetailsSection } from "./form-sections/PregnancyDetailsSection";
 import { AdminSection } from "./form-sections/AdminSection";
 import { BirthType, ClientStatus, PaymentStatus } from "./types/ClientTypes";
-import { addClient } from "./store/clientActions"; // Fixed import path
+import { addClient } from "./store/clientActions";
+import { Loader2 } from "lucide-react";
 
 const phoneRegex = /^([+]?\d{1,2}[-\s]?|)\d{3}[-\s]?\d{3}[-\s]?\d{4}$/;
 
@@ -46,6 +47,7 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string>("/placeholder.svg");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,42 +75,58 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
     }
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const fullName = `${values.firstName} ${values.lastName}`;
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
     
-    const newClient = {
-      name: fullName,
-      dueDateISO: values.dueDate.toISOString().split('T')[0],
-      dueDateLabel: format(values.dueDate, "MMMM do, yyyy"),
-      image: selectedImage,
-      preferredName: values.preferredName,
-      pronouns: values.pronouns,
-      phone: values.phone,
-      email: values.email,
-      careProvider: values.careProvider,
-      birthLocation: values.birthLocation as any,
-      birthTypes: values.birthTypes as BirthType[],
-      status: values.clientStatus as ClientStatus,
-      packageSelected: values.packageSelected,
-      contractSigned: values.contractSigned,
-      paymentStatus: values.paymentStatus as PaymentStatus,
-      notes: values.notes,
-      createdAt: new Date().toISOString(), // Ensure createdAt is an ISO string
-    };
-    
-    console.log("Adding new client with data:", newClient);
-    addClient(newClient);
-    
-    toast({
-      title: "Success",
-      description: `${fullName} has been added to your clients.`,
-    });
-    
-    if (onSuccess) {
-      onSuccess();
+    try {
+      const fullName = `${values.firstName} ${values.lastName}`;
+      
+      const newClient = {
+        name: fullName,
+        dueDateISO: values.dueDate.toISOString().split('T')[0],
+        dueDateLabel: format(values.dueDate, "MMMM do, yyyy"),
+        image: selectedImage,
+        preferredName: values.preferredName,
+        pronouns: values.pronouns,
+        phone: values.phone,
+        email: values.email,
+        careProvider: values.careProvider,
+        birthLocation: values.birthLocation as any,
+        birthTypes: values.birthTypes as BirthType[],
+        status: values.clientStatus as ClientStatus,
+        packageSelected: values.packageSelected,
+        contractSigned: values.contractSigned,
+        paymentStatus: values.paymentStatus as PaymentStatus,
+        notes: values.notes,
+        createdAt: new Date().toISOString(),
+      };
+      
+      console.log("Adding new client with data:", newClient);
+      await addClient(newClient);
+      
+      toast({
+        title: "Success",
+        description: `${fullName} has been added to your clients.`,
+      });
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+      
+      // Small delay before navigation to ensure Firestore has time to synchronize
+      setTimeout(() => {
+        navigate(`/clients/${encodeURIComponent(fullName)}`);
+      }, 500);
+    } catch (error) {
+      console.error("Error adding client:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem adding the client. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    navigate(`/clients/${encodeURIComponent(fullName)}`);
   };
 
   return (
@@ -136,13 +154,21 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
 
         <div className="flex justify-end gap-3">
           <DialogClose asChild>
-            <Button type="button" variant="outline">Cancel</Button>
+            <Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button>
           </DialogClose>
           <Button 
             type="submit" 
             className="bg-[#F499B7] hover:bg-[#F499B7]/90"
+            disabled={isSubmitting}
           >
-            Add Client
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add Client"
+            )}
           </Button>
         </div>
       </form>
