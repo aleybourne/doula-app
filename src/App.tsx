@@ -2,7 +2,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Clients from "./pages/Clients";
@@ -14,6 +14,10 @@ import ClientJane from "./pages/clients/ClientJane";
 import ClientAustin from "./pages/clients/ClientAustin";
 import NewClientPage from "@/components/clients/NewClientTemplate";
 import { BottomNav } from "@/components/dashboard/BottomNav";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import SplashScreen from "./pages/SplashScreen";
+import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 
 // Create a wrapper component to get the clientName parameter
 const DynamicClientPage = () => {
@@ -21,31 +25,105 @@ const DynamicClientPage = () => {
   return <NewClientPage clientName={clientName || ''} />;
 };
 
+// Protected route component
+const RequireAuth = ({ children }: { children: JSX.Element }) => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return children;
+};
+
 const queryClient = new QueryClient();
+
+// Main application component
+const AppContent = () => {
+  const { user } = useAuth();
+  
+  return (
+    <div className="min-h-screen flex flex-col justify-between">
+      <div className="flex-1 flex flex-col">
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<SplashScreen />} />
+          <Route path="/splash" element={<SplashScreen />} />
+          <Route path="/auth" element={<Auth />} />
+
+          {/* Protected routes */}
+          <Route path="/onboarding" element={
+            <RequireAuth>
+              <Onboarding />
+            </RequireAuth>
+          } />
+          <Route path="/home" element={
+            <RequireAuth>
+              <Index />
+            </RequireAuth>
+          } />
+          <Route path="/clients" element={
+            <RequireAuth>
+              <Clients />
+            </RequireAuth>
+          } />
+          <Route path="/clients/Benita Mendez" element={
+            <RequireAuth>
+              <ClientBenita />
+            </RequireAuth>
+          } />
+          <Route path="/clients/Sam Williams" element={
+            <RequireAuth>
+              <ClientSam />
+            </RequireAuth>
+          } />
+          <Route path="/clients/Julie Hill" element={
+            <RequireAuth>
+              <ClientJulie />
+            </RequireAuth>
+          } />
+          <Route path="/clients/Jasmine Jones" element={
+            <RequireAuth>
+              <ClientJasmine />
+            </RequireAuth>
+          } />
+          <Route path="/clients/Jane Miller" element={
+            <RequireAuth>
+              <ClientJane />
+            </RequireAuth>
+          } />
+          <Route path="/clients/Austin Leybourne" element={
+            <RequireAuth>
+              <ClientAustin />
+            </RequireAuth>
+          } />
+          <Route path="/clients/:clientName" element={
+            <RequireAuth>
+              <DynamicClientPage />
+            </RequireAuth>
+          } />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+      {/* Only show BottomNav when user is authenticated */}
+      {user && <BottomNav />}
+    </div>
+  );
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <Toaster />
-    <Sonner />
-    <BrowserRouter>
-      <div className="min-h-screen flex flex-col justify-between">
-        <div className="flex-1 flex flex-col">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/clients" element={<Clients />} />
-            <Route path="/clients/Benita Mendez" element={<ClientBenita />} />
-            <Route path="/clients/Sam Williams" element={<ClientSam />} />
-            <Route path="/clients/Julie Hill" element={<ClientJulie />} />
-            <Route path="/clients/Jasmine Jones" element={<ClientJasmine />} />
-            <Route path="/clients/Jane Miller" element={<ClientJane />} />
-            <Route path="/clients/Austin Leybourne" element={<ClientAustin />} />
-            <Route path="/clients/:clientName" element={<DynamicClientPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
-        <BottomNav />
-      </div>
-    </BrowserRouter>
+    <AuthProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

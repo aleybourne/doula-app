@@ -5,19 +5,23 @@ import { format } from "date-fns";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export const Header: React.FC = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
   const todayStr = format(new Date(), "M/d/yyyy");
-  const isHomePage = location.pathname === '/';
+  const isHomePage = location.pathname === '/home';
   const isClientsPage = location.pathname === '/clients';
+  const { user } = useAuth();
+  
+  const displayName = user?.firstName || "Doula";
 
   const handleBack = () => {
     if (isClientsPage) {
       // From clients page, always go back to home
-      navigate("/");
+      navigate("/home");
     } else {
       // From other pages, go back one step
       navigate(-1);
@@ -45,7 +49,7 @@ export const Header: React.FC = () => {
           className="font-custom text-[28px] md:text-[36px] font-normal"
           style={{ fontWeight: 400 }}
         >
-          Hello, Collin!
+          Hello, {displayName}!
         </div>
         <div className="w-8"></div> {/* Empty div for balance */}
       </div>

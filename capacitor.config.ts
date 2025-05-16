@@ -3,7 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: "app.lovable.2faf8997ab00482fa5d99b3238ceda15",
-  appName: "style-copy-crew",
+  appName: "Push",
   webDir: "dist",
   bundledWebRuntime: false,
   server: {

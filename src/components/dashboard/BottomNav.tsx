@@ -34,7 +34,7 @@ export const BottomNav: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isClientsPage = location.pathname === "/clients";
-  const isHomePage = location.pathname === "/";
+  const isHomePage = location.pathname === "/home";
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const navItems = [
@@ -50,7 +50,7 @@ export const BottomNav: React.FC = () => {
       Icon: Home,
       label: "Home",
       onClick: () => {
-        if (!isHomePage) navigate("/");
+        if (!isHomePage) navigate("/home");
       },
       active: isHomePage,
     },
@@ -73,4 +73,3 @@ export const BottomNav: React.FC = () => {
     </>
   );
 };
-
