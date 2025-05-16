@@ -1,9 +1,11 @@
+
 import { ClientData, ClientStatus } from '../types/ClientTypes';
 import { clients, notifyClientsChanged, getCurrentUserId } from './clientStore';
 import { addWeeks } from 'date-fns';
 import { POSTPARTUM_WEEKS } from '../utils/gestationUtils';
 import { db } from '../../../config/firebase';
 import { doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 export const addClient = async (client: ClientData): Promise<ClientData> => {
   const userId = getCurrentUserId();
@@ -12,16 +14,23 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     return Promise.reject("User not logged in");
   }
   
-  // Ensure the client has the current user's ID
+  // Ensure the client has the current user's ID and a unique ID
   if (!client.status) client.status = "active" as ClientStatus;
   if (!client.createdAt) {
     client.createdAt = new Date().toISOString();
   }
+  
+  // Generate a unique ID if not provided
+  if (!client.id) {
+    client.id = `client-${uuidv4()}`;
+  }
+  
   client.userId = userId;
   
   // Add to Firestore
   try {
-    const clientDocRef = doc(db, 'clients', `${userId}_${client.name}`);
+    // Use client's ID for document ID
+    const clientDocRef = doc(db, 'clients', client.id);
     await setDoc(clientDocRef, client);
     
     // Also update local array
@@ -47,7 +56,7 @@ export const updateClient = async (updatedClient: ClientData) => {
   
   // Only update if the client belongs to the current user
   const clientIndex = clients.findIndex(client => 
-    client.name === updatedClient.name && client.userId === userId
+    client.id === updatedClient.id && client.userId === userId
   );
   
   if (clientIndex !== -1) {
@@ -56,7 +65,7 @@ export const updateClient = async (updatedClient: ClientData) => {
     
     try {
       // Update in Firestore
-      const clientDocRef = doc(db, 'clients', `${userId}_${updatedClient.name}`);
+      const clientDocRef = doc(db, 'clients', updatedClient.id);
       await setDoc(clientDocRef, updatedClient);
       
       // Also update local array
@@ -69,11 +78,11 @@ export const updateClient = async (updatedClient: ClientData) => {
       notifyClientsChanged();
     }
   } else {
-    console.warn(`Client ${updatedClient.name} not found or doesn't belong to current user`);
+    console.warn(`Client ${updatedClient.id} not found or doesn't belong to current user`);
   }
 };
 
-export const updateClientStatus = async (clientName: string, status: ClientData['status'], reason: string): Promise<void> => {
+export const updateClientStatus = async (clientId: string, status: ClientData['status'], reason: string): Promise<void> => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot update client status - user not logged in");
@@ -82,11 +91,11 @@ export const updateClientStatus = async (clientName: string, status: ClientData[
   
   // Only update if the client belongs to the current user
   const clientIndex = clients.findIndex(client => 
-    client.name === clientName && client.userId === userId
+    client.id === clientId && client.userId === userId
   );
   
   if (clientIndex === -1) {
-    console.error(`Client ${clientName} not found or doesn't belong to current user`);
+    console.error(`Client ${clientId} not found or doesn't belong to current user`);
     return;
   }
   
@@ -107,7 +116,7 @@ export const updateClientStatus = async (clientName: string, status: ClientData[
   
   try {
     // Update in Firestore
-    const clientDocRef = doc(db, 'clients', `${userId}_${clientName}`);
+    const clientDocRef = doc(db, 'clients', clientId);
     await setDoc(clientDocRef, updatedClient);
     
     // Also update local array
@@ -121,7 +130,7 @@ export const updateClientStatus = async (clientName: string, status: ClientData[
   }
 };
 
-export const markClientDelivered = async (clientName: string, deliveryDate: Date) => {
+export const markClientDelivered = async (clientId: string, deliveryDate: Date) => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot mark client delivered - user not logged in");
@@ -130,11 +139,11 @@ export const markClientDelivered = async (clientName: string, deliveryDate: Date
   
   // Only update if the client belongs to the current user
   const clientIndex = clients.findIndex(client => 
-    client.name === clientName && client.userId === userId
+    client.id === clientId && client.userId === userId
   );
   
   if (clientIndex === -1) {
-    console.error(`Client ${clientName} not found or doesn't belong to current user`);
+    console.error(`Client ${clientId} not found or doesn't belong to current user`);
     return;
   }
   
@@ -151,7 +160,7 @@ export const markClientDelivered = async (clientName: string, deliveryDate: Date
   
   try {
     // Update in Firestore
-    const clientDocRef = doc(db, 'clients', `${userId}_${clientName}`);
+    const clientDocRef = doc(db, 'clients', clientId);
     await setDoc(clientDocRef, updatedClient);
     
     // Also update local array
@@ -165,11 +174,11 @@ export const markClientDelivered = async (clientName: string, deliveryDate: Date
   }
 };
 
-export const archiveClient = (clientName: string, reason: string) => {
-  updateClientStatus(clientName, 'archived' as ClientStatus, reason);
+export const archiveClient = (clientId: string, reason: string) => {
+  updateClientStatus(clientId, 'archived' as ClientStatus, reason);
 };
 
-export const deleteClient = async (clientName: string, reason: string) => {
+export const deleteClient = async (clientId: string, reason: string) => {
   const userId = getCurrentUserId();
   if (!userId) {
     console.error("Cannot delete client - user not logged in");
@@ -177,17 +186,17 @@ export const deleteClient = async (clientName: string, reason: string) => {
   }
   
   // First mark as deleted in the local array
-  updateClientStatus(clientName, 'deleted' as ClientStatus, reason);
+  updateClientStatus(clientId, 'deleted' as ClientStatus, reason);
   
   // Attempt to remove from Firestore
   try {
-    const clientDocRef = doc(db, 'clients', `${userId}_${clientName}`);
+    const clientDocRef = doc(db, 'clients', clientId);
     await deleteDoc(clientDocRef);
   } catch (error) {
-    console.error(`Error deleting client ${clientName} from Firestore:`, error);
+    console.error(`Error deleting client ${clientId} from Firestore:`, error);
   }
 };
 
-export const restoreClient = (clientName: string) => {
-  updateClientStatus(clientName, 'active' as ClientStatus, 'Restored from archive');
+export const restoreClient = (clientId: string) => {
+  updateClientStatus(clientId, 'active' as ClientStatus, 'Restored from archive');
 };

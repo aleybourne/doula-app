@@ -19,10 +19,15 @@ import SplashScreen from "./pages/SplashScreen";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 
-// Create a wrapper component to get the clientName parameter
-const DynamicClientPage = () => {
+// Create wrapper components to get parameters
+const DynamicClientByNamePage = () => {
   const { clientName } = useParams();
   return <NewClientPage clientName={clientName || ''} />;
+};
+
+const DynamicClientByIdPage = () => {
+  const { clientId } = useParams();
+  return <NewClientPage clientId={clientId || ''} />;
 };
 
 // Protected route component
@@ -101,11 +106,21 @@ const AppContent = () => {
               <ClientAustin />
             </RequireAuth>
           } />
-          <Route path="/clients/:clientName" element={
+          
+          {/* New ID-based client route (preferred) */}
+          <Route path="/clients/id/:clientId" element={
             <RequireAuth>
-              <DynamicClientPage />
+              <DynamicClientByIdPage />
             </RequireAuth>
           } />
+          
+          {/* Legacy name-based client route (for backward compatibility) */}
+          <Route path="/clients/:clientName" element={
+            <RequireAuth>
+              <DynamicClientByNamePage />
+            </RequireAuth>
+          } />
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

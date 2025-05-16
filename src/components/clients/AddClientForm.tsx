@@ -16,6 +16,7 @@ import { AdminSection } from "./form-sections/AdminSection";
 import { BirthType, ClientStatus, PaymentStatus } from "./types/ClientTypes";
 import { addClient } from "./store/clientActions";
 import { Loader2 } from "lucide-react";
+import { v4 as uuidv4 } from 'uuid';
 
 const phoneRegex = /^([+]?\d{1,2}[-\s]?|)\d{3}[-\s]?\d{3}[-\s]?\d{4}$/;
 
@@ -80,8 +81,10 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
     
     try {
       const fullName = `${values.firstName} ${values.lastName}`;
+      const clientId = `client-${uuidv4()}`;
       
       const newClient = {
+        id: clientId, // Generate unique ID for the client
         name: fullName,
         dueDateISO: values.dueDate.toISOString().split('T')[0],
         dueDateLabel: format(values.dueDate, "MMMM do, yyyy"),
@@ -102,7 +105,7 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
       };
       
       console.log("Adding new client with data:", newClient);
-      await addClient(newClient);
+      const savedClient = await addClient(newClient);
       
       toast({
         title: "Success",
@@ -113,10 +116,8 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
         onSuccess();
       }
       
-      // Small delay before navigation to ensure Firestore has time to synchronize
-      setTimeout(() => {
-        navigate(`/clients/${encodeURIComponent(fullName)}`);
-      }, 500);
+      // Navigate to the client page using the ID
+      navigate(`/clients/id/${savedClient.id}`);
     } catch (error) {
       console.error("Error adding client:", error);
       toast({

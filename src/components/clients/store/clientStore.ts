@@ -1,11 +1,12 @@
-
 import { ClientData, ClientChangeListener } from '../types/ClientTypes';
 import { cleanupClientImageData } from '../utils/storageUtils';
 import { db } from '../../../config/firebase';
-import { collection, query, where, getDocs, onSnapshot, doc, setDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 const defaultClients: ClientData[] = [
   {
+    id: "client-benita-mendez",
     name: "Benita Mendez",
     dueDateISO: "2025-08-07",
     dueDateLabel: "August 7th, 2025",
@@ -14,6 +15,7 @@ const defaultClients: ClientData[] = [
     createdAt: "2025-04-07T00:00:00.000Z",
   },
   {
+    id: "client-sam-williams",
     name: "Sam Williams",
     dueDateISO: "2025-10-16",
     dueDateLabel: "October 16th, 2025",
@@ -22,6 +24,7 @@ const defaultClients: ClientData[] = [
     createdAt: "2025-05-14T00:00:00.000Z",
   },
   {
+    id: "client-julie-hill",
     name: "Julie Hill",
     dueDateISO: "2025-06-19",
     dueDateLabel: "June 19th, 2025",
@@ -30,6 +33,7 @@ const defaultClients: ClientData[] = [
     createdAt: "2025-04-15T00:00:00.000Z",
   },
   {
+    id: "client-jasmine-jones",
     name: "Jasmine Jones",
     dueDateISO: "2025-05-15",
     dueDateLabel: "May 15th, 2025",
@@ -38,6 +42,7 @@ const defaultClients: ClientData[] = [
     createdAt: "2025-04-01T00:00:00.000Z",
   },
   {
+    id: "client-jane-miller",
     name: "Jane Miller",
     dueDateISO: "2025-03-19",
     dueDateLabel: "March 19th, 2025",
@@ -49,6 +54,7 @@ const defaultClients: ClientData[] = [
     createdAt: "2025-02-19T00:00:00.000Z",
   },
   {
+    id: "client-austin-leybourne",
     name: "Austin Leybourne",
     dueDateISO: "2025-10-24",
     dueDateLabel: "October 24th, 2025",
@@ -57,6 +63,7 @@ const defaultClients: ClientData[] = [
     createdAt: "2025-03-24T00:00:00.000Z",
   },
   {
+    id: "client-luna-garcia",
     name: "Luna Garcia",
     dueDateISO: "2025-09-12",
     dueDateLabel: "September 12th, 2025",
@@ -106,8 +113,10 @@ export const initializeClients = async (): Promise<ClientData[]> => {
       if (savedClients) {
         const parsedClients = JSON.parse(savedClients);
         if (parsedClients.length > 0) {
+          // Ensure all clients have IDs
+          const clientsWithIds = ensureClientsHaveIds(parsedClients);
           // Migrate localStorage clients to Firestore
-          const clientsWithUserId = addUserIdToClients(parsedClients, userId);
+          const clientsWithUserId = addUserIdToClients(clientsWithIds, userId);
           await migrateClientsToFirestore(clientsWithUserId);
           return clientsWithUserId;
         }
@@ -141,11 +150,24 @@ function addUserIdToClients(clients: ClientData[], userId: string): ClientData[]
   return clients.map(client => ({ ...client, userId }));
 }
 
+// Helper function to ensure all clients have unique IDs
+function ensureClientsHaveIds(clients: ClientData[]): ClientData[] {
+  return clients.map(client => {
+    if (!client.id) {
+      // Generate a unique ID based on name and timestamp as a fallback
+      const id = `client-${client.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+      return { ...client, id };
+    }
+    return client;
+  });
+}
+
 // Helper function to migrate clients from localStorage to Firestore
 async function migrateClientsToFirestore(clients: ClientData[]): Promise<void> {
   try {
     for (const client of clients) {
-      const clientDocRef = doc(db, 'clients', `${client.userId}_${client.name}`);
+      // Use client id for document ID instead of userId_name
+      const clientDocRef = doc(db, 'clients', client.id);
       await setDoc(clientDocRef, client);
     }
     console.log(`Successfully migrated ${clients.length} clients to Firestore`);
@@ -153,6 +175,43 @@ async function migrateClientsToFirestore(clients: ClientData[]): Promise<void> {
     console.error('Error migrating clients to Firestore:', error);
   }
 }
+
+// Find a client by ID
+export const getClientById = async (clientId: string): Promise<ClientData | null> => {
+  try {
+    const clientDocRef = doc(db, 'clients', clientId);
+    const clientDoc = await getDoc(clientDocRef);
+    
+    if (clientDoc.exists()) {
+      return clientDoc.data() as ClientData;
+    }
+    
+    // Check local clients array if not found in Firestore
+    const foundClient = clients.find(client => client.id === clientId);
+    return foundClient || null;
+  } catch (error) {
+    console.error(`Failed to get client with ID ${clientId}:`, error);
+    
+    // Check local clients array if Firestore fails
+    const foundClient = clients.find(client => client.id === clientId);
+    return foundClient || null;
+  }
+};
+
+// Find a client by name (legacy support)
+export const getClientByName = (clientName: string): ClientData | null => {
+  const currentUserId = getCurrentUserId();
+  if (!currentUserId) return null;
+  
+  const normalizedSearchName = decodeURIComponent(clientName).toLowerCase().replace(/\s+/g, ' ').trim();
+  
+  return clients.find(client => {
+    if (client.userId !== currentUserId) return false;
+    
+    const normalizedClientName = client.name.toLowerCase().replace(/\s+/g, ' ').trim();
+    return normalizedClientName === normalizedSearchName;
+  }) || null;
+};
 
 export let clients: ClientData[] = []; // Start empty and populate in the useEffect below
 
@@ -171,7 +230,13 @@ export const saveClientsToStorage = async () => {
         client.userId = userId;
       }
       
-      const clientDocRef = doc(db, 'clients', `${client.userId}_${client.name}`);
+      // Ensure client has an ID
+      if (!client.id) {
+        client.id = `client-${client.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+      }
+      
+      // Use client id for document ID
+      const clientDocRef = doc(db, 'clients', client.id);
       await setDoc(clientDocRef, client);
     }
     

@@ -5,6 +5,7 @@ export type BirthType = 'vaginal' | 'c-section' | 'VBAC' | 'unsure';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
 
 export interface ClientData {
+  id: string;  // Unique identifier
   name: string;
   dueDateISO: string;
   dueDateLabel: string;
