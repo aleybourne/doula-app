@@ -1,5 +1,5 @@
 
-import { ClientData } from '../types/ClientTypes';
+import { ClientData, ClientStatus } from '../types/ClientTypes';
 import { differenceInWeeks, isAfter, parseISO } from 'date-fns';
 import { getCurrentUserId } from '../store/clientStore';
 

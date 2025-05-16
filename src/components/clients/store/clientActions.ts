@@ -1,4 +1,5 @@
-import { ClientData } from '../types/ClientTypes';
+
+import { ClientData, ClientStatus } from '../types/ClientTypes';
 import { clients, notifyClientsChanged, getCurrentUserId } from './clientStore';
 import { addWeeks } from 'date-fns';
 import { POSTPARTUM_WEEKS } from '../utils/gestationUtils';
@@ -13,7 +14,7 @@ export const addClient = async (client: ClientData) => {
   }
   
   // Ensure the client has the current user's ID
-  if (!client.status) client.status = "active";
+  if (!client.status) client.status = "active" as ClientStatus;
   if (!client.createdAt) {
     client.createdAt = new Date().toISOString();
   }
@@ -139,7 +140,7 @@ export const markClientDelivered = async (clientName: string, deliveryDate: Date
   
   const updatedClient = {
     ...clients[clientIndex],
-    status: 'delivered',
+    status: 'delivered' as ClientStatus,
     statusReason: 'Client has delivered',
     statusDate: new Date().toISOString(),
     deliveryDate: deliveryDate.toISOString(),
@@ -163,7 +164,7 @@ export const markClientDelivered = async (clientName: string, deliveryDate: Date
 };
 
 export const archiveClient = (clientName: string, reason: string) => {
-  updateClientStatus(clientName, 'archived', reason);
+  updateClientStatus(clientName, 'archived' as ClientStatus, reason);
 };
 
 export const deleteClient = async (clientName: string, reason: string) => {
@@ -174,7 +175,7 @@ export const deleteClient = async (clientName: string, reason: string) => {
   }
   
   // First mark as deleted in the local array
-  updateClientStatus(clientName, 'deleted', reason);
+  updateClientStatus(clientName, 'deleted' as ClientStatus, reason);
   
   // Attempt to remove from Firestore
   try {
@@ -186,5 +187,5 @@ export const deleteClient = async (clientName: string, reason: string) => {
 };
 
 export const restoreClient = (clientName: string) => {
-  updateClientStatus(clientName, 'active', 'Restored from archive');
+  updateClientStatus(clientName, 'active' as ClientStatus, 'Restored from archive');
 };
