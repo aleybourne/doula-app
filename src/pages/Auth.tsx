@@ -71,8 +71,8 @@ const Auth: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-white p-6 pt-16">
       <div className="w-full max-w-md">
-        <h1 className="text-4xl font-bold text-center mb-8">
-          {mode === 'login' ? 'Welcome Back' : 'Join Push'}
+        <h1 className="text-4xl font-custom text-center mb-8">
+          {mode === 'login' ? 'Welcome to Push' : 'Join Push'}
         </h1>
 
         <div className="space-y-6">
