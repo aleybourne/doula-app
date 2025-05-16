@@ -1,6 +1,10 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
+import { 
+  initializeApp, 
+  getApps, 
+  getApp 
+} from 'firebase/app';
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
@@ -8,13 +12,22 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
-  onAuthStateChanged,
-  User as FirebaseUser
+  onAuthStateChanged
 } from 'firebase/auth';
 import { firebaseConfig } from '@/config/firebase';
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase only once
+const initializeFirebase = () => {
+  try {
+    return getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+  } catch (error) {
+    console.error("Error initializing Firebase:", error);
+    throw error;
+  }
+};
+
+// Initialize Firebase app
+const app = initializeFirebase();
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
