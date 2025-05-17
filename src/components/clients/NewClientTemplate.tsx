@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ClientPageTemplate from "./ClientPageTemplate";
 import { clientsTags } from "./clientsTagsData";
 import { useClientStore } from "./clientsData";
@@ -13,6 +14,7 @@ interface NewClientPageProps {
 }
 
 const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) => {
+  const navigate = useNavigate();
   const { clients } = useClientStore();
   const currentUserId = getCurrentUserId();
   const [isLoading, setIsLoading] = useState(true);
@@ -54,6 +56,13 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
         
         if (existingClient) {
           console.log("Found client by name:", existingClient);
+          // If we find by name, redirect to the ID-based URL
+          if (existingClient.id) {
+            console.log(`Redirecting to ID-based URL: /clients/id/${existingClient.id}`);
+            navigate(`/clients/id/${existingClient.id}`, { replace: true });
+            return;
+          }
+          
           setClientData(existingClient);
           setIsLoading(false);
           setNotFoundError(false);
@@ -64,6 +73,14 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
         const clientByName = getClientByName(clientName);
         if (clientByName) {
           console.log("Retrieved client by name from store:", clientByName);
+          
+          // If we find by name, redirect to the ID-based URL
+          if (clientByName.id) {
+            console.log(`Redirecting to ID-based URL: /clients/id/${clientByName.id}`);
+            navigate(`/clients/id/${clientByName.id}`, { replace: true });
+            return;
+          }
+          
           setClientData(clientByName);
           setIsLoading(false);
           setNotFoundError(false);
@@ -87,7 +104,7 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
     };
     
     loadClient();
-  }, [clientId, clientName, clients, currentUserId, retryCount]);
+  }, [clientId, clientName, clients, currentUserId, retryCount, navigate]);
   
   if (isLoading) {
     return (

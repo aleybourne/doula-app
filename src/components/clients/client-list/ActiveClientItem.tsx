@@ -6,7 +6,7 @@ import { calculateGestationAndTrimester } from "../utils/gestationUtils";
 
 interface ActiveClientItemProps {
   client: ClientData;
-  onClick: (clientName: string) => void;
+  onClick: (clientId: string) => void; // Changed to clientId
 }
 
 const ActiveClientItem: React.FC<ActiveClientItemProps> = ({ client, onClick }) => {
@@ -25,7 +25,7 @@ const ActiveClientItem: React.FC<ActiveClientItemProps> = ({ client, onClick }) 
   
   return (
     <ClientCard
-      key={`${client.name}`}
+      key={client.id}
       name={client.name}
       dueDateLabel={client.dueDateLabel}
       gestation={gestation}
@@ -37,7 +37,7 @@ const ActiveClientItem: React.FC<ActiveClientItemProps> = ({ client, onClick }) 
       isPostpartum={isPostpartum}
       postpartumProgress={postpartumProgress}
       status={client.status}
-      onClick={() => onClick(client.name)}
+      onClick={() => onClick(client.id)} // Pass client.id instead of client.name
     />
   );
 };

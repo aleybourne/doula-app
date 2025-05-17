@@ -7,8 +7,8 @@ import { calculateGestationAndTrimester } from "../utils/gestationUtils";
 
 interface ArchivedClientItemProps {
   client: ClientData;
-  onRestore: (clientName: string, event: React.MouseEvent) => void;
-  onCardClick: (clientName: string) => void;
+  onRestore: (clientId: string, event: React.MouseEvent) => void; // Changed to clientId
+  onCardClick: (clientId: string) => void; // Changed to clientId
 }
 
 const ArchivedClientItem: React.FC<ArchivedClientItemProps> = ({
@@ -43,13 +43,13 @@ const ArchivedClientItem: React.FC<ArchivedClientItemProps> = ({
         isPostpartum={isPostpartum}
         postpartumProgress={postpartumProgress}
         status={client.status}
-        onClick={() => onCardClick(client.name)}
+        onClick={() => onCardClick(client.id)} // Pass client.id instead of client.name
       />
       <div className="absolute top-2 right-2">
         <Button 
           variant="outline" 
           size="sm"
-          onClick={(e) => onRestore(client.name, e)}
+          onClick={(e) => onRestore(client.id, e)} // Pass client.id instead of client.name
           className="bg-white text-xs py-1 px-2 h-auto"
         >
           Restore

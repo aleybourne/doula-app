@@ -5,6 +5,7 @@ import { clientsTags } from "@/components/clients/clientsTagsData";
 
 const ClientJulie: React.FC = () => {
   const clientInfo = {
+    id: "julie-hill-static", // Added ID property
     name: "Julie Hill",
     image: "https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg",
     dueDateISO: "2025-06-19",

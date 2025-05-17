@@ -51,18 +51,18 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
     console.log(`ClientList: After filtering, found ${filteredClients.length} clients`);
   }, [filteredClients]);
 
-  const handleRestoreClient = (clientName: string, event: React.MouseEvent) => {
+  const handleRestoreClient = (clientId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    restoreClient(clientName);
+    restoreClient(clientId);
     toast({
       title: "Client Restored",
-      description: `${clientName} has been restored to active status.`,
+      description: "Client has been restored to active status.",
     });
   };
 
-  const handleCardClick = (clientName: string) => {
-    console.log(`Navigating to client: ${clientName}`);
-    navigate(`/clients/${encodeURIComponent(clientName)}`);
+  const handleCardClick = (clientId: string) => {
+    console.log(`Navigating to client ID: ${clientId}`);
+    navigate(`/clients/id/${clientId}`);
   };
 
   // Helper function to generate appropriate title

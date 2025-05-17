@@ -28,9 +28,10 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { archiveClient, deleteClient } from "../clientsData";
+import { useClientStore } from "../hooks/useClientStore";
 
 interface ClientManagementDropdownProps {
-  clientName: string;
+  clientName: string; // Keep using clientName for now but implement ID-based operations
 }
 
 const archiveReasons = [
@@ -51,9 +52,19 @@ const ClientManagementDropdown: React.FC<ClientManagementDropdownProps> = ({ cli
   const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedDeleteReason, setSelectedDeleteReason] = useState<string | null>(null);
+  const { clients } = useClientStore();
+  
+  // Find client ID from name
+  const client = clients.find(c => c.name === clientName);
+  const clientId = client?.id || '';
 
   const handleArchive = (reason: string) => {
-    archiveClient(clientName, reason);
+    if (!clientId) {
+      console.error("Client ID not found for:", clientName);
+      return;
+    }
+    
+    archiveClient(clientId, reason);
     toast({
       title: "Client Archived",
       description: `${clientName} has been archived. Reason: ${reason}`,
@@ -61,8 +72,8 @@ const ClientManagementDropdown: React.FC<ClientManagementDropdownProps> = ({ cli
   };
 
   const handleDelete = () => {
-    if (selectedDeleteReason) {
-      deleteClient(clientName, selectedDeleteReason);
+    if (selectedDeleteReason && clientId) {
+      deleteClient(clientId, selectedDeleteReason);
       toast({
         title: "Client Deleted",
         description: `${clientName} has been deleted. Reason: ${selectedDeleteReason}`,

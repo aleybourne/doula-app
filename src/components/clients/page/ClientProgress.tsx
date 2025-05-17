@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useNavigate } from "react-router-dom"; // Added useNavigate
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -43,6 +44,7 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
   tags,
   status,
 }) => {
+  const navigate = useNavigate(); // Added useNavigate hook
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   
   const handleUpdateClient = (updatedClient: ClientData) => {
@@ -50,7 +52,8 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
     if (clientIndex !== -1) {
       clients[clientIndex] = updatedClient;
       localStorage.setItem('clients', JSON.stringify(clients));
-      window.location.href = `/clients/${encodeURIComponent(updatedClient.name)}`;
+      // Use navigate instead of window.location.href
+      navigate(`/clients/id/${updatedClient.id}`);
     }
   };
 

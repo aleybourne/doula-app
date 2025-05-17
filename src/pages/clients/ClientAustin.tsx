@@ -20,7 +20,7 @@ const ClientAustin: React.FC = () => {
   }
 
   const clientInfo = {
-    ...clientData, // Spread all client data
+    ...clientData, // Spread all client data including ID
     bgColor: "bg-[#f9f5f2]",
     tags: clientsTags["Austin Leybourne"] || [],
   };
