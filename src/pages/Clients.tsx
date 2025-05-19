@@ -1,6 +1,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/config/firebase";
+
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ClientsHeader from "@/components/clients/ClientsHeader";
