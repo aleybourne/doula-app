@@ -30,6 +30,21 @@ const Clients: React.FC = () => {
     console.log("Clients page filter value:", filter);
   }, [filter]);
   
+  useEffect(() => {
+  const fetchClientsFromFirestore = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "clients"));
+      snapshot.forEach((doc) => {
+        console.log("CLIENT FROM FIRESTORE:", doc.id, doc.data());
+      });
+    } catch (error) {
+      console.error("Error fetching clients from Firestore:", error);
+    }
+  };
+
+  fetchClientsFromFirestore();
+}, []);
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
   };
