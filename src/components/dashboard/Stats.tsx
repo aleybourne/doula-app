@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useMemo } from "react";
 import { StatCardProps } from "./types";
 import { useNavigate } from "react-router-dom";
 import { useClientsStore } from "@/components/clients/hooks/useClientsStore";
@@ -40,56 +41,57 @@ const StatCard: React.FC<StatCardProps & { onClick?: () => void, isLoading?: boo
 
 export const Stats: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [stats, setStats] = useState({
-    newClients: 0,
-    upcomingBirths: 0,
-    activeClients: 0
-  });
   
   // Get access to the client store
-  const { clients } = useClientsStore();
+  const { clients, isLoading } = useClientsStore();
   const userId = getCurrentUserId();
 
-  useEffect(() => {
-    const calculateStats = () => {
-      try {
-        console.log("Stats component calculating client statistics...");
-        setIsLoading(true);
-        
-        // Filter clients for the current user first
-        const userClients = userId ? clients.filter(client => client.userId === userId) : [];
-        
-        // Use the centralized filtering function to get counts
-        const newClientsCount = filterClientsByType(userClients, "new").length;
-        const upcomingBirthsCount = filterClientsByType(userClients, "upcoming").length;
-        const activeClientsCount = userClients.filter(client => 
-          client.status === 'active' || 
-          client.status === 'delivered' || 
-          !client.status
-        ).length;
-        
-        console.log(`Stats calculated: new=${newClientsCount}, upcoming=${upcomingBirthsCount}, active=${activeClientsCount}`);
-        
-        setStats({
-          newClients: newClientsCount,
-          upcomingBirths: upcomingBirthsCount,
-          activeClients: activeClientsCount
-        });
-      } catch (error) {
-        console.error("Error calculating client stats:", error);
-        toast({
-          title: "Error",
-          description: "Failed to calculate client statistics",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Memoize the stats calculation to prevent infinite loops
+  const stats = useMemo(() => {
+    if (!userId || clients.length === 0) {
+      return {
+        newClients: 0,
+        upcomingBirths: 0,
+        activeClients: 0
+      };
+    }
 
-    calculateStats();
+    try {
+      console.log("Stats component calculating client statistics...");
+      
+      // Filter clients for the current user first
+      const userClients = clients.filter(client => client.userId === userId);
+      
+      // Use the centralized filtering function to get counts
+      const newClientsCount = filterClientsByType(userClients, "new").length;
+      const upcomingBirthsCount = filterClientsByType(userClients, "upcoming").length;
+      const activeClientsCount = userClients.filter(client => 
+        client.status === 'active' || 
+        client.status === 'delivered' || 
+        !client.status
+      ).length;
+      
+      console.log(`Stats calculated: new=${newClientsCount}, upcoming=${upcomingBirthsCount}, active=${activeClientsCount}`);
+      
+      return {
+        newClients: newClientsCount,
+        upcomingBirths: upcomingBirthsCount,
+        activeClients: activeClientsCount
+      };
+    } catch (error) {
+      console.error("Error calculating client stats:", error);
+      toast({
+        title: "Error",
+        description: "Failed to calculate client statistics",
+        variant: "destructive"
+      });
+      return {
+        newClients: 0,
+        upcomingBirths: 0,
+        activeClients: 0
+      };
+    }
   }, [clients, userId]);
 
   const handleNavigateToNewClients = () => {
