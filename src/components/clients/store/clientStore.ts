@@ -1,6 +1,7 @@
+
 import { ClientData, ClientChangeListener } from '../types/ClientTypes';
 import { cleanupClientImageData } from '../utils/storageUtils';
-import { db } from '../../../config/firebase';
+import { db, auth } from '../../../config/firebase';
 import { collection, query, where, getDocs, onSnapshot, doc, setDoc, getDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -73,18 +74,9 @@ const defaultClients: ClientData[] = [
   }
 ];
 
-// Get the current user ID from localStorage
+// Get the current user ID from Firebase Auth
 export const getCurrentUserId = (): string | null => {
-  try {
-    const userDataStr = localStorage.getItem('push_user');
-    if (userDataStr) {
-      const userData = JSON.parse(userDataStr);
-      return userData.id || null;
-    }
-  } catch (error) {
-    console.error("Failed to get current user ID:", error);
-  }
-  return null;
+  return auth.currentUser?.uid || null;
 };
 
 // Initialize clients for a specific user
@@ -92,36 +84,24 @@ export const initializeClients = async (): Promise<ClientData[]> => {
   const userId = getCurrentUserId();
   
   if (!userId) {
-    console.warn("No user ID found, returning empty client list");
+    console.warn("No authenticated user found, returning empty client list");
     return [];
   }
 
   try {
-    // Try to get clients from Firestore
+    console.log(`Loading clients for user: ${userId}`);
+    
+    // Get clients from Firestore
     const clientsRef = collection(db, 'clients');
     const q = query(clientsRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
       const firestoreClients = querySnapshot.docs.map(doc => doc.data() as ClientData);
+      console.log(`Found ${firestoreClients.length} clients in Firestore`);
       return firestoreClients;
     } else {
-      // If no clients found in Firestore for this user, check localStorage as fallback
-      const storageKey = `clients_${userId}`;
-      const savedClients = localStorage.getItem(storageKey);
-      
-      if (savedClients) {
-        const parsedClients = JSON.parse(savedClients);
-        if (parsedClients.length > 0) {
-          // Ensure all clients have IDs
-          const clientsWithIds = ensureClientsHaveIds(parsedClients);
-          // Migrate localStorage clients to Firestore
-          const clientsWithUserId = addUserIdToClients(clientsWithIds, userId);
-          await migrateClientsToFirestore(clientsWithUserId);
-          return clientsWithUserId;
-        }
-      }
-      
+      console.log("No clients found in Firestore, creating default clients for new user");
       // First time user - give them default clients with their userId
       const defaultClientsWithUserId = addUserIdToClients(defaultClients, userId);
       await migrateClientsToFirestore(defaultClientsWithUserId);
@@ -129,20 +109,8 @@ export const initializeClients = async (): Promise<ClientData[]> => {
     }
   } catch (error) {
     console.error(`Failed to load clients from Firestore for user ${userId}:`, error);
-    
-    // Fallback to localStorage if Firestore fails
-    try {
-      const storageKey = `clients_${userId}`;
-      const savedClients = localStorage.getItem(storageKey);
-      if (savedClients) {
-        return JSON.parse(savedClients);
-      }
-    } catch (localError) {
-      console.error(`Failed to load clients from localStorage for user ${userId}:`, localError);
-    }
+    throw error; // Re-throw to let the calling code handle it
   }
-  
-  return [];
 };
 
 // Helper function to add userId to client data
@@ -150,29 +118,19 @@ function addUserIdToClients(clients: ClientData[], userId: string): ClientData[]
   return clients.map(client => ({ ...client, userId }));
 }
 
-// Helper function to ensure all clients have unique IDs
-function ensureClientsHaveIds(clients: ClientData[]): ClientData[] {
-  return clients.map(client => {
-    if (!client.id) {
-      // Generate a unique ID based on name and timestamp as a fallback
-      const id = `client-${client.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
-      return { ...client, id };
-    }
-    return client;
-  });
-}
-
-// Helper function to migrate clients from localStorage to Firestore
+// Helper function to migrate clients to Firestore
 async function migrateClientsToFirestore(clients: ClientData[]): Promise<void> {
   try {
+    const batch = [];
     for (const client of clients) {
-      // Use client id for document ID instead of userId_name
       const clientDocRef = doc(db, 'clients', client.id);
-      await setDoc(clientDocRef, client);
+      batch.push(setDoc(clientDocRef, client));
     }
+    await Promise.all(batch);
     console.log(`Successfully migrated ${clients.length} clients to Firestore`);
   } catch (error) {
     console.error('Error migrating clients to Firestore:', error);
+    throw error;
   }
 }
 
@@ -215,16 +173,18 @@ export const getClientByName = (clientName: string): ClientData | null => {
 
 export let clients: ClientData[] = []; // Start empty and populate in the useEffect below
 
-// Save clients to Firestore
+// Save clients to Firestore (primary storage)
 export const saveClientsToStorage = async () => {
   const userId = getCurrentUserId();
   if (!userId) {
-    console.error("Cannot save clients - no user ID found");
-    return;
+    console.error("Cannot save clients - no authenticated user found");
+    throw new Error("User not authenticated");
   }
   
   try {
-    // Save to Firestore
+    console.log(`Saving ${clients.length} clients to Firestore for user: ${userId}`);
+    
+    const batch = [];
     for (const client of clients) {
       if (!client.userId) {
         client.userId = userId;
@@ -235,73 +195,68 @@ export const saveClientsToStorage = async () => {
         client.id = `client-${client.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
       }
       
-      // Use client id for document ID
       const clientDocRef = doc(db, 'clients', client.id);
-      await setDoc(clientDocRef, client);
+      batch.push(setDoc(clientDocRef, client));
     }
     
-    // Also save to localStorage as backup
-    const storageKey = `clients_${userId}`;
-    localStorage.setItem(storageKey, JSON.stringify(clients));
+    await Promise.all(batch);
+    console.log("Successfully saved all clients to Firestore");
   } catch (error) {
     console.error(`Failed to save clients to Firestore for user ${userId}:`, error);
-    
-    // Fallback to localStorage if Firestore fails
-    try {
-      const storageKey = `clients_${userId}`;
-      localStorage.setItem(storageKey, JSON.stringify(clients));
-    } catch (localError) {
-      console.error(`Failed to save clients to localStorage for user ${userId}:`, localError);
-    }
+    throw error;
   }
 };
 
 export const clientsChangeListeners: Array<ClientChangeListener> = [];
 
 export const notifyClientsChanged = () => {
-  saveClientsToStorage();
+  saveClientsToStorage().catch(error => {
+    console.error("Error saving clients after change:", error);
+  });
   clientsChangeListeners.forEach(listener => listener());
 };
+
+let firestoreUnsubscribe: (() => void) | null = null;
 
 export const subscribeToClientChanges = (callback: ClientChangeListener): (() => void) => {
   clientsChangeListeners.push(callback);
   
-  // Set up Firestore real-time listener
+  // Set up Firestore real-time listener if not already set up
   const userId = getCurrentUserId();
-  let unsubscribeFirestore: (() => void) | null = null;
   
-  if (userId) {
+  if (userId && !firestoreUnsubscribe) {
     const clientsRef = collection(db, 'clients');
     const q = query(clientsRef, where('userId', '==', userId));
     
-    unsubscribeFirestore = onSnapshot(q, (snapshot) => {
+    firestoreUnsubscribe = onSnapshot(q, (snapshot) => {
+      console.log("Firestore snapshot received, updating clients");
+      
       if (!snapshot.empty) {
         const firestoreClients = snapshot.docs.map(doc => doc.data() as ClientData);
         
-        // Update local clients array without triggering listeners (to avoid loops)
-        const oldLength = clients.length;
+        // Update local clients array
         clients.length = 0;
         clients.push(...firestoreClients);
         
-        // Only call the callback if this wasn't triggered by our own local update
-        if (oldLength !== firestoreClients.length || JSON.stringify(clients) !== JSON.stringify(firestoreClients)) {
-          callback();
-        }
+        // Notify all listeners except saveClientsToStorage to avoid loops
+        clientsChangeListeners.forEach(listener => listener());
       }
     }, (error) => {
       console.error("Error in Firestore client subscription:", error);
     });
   }
   
-  // Return function to unsubscribe from both local and Firestore listeners
+  // Return function to unsubscribe from local listener only
   return () => {
     const index = clientsChangeListeners.indexOf(callback);
     if (index !== -1) {
       clientsChangeListeners.splice(index, 1);
     }
     
-    if (unsubscribeFirestore) {
-      unsubscribeFirestore();
+    // Only unsubscribe from Firestore if no more listeners
+    if (clientsChangeListeners.length === 0 && firestoreUnsubscribe) {
+      firestoreUnsubscribe();
+      firestoreUnsubscribe = null;
     }
   };
 };
@@ -309,11 +264,16 @@ export const subscribeToClientChanges = (callback: ClientChangeListener): (() =>
 // Load clients when user changes
 export const loadClientsForCurrentUser = async () => {
   try {
+    console.log("Loading clients for current user...");
     const loadedClients = await initializeClients();
     clients.length = 0; // Clear the array
     clients.push(...loadedClients); // Add the loaded clients
-    notifyClientsChanged();
+    console.log(`Loaded ${clients.length} clients`);
+    
+    // Don't call notifyClientsChanged here to avoid triggering save immediately
+    clientsChangeListeners.forEach(listener => listener());
   } catch (error) {
     console.error("Error loading clients:", error);
+    throw error;
   }
 };

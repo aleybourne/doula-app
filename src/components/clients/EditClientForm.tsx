@@ -74,13 +74,8 @@ export const EditClientForm: React.FC<EditClientFormProps> = ({
     },
   });
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const imageUrl = `/lovable-uploads/client-${uniqueId}.png`;
-      setSelectedImage(imageUrl);
-    }
+  const handleImageUpload = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
@@ -122,6 +117,7 @@ export const EditClientForm: React.FC<EditClientFormProps> = ({
         <ImageUpload 
           selectedImage={selectedImage}
           onImageUpload={handleImageUpload}
+          clientId={client.id}
         />
         <PersonalInfoFields form={form} />
         

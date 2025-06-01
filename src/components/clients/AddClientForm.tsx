@@ -67,13 +67,8 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
     },
   });
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const uniqueId = `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-      const imageUrl = `/lovable-uploads/client-${uniqueId}.png`;
-      setSelectedImage(imageUrl);
-    }
+  const handleImageUpload = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -84,7 +79,7 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
       const clientId = `client-${uuidv4()}`;
       
       const newClient = {
-        id: clientId, // Generate unique ID for the client
+        id: clientId,
         name: fullName,
         dueDateISO: values.dueDate.toISOString().split('T')[0],
         dueDateLabel: format(values.dueDate, "MMMM do, yyyy"),
@@ -122,7 +117,7 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
       console.error("Error adding client:", error);
       toast({
         title: "Error",
-        description: "There was a problem adding the client. Please try again.",
+        description: error.message || "There was a problem adding the client. Please try again.",
         variant: "destructive",
       });
     } finally {

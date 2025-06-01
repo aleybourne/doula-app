@@ -1,4 +1,3 @@
-
 import { ClientData, ClientStatus } from '../types/ClientTypes';
 import { clients, notifyClientsChanged, getCurrentUserId } from './clientStore';
 import { addWeeks } from 'date-fns';
@@ -10,8 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 export const addClient = async (client: ClientData): Promise<ClientData> => {
   const userId = getCurrentUserId();
   if (!userId) {
-    console.error("Cannot add client - user not logged in");
-    return Promise.reject("User not logged in");
+    throw new Error("Cannot add client - user not authenticated");
   }
   
   // Ensure the client has the current user's ID and a unique ID
@@ -27,31 +25,33 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   
   client.userId = userId;
   
-  // Add to Firestore
   try {
-    // Use client's ID for document ID
+    console.log(`Adding client ${client.name} to Firestore`);
+    
+    // Add to Firestore first
     const clientDocRef = doc(db, 'clients', client.id);
     await setDoc(clientDocRef, client);
     
-    // Also update local array
+    // Update local array
     clients.unshift(client);
-    notifyClientsChanged();
     
-    return client; // Return the client object after successful addition
+    // Notify listeners (but skip saving since we just saved)
+    clients.forEach(listener => {
+      if (typeof listener === 'function') listener();
+    });
+    
+    console.log(`Successfully added client ${client.name}`);
+    return client;
   } catch (error) {
     console.error("Error adding client to Firestore:", error);
-    // Add to local array anyway to ensure UI updates
-    clients.unshift(client);
-    notifyClientsChanged();
-    return client; // Still return the client even if Firestore update fails
+    throw new Error(`Failed to add client: ${error.message}`);
   }
 };
 
 export const updateClient = async (updatedClient: ClientData) => {
   const userId = getCurrentUserId();
   if (!userId) {
-    console.error("Cannot update client - user not logged in");
-    return;
+    throw new Error("Cannot update client - user not authenticated");
   }
   
   // Only update if the client belongs to the current user
@@ -59,34 +59,35 @@ export const updateClient = async (updatedClient: ClientData) => {
     client.id === updatedClient.id && client.userId === userId
   );
   
-  if (clientIndex !== -1) {
-    // Ensure we keep the userId in the updated client
-    updatedClient.userId = userId;
+  if (clientIndex === -1) {
+    throw new Error(`Client ${updatedClient.id} not found or access denied`);
+  }
+  
+  // Ensure we keep the userId in the updated client
+  updatedClient.userId = userId;
+  
+  try {
+    console.log(`Updating client ${updatedClient.name} in Firestore`);
     
-    try {
-      // Update in Firestore
-      const clientDocRef = doc(db, 'clients', updatedClient.id);
-      await setDoc(clientDocRef, updatedClient);
-      
-      // Also update local array
-      clients[clientIndex] = updatedClient;
-      notifyClientsChanged();
-    } catch (error) {
-      console.error("Error updating client in Firestore:", error);
-      // Update local array anyway to ensure UI updates
-      clients[clientIndex] = updatedClient;
-      notifyClientsChanged();
-    }
-  } else {
-    console.warn(`Client ${updatedClient.id} not found or doesn't belong to current user`);
+    // Update in Firestore first
+    const clientDocRef = doc(db, 'clients', updatedClient.id);
+    await setDoc(clientDocRef, updatedClient);
+    
+    // Update local array
+    clients[clientIndex] = updatedClient;
+    notifyClientsChanged();
+    
+    console.log(`Successfully updated client ${updatedClient.name}`);
+  } catch (error) {
+    console.error("Error updating client in Firestore:", error);
+    throw new Error(`Failed to update client: ${error.message}`);
   }
 };
 
 export const updateClientStatus = async (clientId: string, status: ClientData['status'], reason: string): Promise<void> => {
   const userId = getCurrentUserId();
   if (!userId) {
-    console.error("Cannot update client status - user not logged in");
-    return;
+    throw new Error("Cannot update client status - user not authenticated");
   }
   
   // Only update if the client belongs to the current user
@@ -95,8 +96,7 @@ export const updateClientStatus = async (clientId: string, status: ClientData['s
   );
   
   if (clientIndex === -1) {
-    console.error(`Client ${clientId} not found or doesn't belong to current user`);
-    return;
+    throw new Error(`Client ${clientId} not found or access denied`);
   }
   
   const currentDate = new Date();
@@ -115,26 +115,27 @@ export const updateClientStatus = async (clientId: string, status: ClientData['s
   }
   
   try {
-    // Update in Firestore
+    console.log(`Updating client ${clientId} status to ${status}`);
+    
+    // Update in Firestore first
     const clientDocRef = doc(db, 'clients', clientId);
     await setDoc(clientDocRef, updatedClient);
     
-    // Also update local array
+    // Update local array
     clients[clientIndex] = updatedClient;
     notifyClientsChanged();
+    
+    console.log(`Successfully updated client status`);
   } catch (error) {
     console.error("Error updating client status in Firestore:", error);
-    // Update local array anyway to ensure UI updates
-    clients[clientIndex] = updatedClient;
-    notifyClientsChanged();
+    throw new Error(`Failed to update client status: ${error.message}`);
   }
 };
 
 export const markClientDelivered = async (clientId: string, deliveryDate: Date) => {
   const userId = getCurrentUserId();
   if (!userId) {
-    console.error("Cannot mark client delivered - user not logged in");
-    return;
+    throw new Error("Cannot mark client delivered - user not authenticated");
   }
   
   // Only update if the client belongs to the current user
@@ -143,8 +144,7 @@ export const markClientDelivered = async (clientId: string, deliveryDate: Date) 
   );
   
   if (clientIndex === -1) {
-    console.error(`Client ${clientId} not found or doesn't belong to current user`);
-    return;
+    throw new Error(`Client ${clientId} not found or access denied`);
   }
   
   const postpartumEndDate = addWeeks(deliveryDate, POSTPARTUM_WEEKS);
@@ -159,44 +159,54 @@ export const markClientDelivered = async (clientId: string, deliveryDate: Date) 
   };
   
   try {
-    // Update in Firestore
+    console.log(`Marking client ${clientId} as delivered`);
+    
+    // Update in Firestore first
     const clientDocRef = doc(db, 'clients', clientId);
     await setDoc(clientDocRef, updatedClient);
     
-    // Also update local array
+    // Update local array
     clients[clientIndex] = updatedClient;
     notifyClientsChanged();
+    
+    console.log(`Successfully marked client as delivered`);
   } catch (error) {
     console.error("Error marking client delivered in Firestore:", error);
-    // Update local array anyway to ensure UI updates
-    clients[clientIndex] = updatedClient;
-    notifyClientsChanged();
+    throw new Error(`Failed to mark client as delivered: ${error.message}`);
   }
 };
 
 export const archiveClient = (clientId: string, reason: string) => {
-  updateClientStatus(clientId, 'archived' as ClientStatus, reason);
+  return updateClientStatus(clientId, 'archived' as ClientStatus, reason);
 };
 
 export const deleteClient = async (clientId: string, reason: string) => {
   const userId = getCurrentUserId();
   if (!userId) {
-    console.error("Cannot delete client - user not logged in");
-    return;
+    throw new Error("Cannot delete client - user not authenticated");
   }
   
-  // First mark as deleted in the local array
-  updateClientStatus(clientId, 'deleted' as ClientStatus, reason);
-  
-  // Attempt to remove from Firestore
   try {
+    console.log(`Deleting client ${clientId} from Firestore`);
+    
+    // Remove from Firestore first
     const clientDocRef = doc(db, 'clients', clientId);
     await deleteDoc(clientDocRef);
+    
+    // Remove from local array
+    const clientIndex = clients.findIndex(client => client.id === clientId);
+    if (clientIndex !== -1) {
+      clients.splice(clientIndex, 1);
+      notifyClientsChanged();
+    }
+    
+    console.log(`Successfully deleted client ${clientId}`);
   } catch (error) {
     console.error(`Error deleting client ${clientId} from Firestore:`, error);
+    throw new Error(`Failed to delete client: ${error.message}`);
   }
 };
 
 export const restoreClient = (clientId: string) => {
-  updateClientStatus(clientId, 'active' as ClientStatus, 'Restored from archive');
+  return updateClientStatus(clientId, 'active' as ClientStatus, 'Restored from archive');
 };
