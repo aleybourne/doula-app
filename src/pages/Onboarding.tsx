@@ -26,7 +26,7 @@ const Onboarding: React.FC = () => {
   const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
-      updateUserProfile({
+      await updateUserProfile({
         ...data,
         profileComplete: true,
       });
@@ -39,6 +39,7 @@ const Onboarding: React.FC = () => {
       // Navigate to home after successful submission
       navigate('/home');
     } catch (error) {
+      console.error('Profile update error:', error);
       toast({
         title: 'Error',
         description: 'Failed to save profile. Please try again.',

@@ -1,6 +1,15 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { firebaseConfig } from '@/config/firebase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  updateProfile,
+  User as FirebaseUser
+} from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { auth, db } from '@/config/firebase';
 import { loadClientsForCurrentUser } from '@/components/clients/store/clientStore';
 
 interface User {
@@ -32,68 +41,84 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing user session on mount
+  // Listen for authentication state changes
   useEffect(() => {
-    const storedUser = localStorage.getItem('push_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      // Load clients for this user
-      loadClientsForCurrentUser();
-    }
-    setIsLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        // User is signed in, get their profile data from Firestore
+        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const user: User = {
+            id: firebaseUser.uid,
+            firstName: userData.firstName || '',
+            lastName: userData.lastName || '',
+            email: firebaseUser.email || '',
+            profileComplete: userData.profileComplete || false,
+          };
+          setUser(user);
+          loadClientsForCurrentUser();
+        } else {
+          // User document doesn't exist, create a basic one
+          const user: User = {
+            id: firebaseUser.uid,
+            firstName: '',
+            lastName: '',
+            email: firebaseUser.email || '',
+            profileComplete: false,
+          };
+          setUser(user);
+        }
+      } else {
+        // User is signed out
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  // Email/Password login - Mock implementation
+  // Email/Password login
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Since Firebase API is not working, we'll simulate a login
-      // In a real app, this would validate with Firebase
-      const mockUser: User = {
-        id: 'mock-user-id-' + Date.now(),
-        firstName: 'Test',
-        lastName: 'User',
-        email,
-        profileComplete: false
-      };
-      
-      localStorage.setItem('push_user', JSON.stringify(mockUser));
-      setUser(mockUser);
-      
-      // Load clients for this user after login
-      loadClientsForCurrentUser();
-    } catch (error) {
+      await signInWithEmailAndPassword(auth, email, password);
+      // User state will be updated by the onAuthStateChanged listener
+    } catch (error: any) {
       console.error('Login error:', error);
-      throw new Error('Login failed. Please check your credentials.');
+      throw new Error(error.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Sign up with email/password - Mock implementation
+  // Sign up with email/password
   const signup = async (email: string, password: string, firstName: string, lastName: string) => {
     setIsLoading(true);
     try {
-      // Since Firebase API is not working, we'll simulate a signup
-      // In a real app, this would register with Firebase
-      const mockUser: User = {
-        id: 'mock-user-id-' + Date.now(),
+      const { user: firebaseUser } = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // Update the user's display name
+      await updateProfile(firebaseUser, {
+        displayName: `${firstName} ${lastName}`
+      });
+
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', firebaseUser.uid), {
         firstName,
         lastName,
         email,
-        profileComplete: false
-      };
-      
-      localStorage.setItem('push_user', JSON.stringify(mockUser));
-      setUser(mockUser);
-      
-      // Load clients for this user after signup
-      loadClientsForCurrentUser();
-    } catch (error) {
+        profileComplete: false,
+        createdAt: new Date().toISOString(),
+      });
+
+      // User state will be updated by the onAuthStateChanged listener
+    } catch (error: any) {
       console.error('Signup error:', error);
-      throw new Error('Signup failed. Please try again with different credentials.');
+      throw new Error(error.message || 'Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -102,16 +127,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Log out
   const logout = async () => {
     try {
-      localStorage.removeItem('push_user');
-      setUser(null);
-    } catch (error) {
+      await signOut(auth);
+      // User state will be updated by the onAuthStateChanged listener
+    } catch (error: any) {
       console.error('Logout error:', error);
       throw error;
     }
   };
 
   // Update user profile
-  const updateUserProfile = (userData: Partial<User>) => {
+  const updateUserProfile = async (userData: Partial<User>) => {
     if (!user) return;
     
     const updatedUser = {
@@ -119,8 +144,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...userData,
     };
     
-    localStorage.setItem('push_user', JSON.stringify(updatedUser));
-    setUser(updatedUser);
+    try {
+      // Update in Firestore
+      await setDoc(doc(db, 'users', user.id), {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        profileComplete: updatedUser.profileComplete,
+        ...userData,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+
+      // Update local state
+      setUser(updatedUser);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
   };
 
   return (
