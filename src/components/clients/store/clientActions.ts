@@ -35,10 +35,8 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     // Update local array
     clients.unshift(client);
     
-    // Notify listeners (but skip saving since we just saved)
-    clients.forEach(listener => {
-      if (typeof listener === 'function') listener();
-    });
+    // Notify listeners
+    notifyClientsChanged();
     
     console.log(`Successfully added client ${client.name}`);
     return client;
