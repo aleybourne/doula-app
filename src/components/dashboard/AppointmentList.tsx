@@ -7,32 +7,8 @@ import { CalendlyModal } from "./CalendlyModal";
 
 const calendlyUrl = "https://calendly.com/";
 
-const appointments = [
-  {
-    time: "11-11:30am",
-    title: "Client Check-in: Jane Miller",
-    subtitle: "30min Zoom meeting",
-    avatarType: "photo",
-    avatarUrl: "/lovable-uploads/cda9c6dc-0e5b-48b5-96ec-932f937caa78.png",
-    avatarFallback: "JM",
-  },
-  {
-    time: "2pm-3pm",
-    title: "Birth Planning Session: Jasmine Jones",
-    subtitle: "30min Zoom meeting",
-    avatarType: "photo",
-    avatarUrl: "/lovable-uploads/50419604-6811-43ad-9a7a-56cc3714c181.png",
-    avatarFallback: "JJ",
-  },
-  {
-    time: "4:30pm-5pm",
-    title: "Client Check-in: Benita Mendez",
-    subtitle: "30min Zoom meeting",
-    avatarType: "photo",
-    avatarUrl: "/lovable-uploads/eb028e8e-c38f-4206-ac0d-192b345b0b66.png",
-    avatarFallback: "BM",
-  },
-];
+// Remove static appointments - each user should have their own appointments
+const appointments: AppointmentProps[] = [];
 
 const Appointment: React.FC<AppointmentProps> = ({
   time,
@@ -91,12 +67,19 @@ export const AppointmentList: React.FC = () => {
         aria-label="View and schedule appointments via Calendly"
       >
         <div className="text-base font-semibold text-[#1B3F58] mb-2.5 px-5 pt-4 group-hover:underline md:text-base sm:text-sm md:px-5 md:pt-4 sm:px-2 sm:pt-2">
-          Appointments: 3/20
+          Appointments: {appointments.length}/20
         </div>
         <div className="pb-3 md:pb-3 sm:pb-1">
-          {appointments.map((appointment, index) => (
-            <Appointment key={index} {...appointment} />
-          ))}
+          {appointments.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>No appointments scheduled</p>
+              <p className="text-sm mt-1">Click to add appointments via Calendly</p>
+            </div>
+          ) : (
+            appointments.map((appointment, index) => (
+              <Appointment key={index} {...appointment} />
+            ))
+          )}
         </div>
       </button>
       <CalendlyModal
