@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,7 +12,7 @@ type AuthMode = 'login' | 'signup';
 const Auth: React.FC = () => {
   const [mode, setMode] = useState<AuthMode>('login');
   const navigate = useNavigate();
-  const { login, signup } = useAuth();
+  const { login, signup, user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -24,6 +24,17 @@ const Auth: React.FC = () => {
       lastName: '',
     },
   });
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      if (!user.profileComplete) {
+        navigate('/onboarding');
+      } else {
+        navigate('/home');
+      }
+    }
+  }, [user, navigate]);
 
   const toggleMode = () => {
     setMode(mode === 'login' ? 'signup' : 'login');
@@ -37,10 +48,10 @@ const Auth: React.FC = () => {
       setAuthError(null);
       if (mode === 'login') {
         await login(data.email, data.password);
-        navigate('/onboarding');
+        // Navigation will be handled by useEffect after user state updates
       } else {
         await signup(data.email, data.password, data.firstName, data.lastName);
-        navigate('/onboarding');
+        // Navigation will be handled by useEffect after user state updates
       }
     } catch (error: any) {
       console.error('Authentication error:', error);
@@ -48,7 +59,7 @@ const Auth: React.FC = () => {
       setAuthError(errorMessage);
       toast({
         title: 'Authentication Error',
-        description: 'Failed to authenticate. Please check your credentials.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

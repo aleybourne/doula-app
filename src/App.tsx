@@ -47,8 +47,8 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
 
 const queryClient = new QueryClient();
 
-// Main application component
-const AppContent = () => {
+// Routes component that uses auth context
+const AppRoutes = () => {
   const { user } = useAuth();
   
   return (
@@ -136,7 +136,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppContent />
+        <AppRoutes />
       </BrowserRouter>
     </AuthProvider>
   </QueryClientProvider>
