@@ -1,3 +1,4 @@
+
 import { ClientData } from '../../types/ClientTypes';
 import { clients } from '../clientStore';
 import { getCurrentUserId, notifyClientsChanged } from '../clientSubscriptions';
@@ -12,7 +13,7 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   
   console.log("=== ADDING CLIENT TO FIREBASE ===");
   console.log("User ID:", userId);
-  console.log("Client data:", client);
+  console.log("Client data before processing:", client);
   
   // Ensure the client has the current user's ID and a unique ID
   if (!client.status) client.status = "active";
@@ -26,7 +27,10 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     client.id = `client-${uuidv4()}`;
   }
   
+  // CRITICAL: Always ensure userId is set
   client.userId = userId;
+  
+  console.log("Final client data with userId:", client);
   
   try {
     // Add to Firestore first
@@ -38,7 +42,7 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     // Notify listeners
     notifyClientsChanged();
     
-    console.log(`Successfully added client ${client.name} locally`);
+    console.log(`Successfully added client ${client.name} locally with userId: ${client.userId}`);
     return client;
   } catch (error) {
     console.error("❌ Error adding client:", error);
@@ -65,7 +69,7 @@ export const updateClient = async (updatedClient: ClientData) => {
   updatedClient.userId = userId;
   
   try {
-    console.log(`Updating client ${updatedClient.name} in Firestore`);
+    console.log(`Updating client ${updatedClient.name} in Firestore with userId: ${updatedClient.userId}`);
     
     // Update in Firestore first
     await saveClientToFirestore(updatedClient);
@@ -87,6 +91,12 @@ export const deleteClient = async (clientId: string, reason: string) => {
     throw new Error("Cannot delete client - user not authenticated");
   }
   
+  // Verify the client belongs to the current user before deleting
+  const clientToDelete = clients.find(client => client.id === clientId && client.userId === userId);
+  if (!clientToDelete) {
+    throw new Error(`Client ${clientId} not found or access denied`);
+  }
+  
   try {
     // Remove from Firestore first
     await deleteClientFromFirestore(clientId);
@@ -98,7 +108,7 @@ export const deleteClient = async (clientId: string, reason: string) => {
       notifyClientsChanged();
     }
     
-    console.log(`Successfully deleted client ${clientId}`);
+    console.log(`Successfully deleted client ${clientId} for user ${userId}`);
   } catch (error) {
     console.error(`Error deleting client ${clientId}:`, error);
     throw error;

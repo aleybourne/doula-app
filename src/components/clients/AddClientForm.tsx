@@ -15,6 +15,7 @@ import { PregnancyDetailsSection } from "./form-sections/PregnancyDetailsSection
 import { AdminSection } from "./form-sections/AdminSection";
 import { BirthType, ClientStatus, PaymentStatus } from "./types/ClientTypes";
 import { addClient } from "./store/clientActions";
+import { getCurrentUserId } from "./store/clientStore";
 import { Loader2 } from "lucide-react";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -75,8 +76,15 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
     setIsSubmitting(true);
     
     try {
+      const currentUserId = getCurrentUserId();
+      if (!currentUserId) {
+        throw new Error("User not authenticated. Please log in again.");
+      }
+
       const fullName = `${values.firstName} ${values.lastName}`;
       const clientId = `client-${uuidv4()}`;
+      
+      console.log("Creating client with userId:", currentUserId);
       
       const newClient = {
         id: clientId,
@@ -97,6 +105,7 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
         paymentStatus: values.paymentStatus as PaymentStatus || "unpaid",
         notes: values.notes || "",
         createdAt: new Date().toISOString(),
+        userId: currentUserId, // Explicitly set the userId
       };
       
       console.log("Adding new client with data:", newClient);
