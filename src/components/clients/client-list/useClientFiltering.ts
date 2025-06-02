@@ -13,17 +13,28 @@ export function useClientFiltering(
 
   // Force a re-filter when clients array changes
   useEffect(() => {
+    console.log(`useClientFiltering: Clients array changed, forcing re-filter`);
     setFilterVersion(prev => prev + 1);
   }, [clients]);
 
   useEffect(() => {
-    console.log(`useClientFiltering: processing filter: ${filter || "none"} (version ${filterVersion})`);
-    console.log("Total clients before filtering:", clients?.length || 0);
+    console.log(`=== useClientFiltering: PROCESSING FILTER ===`);
+    console.log(`Filter: ${filter || "none"}`);
+    console.log(`Search query: "${searchQuery}"`);
+    console.log(`Input clients count: ${clients?.length || 0}`);
+    console.log(`Filter version: ${filterVersion}`);
 
     if (!clients || clients.length === 0) {
+      console.log(`useClientFiltering: No clients to filter`);
       setFilteredClients([]);
       return;
     }
+
+    // Log all input clients
+    console.log(`Input clients:`);
+    clients.forEach((client, index) => {
+      console.log(`  ${index + 1}. ${client.name} (ID: ${client.id}, userId: ${client.userId})`);
+    });
 
     // First apply type filter (new, upcoming, etc)
     let filtered = filterClientsByType(clients, filter);
@@ -38,10 +49,17 @@ export function useClientFiltering(
       console.log(`Search "${searchQuery}" reduced clients from ${beforeSearch} to ${filtered.length}`);
     }
     
-    console.log("Final filtered clients count:", filtered.length);
+    console.log(`=== FINAL RESULT ===`);
+    console.log(`Final filtered clients count: ${filtered.length}`);
     if (filtered.length > 0) {
-      console.log("First few filtered clients:", filtered.slice(0, Math.min(3, filtered.length)).map(c => c.name));
+      console.log(`Final filtered clients:`);
+      filtered.forEach((client, index) => {
+        console.log(`  ${index + 1}. ${client.name} (ID: ${client.id})`);
+      });
+    } else {
+      console.log(`No clients match the current filter and search criteria`);
     }
+    console.log(`=== useClientFiltering: END ===`);
     
     setFilteredClients(filtered);
   }, [clients, filter, searchQuery, filterVersion]);

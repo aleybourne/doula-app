@@ -31,24 +31,48 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
   
   // Log the filter value when it changes
   useEffect(() => {
-    console.log("ClientList received filter:", filter);
-  }, [filter]);
+    console.log(`=== ClientList RECEIVED FILTER ===`);
+    console.log(`Filter: ${filter}`);
+    console.log(`Search query: "${searchQuery}"`);
+    console.log(`Show archived: ${showArchived}`);
+    console.log(`Current user: ${userId}`);
+  }, [filter, searchQuery, showArchived, userId]);
 
   // Force a refresh when the location (URL) changes to ensure filters apply correctly
   useEffect(() => {
-    console.log("Location changed, forcing refresh");
+    console.log("ClientList: Location changed, forcing refresh");
     setForceRefresh(prev => prev + 1);
   }, [location]);
   
   // Get clients based on archived status
   const allClients = showArchived ? getArchivedClients() : getActiveClients();
   
+  // Log the clients before filtering
+  useEffect(() => {
+    console.log(`=== ClientList: RAW CLIENTS DATA ===`);
+    console.log(`Show archived: ${showArchived}`);
+    console.log(`Raw clients count: ${allClients.length}`);
+    if (allClients.length > 0) {
+      console.log(`Raw clients:`);
+      allClients.forEach((client, index) => {
+        console.log(`  ${index + 1}. ${client.name} (status: ${client.status || 'no status'}, userId: ${client.userId})`);
+      });
+    }
+  }, [allClients, showArchived]);
+  
   // Apply filters and search (with key that includes forceRefresh)
   const filteredClients = useClientFiltering(allClients, searchQuery, filter);
 
   // Log the number of clients after filtering
   useEffect(() => {
-    console.log(`ClientList: After filtering, found ${filteredClients.length} clients`);
+    console.log(`=== ClientList: AFTER FILTERING ===`);
+    console.log(`Filtered clients count: ${filteredClients.length}`);
+    if (filteredClients.length > 0) {
+      console.log(`Filtered clients:`);
+      filteredClients.forEach((client, index) => {
+        console.log(`  ${index + 1}. ${client.name}`);
+      });
+    }
   }, [filteredClients]);
 
   const handleRestoreClient = (clientId: string, event: React.MouseEvent) => {
