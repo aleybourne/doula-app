@@ -33,6 +33,7 @@ const formSchema = z.object({
   contractSigned: z.boolean().optional(),
   paymentStatus: z.string().optional(),
   notes: z.string().optional(),
+  clientStatus: z.string().optional(),
 });
 
 interface EditClientFormProps {
@@ -71,6 +72,7 @@ export const EditClientForm: React.FC<EditClientFormProps> = ({
       contractSigned: client.contractSigned || false,
       paymentStatus: client.paymentStatus || "unpaid",
       notes: client.notes || "",
+      clientStatus: client.status || "active",
     },
   });
 
@@ -98,6 +100,7 @@ export const EditClientForm: React.FC<EditClientFormProps> = ({
       contractSigned: values.contractSigned,
       paymentStatus: values.paymentStatus as any,
       notes: values.notes,
+      status: values.clientStatus as any,
     };
     
     onUpdate(updatedClient);
