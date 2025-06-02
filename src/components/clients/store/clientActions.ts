@@ -1,3 +1,4 @@
+
 import { ClientData, ClientStatus } from '../types/ClientTypes';
 import { clients, notifyClientsChanged, getCurrentUserId } from './clientStore';
 import { addWeeks } from 'date-fns';
@@ -14,9 +15,10 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   
   // Ensure the client has the current user's ID and a unique ID
   if (!client.status) client.status = "active" as ClientStatus;
-  if (!client.createdAt) {
-    client.createdAt = new Date().toISOString();
-  }
+  
+  // Always set createdAt to current timestamp when adding a new client
+  client.createdAt = new Date().toISOString();
+  console.log(`Setting createdAt for new client ${client.name}: ${client.createdAt}`);
   
   // Generate a unique ID if not provided
   if (!client.id) {
@@ -26,7 +28,7 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   client.userId = userId;
   
   try {
-    console.log(`Adding client ${client.name} to Firestore`);
+    console.log(`Adding client ${client.name} to Firestore with createdAt: ${client.createdAt}`);
     
     // Add to Firestore first
     const clientDocRef = doc(db, 'clients', client.id);
