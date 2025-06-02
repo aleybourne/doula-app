@@ -25,6 +25,21 @@ interface ClientPageTemplateProps {
 const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) => {
   const [expanded, setExpanded] = React.useState(false);
   
+  // Add safety check for clientInfo
+  if (!clientInfo || !clientInfo.id) {
+    console.error("ClientPageTemplate: Invalid clientInfo provided", clientInfo);
+    return (
+      <div className="min-h-screen bg-white pb-4 flex flex-col max-w-md mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Client</h2>
+            <p className="text-gray-600">Invalid client data provided.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
   const { 
     gestation, 
     trimester, 
@@ -44,7 +59,7 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
     if (isPostpartum) {
       console.log("Client is in postpartum period with progress:", postpartumProgress);
     }
-  }, [clientInfo, isPostpartum, postpartumProgress]);
+  }, [clientInfo.id]); // Only depend on ID to prevent infinite re-renders
 
   return (
     <div className="min-h-screen bg-white pb-4 flex flex-col max-w-md mx-auto">
