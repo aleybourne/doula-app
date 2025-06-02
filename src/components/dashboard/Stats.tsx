@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { StatCardProps } from "./types";
 import { useNavigate } from "react-router-dom";
@@ -74,10 +73,10 @@ export const Stats: React.FC = () => {
       const newClientsCount = filterClientsByType(userClients, "new").length;
       const upcomingBirthsCount = filterClientsByType(userClients, "upcoming").length;
       
-      // Count active clients - those with active status or no status (default to active)
+      // Count active clients - any client that is NOT 'past' status is considered active
       const activeClientsCount = userClients.filter(client => {
         const status = client.status;
-        const isActive = !status || status === 'active';
+        const isActive = status !== 'past'; // In our simplified system, anything not 'past' is active
         
         console.log(`Client ${client.name}: status="${status || 'undefined'}", isActive=${isActive}`);
         return isActive;

@@ -79,7 +79,8 @@ export const useClientsStore = () => {
     console.log(`Input user clients: ${userClients.length}`);
     
     const activeClients = userClients.filter(client => {
-      const isActive = client.status === 'active' || !client.status;
+      // In our simplified system, any client that is NOT 'past' is considered active
+      const isActive = client.status !== 'past';
       
       console.log(`Client ${client.name}:`);
       console.log(`  - Status: "${client.status}"`);
