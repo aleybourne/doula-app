@@ -28,7 +28,11 @@ export const initializeClients = async (): Promise<ClientData[]> => {
     const querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
-      const firestoreClients = querySnapshot.docs.map(doc => doc.data() as ClientData);
+      const firestoreClients = querySnapshot.docs.map(doc => {
+        const data = doc.data() as ClientData;
+        console.log(`Loaded client from Firestore: ${data.name}, createdAt: ${data.createdAt}`);
+        return data;
+      });
       console.log(`Found ${firestoreClients.length} clients in Firestore`);
       return firestoreClients;
     } else {
@@ -117,9 +121,7 @@ export const saveClientsToStorage = async () => {
 export const clientsChangeListeners: Array<ClientChangeListener> = [];
 
 export const notifyClientsChanged = () => {
-  saveClientsToStorage().catch(error => {
-    console.error("Error saving clients after change:", error);
-  });
+  // Don't automatically save here to avoid loops - let individual actions handle their own saves
   clientsChangeListeners.forEach(listener => listener());
 };
 
@@ -132,6 +134,7 @@ export const subscribeToClientChanges = (callback: ClientChangeListener): (() =>
   const userId = getCurrentUserId();
   
   if (userId && !firestoreUnsubscribe) {
+    console.log("Setting up Firestore real-time listener for user:", userId);
     const clientsRef = collection(db, 'clients');
     const q = query(clientsRef, where('userId', '==', userId));
     
@@ -139,15 +142,22 @@ export const subscribeToClientChanges = (callback: ClientChangeListener): (() =>
       console.log("Firestore snapshot received, updating clients");
       
       if (!snapshot.empty) {
-        const firestoreClients = snapshot.docs.map(doc => doc.data() as ClientData);
+        const firestoreClients = snapshot.docs.map(doc => {
+          const data = doc.data() as ClientData;
+          console.log(`Real-time update - client: ${data.name}, createdAt: ${data.createdAt}`);
+          return data;
+        });
+        
+        console.log(`Real-time listener found ${firestoreClients.length} clients`);
         
         // Update local clients array
         clients.length = 0;
         clients.push(...firestoreClients);
         
-        // Notify all listeners except saveClientsToStorage to avoid loops
+        // Notify all listeners
         clientsChangeListeners.forEach(listener => listener());
       } else {
+        console.log("Real-time listener: No clients found");
         // If snapshot is empty, clear local clients array
         clients.length = 0;
         clientsChangeListeners.forEach(listener => listener());
@@ -166,6 +176,7 @@ export const subscribeToClientChanges = (callback: ClientChangeListener): (() =>
     
     // Only unsubscribe from Firestore if no more listeners
     if (clientsChangeListeners.length === 0 && firestoreUnsubscribe) {
+      console.log("Cleaning up Firestore listener");
       firestoreUnsubscribe();
       firestoreUnsubscribe = null;
     }
@@ -179,7 +190,7 @@ export const loadClientsForCurrentUser = async () => {
     const loadedClients = await initializeClients();
     clients.length = 0; // Clear the array
     clients.push(...loadedClients); // Add the loaded clients
-    console.log(`Loaded ${clients.length} clients`);
+    console.log(`Loaded ${clients.length} clients for current user`);
     
     // Don't call notifyClientsChanged here to avoid triggering save immediately
     clientsChangeListeners.forEach(listener => listener());
