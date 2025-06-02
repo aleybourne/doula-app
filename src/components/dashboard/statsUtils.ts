@@ -12,8 +12,8 @@ export const countNewClients = (clients: ClientData[]): number => {
   threeWeeksAgo.setDate(today.getDate() - 21); // 3 weeks = 21 days
   
   const newClients = clients.filter(client => {
-    // Skip archived clients
-    if (client.status === 'archived') return false;
+    // Skip past clients
+    if (client.status === 'past') return false;
     
     // If client has a createdAt timestamp
     if (client.createdAt) {
@@ -41,9 +41,9 @@ export const countNewClients = (clients: ClientData[]): number => {
  */
 export const countUpcomingBirths = (clients: ClientData[]): number => {
   const upcomingBirths = clients.filter(client => {
-    // Skip archived and delivered clients
-    if (client.status === 'archived' || client.status === 'delivered') {
-      console.log(`Stats check: Client ${client.name} is ${client.status}, not counted for upcoming births`);
+    // Skip past clients
+    if (client.status === 'past') {
+      console.log(`Stats check: Client ${client.name} is past, not counted for upcoming births`);
       return false;
     }
     
@@ -76,7 +76,6 @@ export const countUpcomingBirths = (clients: ClientData[]): number => {
 export const countActiveClients = (clients: ClientData[]): number => {
   const activeClients = clients.filter(client => 
     client.status === 'active' || 
-    client.status === 'delivered' || 
     !client.status
   );
   

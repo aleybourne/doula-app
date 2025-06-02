@@ -11,7 +11,6 @@ import ClientProgressBar from "./page/ClientProgressBar";
 import ClientBirthPlans from "./page/ClientBirthPlans";
 import ClientAlertButton from "./page/ClientAlertButton";
 import { calculateGestationAndTrimester } from "./utils/gestationUtils";
-import { markClientDelivered } from "./store/clientActions";
 
 interface ClientInfo extends ClientData {
   bgColor: string;
@@ -83,7 +82,6 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
 
       <ClientStatus 
         dueDateLabel={clientInfo.dueDateLabel}
-        onDelivered={markClientDelivered}
         client={clientInfo}
       />
 
