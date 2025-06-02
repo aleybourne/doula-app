@@ -81,6 +81,7 @@ export const useClientsStore = () => {
     const activeClients = userClients.filter(client => {
       const isActive = client.status === 'active' || 
                       client.status === 'delivered' || 
+                      client.status === 'inquiry' ||
                       !client.status || 
                       client.status === undefined;
       
