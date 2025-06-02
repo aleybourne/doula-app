@@ -1,5 +1,5 @@
 
-export type ClientStatus = 'active' | 'past' | 'on-hold' | 'archived' | 'deleted' | 'delivered';
+export type ClientStatus = 'active' | 'past' | 'archived' | 'deleted' | 'delivered';
 export type BirthLocationType = 'home' | 'hospital' | 'birthing-center' | 'TBD';
 export type BirthType = 'vaginal' | 'c-section' | 'VBAC' | 'unsure';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
