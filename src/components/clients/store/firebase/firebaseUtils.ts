@@ -1,6 +1,6 @@
 
 import { db } from '../../../../config/firebase';
-import { collection, query, where, getDocs, doc, setDoc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, query, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { ClientData } from '../../types/ClientTypes';
 
 export const testFirebaseConnection = async (): Promise<boolean> => {
@@ -19,10 +19,11 @@ export const testFirebaseConnection = async (): Promise<boolean> => {
 export const loadClientsFromFirestore = async (userId: string): Promise<ClientData[]> => {
   try {
     console.log(`Loading clients from Firestore for user: ${userId}`);
+    console.log(`Using new collection path: clients/${userId}/clients`);
     
-    const clientsRef = collection(db, 'clients');
-    const q = query(clientsRef, where('userId', '==', userId));
-    const querySnapshot = await getDocs(q);
+    // Use the new nested collection structure: /clients/{userId}/clients
+    const clientsRef = collection(db, 'clients', userId, 'clients');
+    const querySnapshot = await getDocs(clientsRef);
     
     console.log(`Query snapshot size: ${querySnapshot.size}`);
     
@@ -30,9 +31,13 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
       const firestoreClients = querySnapshot.docs.map(doc => {
         const data = doc.data() as ClientData;
         console.log(`Loaded client from Firestore: ${data.name}, createdAt: ${data.createdAt}, ID: ${doc.id}`);
-        return data;
+        return {
+          ...data,
+          id: doc.id, // Ensure we use the document ID
+          userId: userId // Ensure userId is set
+        };
       });
-      console.log(`Found ${firestoreClients.length} clients in Firestore`);
+      console.log(`Found ${firestoreClients.length} clients in Firestore for user ${userId}`);
       return firestoreClients;
     } else {
       console.log("No clients found in Firestore for this user");
@@ -46,26 +51,45 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
 
 export const saveClientToFirestore = async (client: ClientData): Promise<void> => {
   try {
-    console.log(`Saving client ${client.name} to Firestore with ID: ${client.id}`);
+    if (!client.userId) {
+      throw new Error("Cannot save client without userId");
+    }
+    
+    console.log(`Saving client ${client.name} to Firestore with new structure`);
+    console.log(`Path: clients/${client.userId}/clients/${client.id}`);
     console.log("Full client object being saved:", JSON.stringify(client, null, 2));
     
-    const clientDocRef = doc(db, 'clients', client.id);
+    // Use the new nested collection structure: /clients/{userId}/clients/{clientId}
+    const clientDocRef = doc(db, 'clients', client.userId, 'clients', client.id);
     await setDoc(clientDocRef, client);
     
-    console.log(`✅ Successfully saved client ${client.name} to Firestore`);
+    console.log(`✅ Successfully saved client ${client.name} to Firestore at new path`);
   } catch (error) {
     console.error("❌ Error saving client to Firestore:", error);
     throw new Error(`Failed to save client: ${error.message}`);
   }
 };
 
-export const getClientFromFirestore = async (clientId: string): Promise<ClientData | null> => {
+export const getClientFromFirestore = async (clientId: string, userId?: string): Promise<ClientData | null> => {
   try {
-    const clientDocRef = doc(db, 'clients', clientId);
+    if (!userId) {
+      console.error("Cannot get client without userId in new data model");
+      return null;
+    }
+    
+    console.log(`Getting client ${clientId} for user ${userId} from new structure`);
+    
+    // Use the new nested collection structure: /clients/{userId}/clients/{clientId}
+    const clientDocRef = doc(db, 'clients', userId, 'clients', clientId);
     const clientDoc = await getDoc(clientDocRef);
     
     if (clientDoc.exists()) {
-      return clientDoc.data() as ClientData;
+      const data = clientDoc.data() as ClientData;
+      return {
+        ...data,
+        id: clientDoc.id,
+        userId: userId
+      };
     }
     
     return null;
@@ -75,11 +99,13 @@ export const getClientFromFirestore = async (clientId: string): Promise<ClientDa
   }
 };
 
-export const deleteClientFromFirestore = async (clientId: string): Promise<void> => {
+export const deleteClientFromFirestore = async (clientId: string, userId: string): Promise<void> => {
   try {
-    console.log(`Deleting client ${clientId} from Firestore`);
+    console.log(`Deleting client ${clientId} for user ${userId} from new structure`);
+    console.log(`Path: clients/${userId}/clients/${clientId}`);
     
-    const clientDocRef = doc(db, 'clients', clientId);
+    // Use the new nested collection structure: /clients/{userId}/clients/{clientId}
+    const clientDocRef = doc(db, 'clients', userId, 'clients', clientId);
     await deleteDoc(clientDocRef);
     
     console.log(`✅ Successfully deleted client ${clientId} from Firestore`);

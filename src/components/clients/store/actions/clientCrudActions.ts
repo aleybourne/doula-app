@@ -11,9 +11,10 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     throw new Error("Cannot add client - user not authenticated");
   }
   
-  console.log("=== ADDING CLIENT TO FIREBASE ===");
+  console.log("=== ADDING CLIENT TO NEW FIRESTORE STRUCTURE ===");
   console.log("User ID:", userId);
   console.log("Client data before processing:", client);
+  console.log("Will save to path: clients/{userId}/clients/{clientId}");
   
   // Ensure the client has the current user's ID and a unique ID
   if (!client.status) client.status = "active";
@@ -31,9 +32,10 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   client.userId = userId;
   
   console.log("Final client data with userId:", client);
+  console.log(`Saving to: clients/${userId}/clients/${client.id}`);
   
   try {
-    // Add to Firestore first
+    // Add to Firestore first using new structure
     await saveClientToFirestore(client);
     
     // Update local array
@@ -42,10 +44,10 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     // Notify listeners
     notifyClientsChanged();
     
-    console.log(`Successfully added client ${client.name} locally with userId: ${client.userId}`);
+    console.log(`Successfully added client ${client.name} to new structure with userId: ${client.userId}`);
     return client;
   } catch (error) {
-    console.error("❌ Error adding client:", error);
+    console.error("❌ Error adding client to new structure:", error);
     throw error;
   }
 };
@@ -69,18 +71,19 @@ export const updateClient = async (updatedClient: ClientData) => {
   updatedClient.userId = userId;
   
   try {
-    console.log(`Updating client ${updatedClient.name} in Firestore with userId: ${updatedClient.userId}`);
+    console.log(`Updating client ${updatedClient.name} in new Firestore structure`);
+    console.log(`Path: clients/${userId}/clients/${updatedClient.id}`);
     
-    // Update in Firestore first
+    // Update in Firestore first using new structure
     await saveClientToFirestore(updatedClient);
     
     // Update local array
     clients[clientIndex] = updatedClient;
     notifyClientsChanged();
     
-    console.log(`Successfully updated client ${updatedClient.name}`);
+    console.log(`Successfully updated client ${updatedClient.name} in new structure`);
   } catch (error) {
-    console.error("Error updating client in Firestore:", error);
+    console.error("Error updating client in new Firestore structure:", error);
     throw new Error(`Failed to update client: ${error.message}`);
   }
 };
@@ -98,8 +101,11 @@ export const deleteClient = async (clientId: string, reason: string) => {
   }
   
   try {
-    // Remove from Firestore first
-    await deleteClientFromFirestore(clientId);
+    console.log(`Deleting client ${clientId} from new structure for user ${userId}`);
+    console.log(`Path: clients/${userId}/clients/${clientId}`);
+    
+    // Remove from Firestore first using new structure
+    await deleteClientFromFirestore(clientId, userId);
     
     // Remove from local array
     const clientIndex = clients.findIndex(client => client.id === clientId);
@@ -108,9 +114,9 @@ export const deleteClient = async (clientId: string, reason: string) => {
       notifyClientsChanged();
     }
     
-    console.log(`Successfully deleted client ${clientId} for user ${userId}`);
+    console.log(`Successfully deleted client ${clientId} for user ${userId} from new structure`);
   } catch (error) {
-    console.error(`Error deleting client ${clientId}:`, error);
+    console.error(`Error deleting client ${clientId} from new structure:`, error);
     throw error;
   }
 };

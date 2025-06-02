@@ -17,13 +17,14 @@ export const initializeClients = async (): Promise<ClientData[]> => {
   }
 
   try {
-    console.log(`=== LOADING CLIENTS FROM FIRESTORE ===`);
+    console.log(`=== LOADING CLIENTS FROM NEW FIRESTORE STRUCTURE ===`);
     console.log(`Current user ID: ${userId}`);
+    console.log(`Using path: clients/${userId}/clients`);
     
     await testFirebaseConnection();
     const firestoreClients = await loadClientsFromFirestore(userId);
     
-    console.log(`Loaded ${firestoreClients.length} clients for user ${userId}`);
+    console.log(`Loaded ${firestoreClients.length} clients for user ${userId} from new structure`);
     
     // Debug: Log client-user associations
     firestoreClients.forEach((client, index) => {
@@ -32,37 +33,36 @@ export const initializeClients = async (): Promise<ClientData[]> => {
     
     return firestoreClients;
   } catch (error) {
-    console.error(`❌ Failed to load clients from Firestore for user ${userId}:`, error);
+    console.error(`❌ Failed to load clients from new Firestore structure for user ${userId}:`, error);
     throw error;
   }
 };
 
 export const getClientById = async (clientId: string): Promise<ClientData | null> => {
   try {
+    const currentUserId = getCurrentUserId();
+    if (!currentUserId) {
+      console.warn("Cannot get client by ID - no authenticated user");
+      return null;
+    }
+
     const { getClientFromFirestore } = await import('./firebase/firebaseUtils');
-    const client = await getClientFromFirestore(clientId);
+    const client = await getClientFromFirestore(clientId, currentUserId);
     
     if (client) {
-      const currentUserId = getCurrentUserId();
       console.log(`Found client ${client.name} with userId: ${client.userId}, current user: ${currentUserId}`);
-      
-      // Verify the client belongs to the current user
-      if (client.userId !== currentUserId) {
-        console.warn(`Access denied: Client ${clientId} belongs to user ${client.userId}, current user is ${currentUserId}`);
-        return null;
-      }
-      
       return client;
     }
     
     // Check local clients array if not found in Firestore
-    const foundClient = clients.find(client => client.id === clientId);
+    const foundClient = clients.find(client => client.id === clientId && client.userId === currentUserId);
     return foundClient || null;
   } catch (error) {
     console.error(`Failed to get client with ID ${clientId}:`, error);
     
     // Check local clients array if Firestore fails
-    const foundClient = clients.find(client => client.id === clientId);
+    const currentUserId = getCurrentUserId();
+    const foundClient = clients.find(client => client.id === clientId && client.userId === currentUserId);
     return foundClient || null;
   }
 };
@@ -83,18 +83,18 @@ export const getClientByName = (clientName: string): ClientData | null => {
 
 export const loadClientsForCurrentUser = async () => {
   try {
-    console.log("Loading clients for current user...");
+    console.log("Loading clients for current user from new data structure...");
     const loadedClients = await initializeClients();
     clients.length = 0;
     clients.push(...loadedClients);
-    console.log(`Loaded ${clients.length} clients for current user`);
+    console.log(`Loaded ${clients.length} clients for current user from new structure`);
     
     // Debug: Check user associations
     debugClientUserAssociations();
     
     notifyClientsChanged();
   } catch (error) {
-    console.error("Error loading clients:", error);
+    console.error("Error loading clients from new structure:", error);
     throw error;
   }
 };
@@ -102,7 +102,7 @@ export const loadClientsForCurrentUser = async () => {
 // Debug function to check client-user associations
 export const debugClientUserAssociations = () => {
   const currentUserId = getCurrentUserId();
-  console.log("=== CLIENT-USER ASSOCIATION DEBUG ===");
+  console.log("=== CLIENT-USER ASSOCIATION DEBUG (NEW STRUCTURE) ===");
   console.log(`Current user ID: ${currentUserId}`);
   console.log(`Total clients in memory: ${clients.length}`);
   

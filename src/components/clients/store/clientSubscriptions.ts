@@ -1,5 +1,5 @@
 
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '../../../config/firebase';
 import { ClientData, ClientChangeListener } from '../types/ClientTypes';
 
@@ -26,20 +26,26 @@ export const subscribeToClientChanges = (
   
   if (userId && !firestoreUnsubscribe) {
     console.log("Setting up Firestore real-time listener for user:", userId);
-    const clientsRef = collection(db, 'clients');
-    const q = query(clientsRef, where('userId', '==', userId));
+    console.log(`Using new collection path: clients/${userId}/clients`);
     
-    firestoreUnsubscribe = onSnapshot(q, (snapshot) => {
-      console.log("Firestore snapshot received, updating clients");
+    // Use the new nested collection structure: /clients/{userId}/clients
+    const clientsRef = collection(db, 'clients', userId, 'clients');
+    
+    firestoreUnsubscribe = onSnapshot(clientsRef, (snapshot) => {
+      console.log("Firestore snapshot received from new structure, updating clients");
       
       if (!snapshot.empty) {
         const firestoreClients = snapshot.docs.map(doc => {
           const data = doc.data() as ClientData;
           console.log(`Real-time update - client: ${data.name}, createdAt: ${data.createdAt}`);
-          return data;
+          return {
+            ...data,
+            id: doc.id,
+            userId: userId
+          };
         });
         
-        console.log(`Real-time listener found ${firestoreClients.length} clients`);
+        console.log(`Real-time listener found ${firestoreClients.length} clients from new structure`);
         
         // Update local clients array
         clients.length = 0;
@@ -48,12 +54,12 @@ export const subscribeToClientChanges = (
         // Notify all listeners
         notifyClientsChanged();
       } else {
-        console.log("Real-time listener: No clients found");
+        console.log("Real-time listener: No clients found in new structure");
         clients.length = 0;
         notifyClientsChanged();
       }
     }, (error) => {
-      console.error("Error in Firestore client subscription:", error);
+      console.error("Error in Firestore client subscription with new structure:", error);
     });
   }
   
