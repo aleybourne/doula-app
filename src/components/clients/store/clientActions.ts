@@ -13,6 +13,10 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     throw new Error("Cannot add client - user not authenticated");
   }
   
+  console.log("=== ADDING CLIENT TO FIREBASE ===");
+  console.log("User ID:", userId);
+  console.log("Client data:", client);
+  
   // Ensure the client has the current user's ID and a unique ID
   if (!client.status) client.status = "active" as ClientStatus;
   
@@ -28,11 +32,14 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   client.userId = userId;
   
   try {
-    console.log(`Adding client ${client.name} to Firestore with createdAt: ${client.createdAt}`);
+    console.log(`Adding client ${client.name} to Firestore with ID: ${client.id}`);
+    console.log("Full client object being saved:", JSON.stringify(client, null, 2));
     
     // Add to Firestore first
     const clientDocRef = doc(db, 'clients', client.id);
     await setDoc(clientDocRef, client);
+    
+    console.log(`✅ Successfully saved client ${client.name} to Firestore`);
     
     // Update local array
     clients.unshift(client);
@@ -40,10 +47,12 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     // Notify listeners
     notifyClientsChanged();
     
-    console.log(`Successfully added client ${client.name}`);
+    console.log(`Successfully added client ${client.name} locally`);
     return client;
   } catch (error) {
-    console.error("Error adding client to Firestore:", error);
+    console.error("❌ Error adding client to Firestore:", error);
+    console.error("Error details:", error.message);
+    console.error("Error code:", error.code);
     throw new Error(`Failed to add client: ${error.message}`);
   }
 };

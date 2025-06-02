@@ -11,15 +11,27 @@ export const useClientsStore = () => {
 
   // Load clients for the current user on mount and when userId changes
   useEffect(() => {
-    console.log("useClientsStore: Loading clients for current user");
+    console.log("=== useClientsStore: EFFECT TRIGGERED ===");
+    console.log("useClientsStore: Loading clients for current user, userId:", userId);
     
     const loadClients = async () => {
-      setIsLoading(true);
-      await loadClientsForCurrentUser();
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        await loadClientsForCurrentUser();
+        console.log("✅ useClientsStore: Successfully loaded clients");
+      } catch (error) {
+        console.error("❌ useClientsStore: Error loading clients:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     
-    loadClients();
+    if (userId) {
+      loadClients();
+    } else {
+      console.log("useClientsStore: No user ID, skipping client load");
+      setIsLoading(false);
+    }
   }, [userId]);
 
   useEffect(() => {

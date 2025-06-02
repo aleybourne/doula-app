@@ -1,4 +1,3 @@
-
 import { ClientData, ClientChangeListener } from '../types/ClientTypes';
 import { cleanupClientImageData } from '../utils/storageUtils';
 import { db, auth } from '../../../config/firebase';
@@ -7,7 +6,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Get the current user ID from Firebase Auth
 export const getCurrentUserId = (): string | null => {
-  return auth.currentUser?.uid || null;
+  const userId = auth.currentUser?.uid || null;
+  console.log("Current user ID:", userId);
+  return userId;
 };
 
 // Initialize clients for a specific user
@@ -20,27 +21,38 @@ export const initializeClients = async (): Promise<ClientData[]> => {
   }
 
   try {
+    console.log(`=== LOADING CLIENTS FROM FIRESTORE ===`);
     console.log(`Loading clients for user: ${userId}`);
+    
+    // Test Firebase connection first
+    console.log("Testing Firebase connection...");
+    const testQuery = query(collection(db, 'clients'));
+    await getDocs(testQuery);
+    console.log("✅ Firebase connection successful");
     
     // Get clients from Firestore
     const clientsRef = collection(db, 'clients');
     const q = query(clientsRef, where('userId', '==', userId));
     const querySnapshot = await getDocs(q);
     
+    console.log(`Query snapshot size: ${querySnapshot.size}`);
+    
     if (!querySnapshot.empty) {
       const firestoreClients = querySnapshot.docs.map(doc => {
         const data = doc.data() as ClientData;
-        console.log(`Loaded client from Firestore: ${data.name}, createdAt: ${data.createdAt}`);
+        console.log(`Loaded client from Firestore: ${data.name}, createdAt: ${data.createdAt}, ID: ${doc.id}`);
         return data;
       });
       console.log(`Found ${firestoreClients.length} clients in Firestore`);
       return firestoreClients;
     } else {
-      console.log("No clients found in Firestore, new user starts with empty client list");
+      console.log("No clients found in Firestore for this user");
       return [];
     }
   } catch (error) {
-    console.error(`Failed to load clients from Firestore for user ${userId}:`, error);
+    console.error(`❌ Failed to load clients from Firestore for user ${userId}:`, error);
+    console.error("Error details:", error.message);
+    console.error("Error code:", error.code);
     throw error; // Re-throw to let the calling code handle it
   }
 };
@@ -93,6 +105,7 @@ export const saveClientsToStorage = async () => {
   }
   
   try {
+    console.log(`=== SAVING CLIENTS TO FIRESTORE ===`);
     console.log(`Saving ${clients.length} clients to Firestore for user: ${userId}`);
     
     const batch = [];
@@ -106,14 +119,17 @@ export const saveClientsToStorage = async () => {
         client.id = `client-${client.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
       }
       
+      console.log(`Preparing to save client: ${client.name} with ID: ${client.id}`);
+      
       const clientDocRef = doc(db, 'clients', client.id);
       batch.push(setDoc(clientDocRef, client));
     }
     
     await Promise.all(batch);
-    console.log("Successfully saved all clients to Firestore");
+    console.log("✅ Successfully saved all clients to Firestore");
   } catch (error) {
-    console.error(`Failed to save clients to Firestore for user ${userId}:`, error);
+    console.error(`❌ Failed to save clients to Firestore for user ${userId}:`, error);
+    console.error("Error details:", error.message);
     throw error;
   }
 };
