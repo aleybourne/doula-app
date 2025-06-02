@@ -83,11 +83,29 @@ export const getClientByName = (clientName: string): ClientData | null => {
 
 export const loadClientsForCurrentUser = async () => {
   try {
+    console.log("=== loadClientsForCurrentUser: START ===");
+    const userId = getCurrentUserId();
+    console.log("Current user ID:", userId);
+    
+    if (!userId) {
+      console.warn("No user ID available, cannot load clients");
+      clients.length = 0;
+      notifyClientsChanged();
+      return;
+    }
+    
     console.log("Loading clients for current user from new data structure...");
     const loadedClients = await initializeClients();
+    
+    console.log(`=== UPDATING LOCAL CLIENTS ARRAY ===`);
+    console.log(`Before update: ${clients.length} clients in memory`);
+    console.log(`Loaded from Firestore: ${loadedClients.length} clients`);
+    
     clients.length = 0;
     clients.push(...loadedClients);
-    console.log(`Loaded ${clients.length} clients for current user from new structure`);
+    
+    console.log(`After update: ${clients.length} clients in memory`);
+    console.log(`=== loadClientsForCurrentUser: END ===`);
     
     // Debug: Check user associations
     debugClientUserAssociations();
@@ -95,7 +113,9 @@ export const loadClientsForCurrentUser = async () => {
     notifyClientsChanged();
   } catch (error) {
     console.error("Error loading clients from new structure:", error);
-    throw error;
+    // Don't throw error, just notify with empty state
+    clients.length = 0;
+    notifyClientsChanged();
   }
 };
 

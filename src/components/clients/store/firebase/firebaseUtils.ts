@@ -18,6 +18,7 @@ export const testFirebaseConnection = async (): Promise<boolean> => {
 
 export const loadClientsFromFirestore = async (userId: string): Promise<ClientData[]> => {
   try {
+    console.log(`=== loadClientsFromFirestore: START ===`);
     console.log(`Loading clients from Firestore for user: ${userId}`);
     console.log(`Using new collection path: clients/${userId}/clients`);
     
@@ -26,6 +27,7 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
     const querySnapshot = await getDocs(clientsRef);
     
     console.log(`Query snapshot size: ${querySnapshot.size}`);
+    console.log(`Query snapshot empty: ${querySnapshot.empty}`);
     
     if (!querySnapshot.empty) {
       const firestoreClients = querySnapshot.docs.map(doc => {
@@ -37,9 +39,11 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
           userId: userId // Ensure userId is set
         };
       });
+      console.log(`=== loadClientsFromFirestore: SUCCESS ===`);
       console.log(`Found ${firestoreClients.length} clients in Firestore for user ${userId}`);
       return firestoreClients;
     } else {
+      console.log("=== loadClientsFromFirestore: NO CLIENTS FOUND ===");
       console.log("No clients found in Firestore for this user");
       return [];
     }

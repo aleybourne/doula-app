@@ -17,12 +17,15 @@ export const useClientsStore = () => {
     const loadClients = async () => {
       try {
         setIsLoading(true);
+        console.log("useClientsStore: Starting client load...");
         await loadClientsForCurrentUser();
         console.log("✅ useClientsStore: Successfully loaded clients");
+        console.log(`Current clients array length: ${clients.length}`);
       } catch (error) {
         console.error("❌ useClientsStore: Error loading clients:", error);
       } finally {
         setIsLoading(false);
+        console.log("useClientsStore: Loading finished, isLoading set to false");
       }
     };
     
@@ -38,6 +41,7 @@ export const useClientsStore = () => {
     console.log("useClientsStore: Setting up subscription");
     const unsubscribe = subscribeToClientChanges(() => {
       console.log("useClientsStore: Detected client change, updating...");
+      console.log(`Current clients count after change: ${clients.length}`);
       setForceUpdate(prev => prev + 1);
     }, clients);
     return () => {
@@ -49,24 +53,26 @@ export const useClientsStore = () => {
   // Filter clients for the current user
   const getCurrentUserClients = useCallback(() => {
     const currentUserId = getCurrentUserId();
-    if (!currentUserId) return [];
+    if (!currentUserId) {
+      console.log("getCurrentUserClients: No current user ID");
+      return [];
+    }
     
-    return clients.filter(client => client.userId === currentUserId);
+    const userClients = clients.filter(client => client.userId === currentUserId);
+    console.log(`getCurrentUserClients: Found ${userClients.length} clients for user ${currentUserId}`);
+    return userClients;
   }, [forceUpdate]);
 
   const getActiveClients = useCallback(() => {
     const userClients = getCurrentUserClients();
-    console.log(`useClientsStore: Getting active clients for user (count: ${userClients.filter(client => 
-      client.status === 'active' || 
-      client.status === 'delivered' || 
-      !client.status
-    ).length})`);
-    
-    return userClients.filter(client => 
+    const activeClients = userClients.filter(client => 
       client.status === 'active' || 
       client.status === 'delivered' || 
       !client.status
     );
+    console.log(`useClientsStore: Getting active clients for user (count: ${activeClients.length})`);
+    
+    return activeClients;
   }, [forceUpdate, getCurrentUserClients]);
 
   const getArchivedClients = useCallback(() => {
