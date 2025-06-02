@@ -27,7 +27,7 @@ export function filterClientsByType(clients: ClientData[] = [], filter?: string 
   
   console.log(`filterClientsByType: Found ${userClients.length} clients for user ${userId}`);
   userClients.forEach(client => {
-    console.log(`User client: ${client.name} (ID: ${client.id}, status: ${client.status || 'no status'})`);
+    console.log(`User client: ${client.name} (ID: ${client.id}, status: ${client.status || 'undefined'})`);
   });
   
   if (!filter) {
@@ -43,22 +43,24 @@ export function filterClientsByType(clients: ClientData[] = [], filter?: string 
       console.log(`=== NEW CLIENTS FILTER ===`);
       // Clients added in the last 3 weeks
       const newClients = userClients.filter(client => {
+        console.log(`Checking client ${client.name} for "new" filter:`);
+        console.log(`  - createdAt: ${client.createdAt || 'undefined'}`);
+        
         if (!client.createdAt) {
-          console.log(`Client ${client.name} has no createdAt timestamp, excluding from new clients`);
+          console.log(`  - No createdAt timestamp, excluding from new clients`);
           return false;
         }
         
         try {
           const createDate = parseISO(client.createdAt);
           if (!isValid(createDate)) {
-            console.log(`Client ${client.name} has invalid createdAt timestamp: ${client.createdAt}`);
+            console.log(`  - Invalid createdAt timestamp: ${client.createdAt}`);
             return false;
           }
           
           const weeksDiff = differenceInWeeks(now, createDate);
           const isNew = weeksDiff <= 3;
           
-          console.log(`Client ${client.name}:`);
           console.log(`  - Created: ${client.createdAt}`);
           console.log(`  - Parsed date: ${createDate.toISOString()}`);
           console.log(`  - Weeks difference: ${weeksDiff}`);
@@ -66,7 +68,7 @@ export function filterClientsByType(clients: ClientData[] = [], filter?: string 
           
           return isNew;
         } catch (error) {
-          console.error(`Error parsing createdAt for client ${client.name}:`, error);
+          console.error(`  - Error parsing createdAt for client ${client.name}:`, error);
           return false;
         }
       });

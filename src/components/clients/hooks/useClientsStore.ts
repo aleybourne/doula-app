@@ -60,17 +60,42 @@ export const useClientsStore = () => {
     
     const userClients = clients.filter(client => client.userId === currentUserId);
     console.log(`getCurrentUserClients: Found ${userClients.length} clients for user ${currentUserId}`);
+    
+    // Debug each client's details
+    userClients.forEach((client, index) => {
+      console.log(`Client ${index + 1}: ${client.name}`);
+      console.log(`  - ID: ${client.id}`);
+      console.log(`  - Status: ${client.status || 'undefined'}`);
+      console.log(`  - Created: ${client.createdAt || 'undefined'}`);
+      console.log(`  - User ID: ${client.userId}`);
+    });
+    
     return userClients;
   }, [forceUpdate]);
 
   const getActiveClients = useCallback(() => {
     const userClients = getCurrentUserClients();
-    const activeClients = userClients.filter(client => 
-      client.status === 'active' || 
-      client.status === 'delivered' || 
-      !client.status
-    );
-    console.log(`useClientsStore: Getting active clients for user (count: ${activeClients.length})`);
+    console.log(`=== ACTIVE CLIENTS FILTERING ===`);
+    console.log(`Input user clients: ${userClients.length}`);
+    
+    const activeClients = userClients.filter(client => {
+      const isActive = client.status === 'active' || 
+                      client.status === 'delivered' || 
+                      !client.status || 
+                      client.status === undefined;
+      
+      console.log(`Client ${client.name}:`);
+      console.log(`  - Status: "${client.status}"`);
+      console.log(`  - Is active: ${isActive}`);
+      
+      return isActive;
+    });
+    
+    console.log(`Active clients result: ${activeClients.length} clients`);
+    activeClients.forEach(client => {
+      console.log(`  - Active: ${client.name} (status: ${client.status || 'undefined'})`);
+    });
+    console.log(`=== END ACTIVE CLIENTS FILTERING ===`);
     
     return activeClients;
   }, [forceUpdate, getCurrentUserClients]);
