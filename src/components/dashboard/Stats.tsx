@@ -59,18 +59,32 @@ export const Stats: React.FC = () => {
 
     try {
       console.log("Stats component calculating client statistics...");
+      console.log(`Total clients available: ${clients.length}`);
       
       // Filter clients for the current user first
       const userClients = clients.filter(client => client.userId === userId);
+      console.log(`User clients: ${userClients.length}`);
+      
+      // Debug each client's status
+      userClients.forEach(client => {
+        console.log(`Client ${client.name}: status="${client.status || 'undefined'}"`);
+      });
       
       // Use the centralized filtering function to get counts
       const newClientsCount = filterClientsByType(userClients, "new").length;
       const upcomingBirthsCount = filterClientsByType(userClients, "upcoming").length;
-      const activeClientsCount = userClients.filter(client => 
-        client.status === 'active' || 
-        client.status === 'delivered' || 
-        !client.status
-      ).length;
+      
+      // Count active clients - those that are not archived or deleted
+      const activeClientsCount = userClients.filter(client => {
+        const status = client.status;
+        const isActive = !status || 
+                        status === 'active' || 
+                        status === 'delivered' || 
+                        status === 'past';
+        
+        console.log(`Client ${client.name}: status="${status || 'undefined'}", isActive=${isActive}`);
+        return isActive;
+      }).length;
       
       console.log(`Stats calculated: new=${newClientsCount}, upcoming=${upcomingBirthsCount}, active=${activeClientsCount}`);
       
