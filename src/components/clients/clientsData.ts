@@ -7,8 +7,7 @@ export { calculateGestationAndTrimester } from './utils/gestationUtils';
 export { 
   clients,
   subscribeToClientChanges,
-  notifyClientsChanged,
-  saveClientsToStorage
+  notifyClientsChanged
 } from './store/clientStore';
 
 // Export client management functions from clientActions
@@ -21,4 +20,3 @@ export {
   restoreClient,
   markClientDelivered
 } from './store/clientActions';
-
