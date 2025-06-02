@@ -121,12 +121,14 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
                 <Pencil className="h-4 w-4" />
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <EditClientForm
-                client={clients.find(c => c.name === name)!}
-                onUpdate={handleUpdateClient}
-                onClose={() => setIsEditDialogOpen(false)}
-              />
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto p-0">
+              <div className="p-6">
+                <EditClientForm
+                  client={clients.find(c => c.name === name)!}
+                  onUpdate={handleUpdateClient}
+                  onClose={() => setIsEditDialogOpen(false)}
+                />
+              </div>
             </DialogContent>
           </Dialog>
           

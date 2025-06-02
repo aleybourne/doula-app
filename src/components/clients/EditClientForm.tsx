@@ -111,33 +111,37 @@ export const EditClientForm: React.FC<EditClientFormProps> = ({
   };
 
   return (
-    <Form {...form}>
-      <DialogTitle className="text-lg font-semibold">Edit Client Details</DialogTitle>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
-        <ImageUpload 
-          selectedImage={selectedImage}
-          onImageUpload={handleImageUpload}
-          clientId={client.id}
-        />
-        <PersonalInfoFields form={form} />
-        
-        <PregnancyDetailsSection form={form} />
-        <AdminSection form={form} />
+    <div className="flex flex-col max-h-full">
+      <DialogTitle className="text-lg font-semibold mb-4">Edit Client Details</DialogTitle>
+      
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <div className="flex-1 space-y-6 overflow-y-auto pr-2 -mr-2">
+            <ImageUpload 
+              selectedImage={selectedImage}
+              onImageUpload={handleImageUpload}
+              clientId={client.id}
+            />
+            <PersonalInfoFields form={form} />
+            <PregnancyDetailsSection form={form} />
+            <AdminSection form={form} />
+          </div>
 
-        <div className="flex justify-end gap-3">
-          <DialogClose asChild>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+          <div className="flex justify-end gap-3 pt-4 border-t mt-4">
+            <DialogClose asChild>
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+            </DialogClose>
+            <Button 
+              type="submit" 
+              className="bg-[#F499B7] hover:bg-[#F499B7]/90"
+            >
+              Save Changes
             </Button>
-          </DialogClose>
-          <Button 
-            type="submit" 
-            className="bg-[#F499B7] hover:bg-[#F499B7]/90"
-          >
-            Save Changes
-          </Button>
-        </div>
-      </form>
-    </Form>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 };
