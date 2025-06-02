@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom"; // Added useNavigate
+import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -44,7 +44,7 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
   tags,
   status,
 }) => {
-  const navigate = useNavigate(); // Added useNavigate hook
+  const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   
   const handleUpdateClient = (updatedClient: ClientData) => {
@@ -52,15 +52,14 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
     if (clientIndex !== -1) {
       clients[clientIndex] = updatedClient;
       localStorage.setItem('clients', JSON.stringify(clients));
-      // Use navigate instead of window.location.href
       navigate(`/clients/id/${updatedClient.id}`);
     }
   };
 
   // Determine the progress color based on client status
   const getProgressColor = () => {
-    if (status === 'delivered') {
-      return "#A085E9"; // Purple for postpartum
+    if (status === 'past') {
+      return "#A085E9"; // Purple for past clients
     }
     if (isPastDue) {
       return "#A085E9"; // Purple for past due
@@ -103,8 +102,8 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
             <div className="font-sans font-semibold text-xl mb-1">{name}</div>
             <div className="flex flex-col">
               <span className="font-sans text-base text-gray-800">{gestation}</span>
-              {status === 'delivered' ? (
-                <span className="font-sans text-base text-purple-600">Postpartum Care</span>
+              {status === 'past' ? (
+                <span className="font-sans text-base text-purple-600">Services Completed</span>
               ) : (
                 <span className="font-sans text-base text-gray-600">{trimester}</span>
               )}

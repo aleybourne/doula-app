@@ -3,9 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useClientsStore } from "./hooks/useClientsStore";
-import ArchiveToggle from "./client-list/ArchiveToggle";
 import ClientListSection from "./client-list/ClientListSection";
-import ArchivedClientList from "./client-list/ArchivedClientList";
 import { useClientFiltering } from "./client-list/useClientFiltering";
 import { getCurrentUserId } from "./store/clientStore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,14 +16,11 @@ interface ClientListProps {
 const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showArchived, setShowArchived] = useState(false);
   const userId = getCurrentUserId();
   const [forceRefresh, setForceRefresh] = useState(0);
   
   const { 
-    getActiveClients, 
-    getArchivedClients, 
-    restoreClient,
+    getActiveClients,
     isLoading
   } = useClientsStore();
   
@@ -34,9 +29,8 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
     console.log(`=== ClientList RECEIVED FILTER ===`);
     console.log(`Filter: ${filter}`);
     console.log(`Search query: "${searchQuery}"`);
-    console.log(`Show archived: ${showArchived}`);
     console.log(`Current user: ${userId}`);
-  }, [filter, searchQuery, showArchived, userId]);
+  }, [filter, searchQuery, userId]);
 
   // Force a refresh when the location (URL) changes to ensure filters apply correctly
   useEffect(() => {
@@ -44,13 +38,12 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
     setForceRefresh(prev => prev + 1);
   }, [location]);
   
-  // Get clients based on archived status
-  const allClients = showArchived ? getArchivedClients() : getActiveClients();
+  // Get active clients only
+  const allClients = getActiveClients();
   
   // Log the clients before filtering
   useEffect(() => {
     console.log(`=== ClientList: RAW CLIENTS DATA ===`);
-    console.log(`Show archived: ${showArchived}`);
     console.log(`Raw clients count: ${allClients.length}`);
     if (allClients.length > 0) {
       console.log(`Raw clients:`);
@@ -58,7 +51,7 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
         console.log(`  ${index + 1}. ${client.name} (status: ${client.status || 'no status'}, userId: ${client.userId})`);
       });
     }
-  }, [allClients, showArchived]);
+  }, [allClients]);
   
   // Apply filters and search (with key that includes forceRefresh)
   const filteredClients = useClientFiltering(allClients, searchQuery, filter);
@@ -74,15 +67,6 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
       });
     }
   }, [filteredClients]);
-
-  const handleRestoreClient = (clientId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    restoreClient(clientId);
-    toast({
-      title: "Client Restored",
-      description: "Client has been restored to active status.",
-    });
-  };
 
   const handleCardClick = (clientId: string) => {
     console.log(`Navigating to client ID: ${clientId}`);
@@ -111,31 +95,18 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
 
   return (
     <div className="mb-20">
-      <ArchiveToggle 
-        showArchived={showArchived} 
-        onToggle={() => setShowArchived(!showArchived)} 
+      <ClientListSection
+        title={getFilterTitle()}
+        clients={filteredClients}
+        onCardClick={handleCardClick}
+        emptyMessage={
+          userId ? (
+            filter ? 
+            `No ${filter === "new" ? "new" : "upcoming"} clients found.` :
+            "No active clients found. Add your first client!"
+          ) : "Please log in to view your clients."
+        }
       />
-
-      {!showArchived ? (
-        <ClientListSection
-          title={getFilterTitle()}
-          clients={filteredClients}
-          onCardClick={handleCardClick}
-          emptyMessage={
-            userId ? (
-              filter ? 
-              `No ${filter === "new" ? "new" : "upcoming"} clients found.` :
-              "No active clients found. Add your first client!"
-            ) : "Please log in to view your clients."
-          }
-        />
-      ) : (
-        <ArchivedClientList
-          clients={filteredClients}
-          onRestore={handleRestoreClient}
-          onCardClick={handleCardClick}
-        />
-      )}
     </div>
   );
 };

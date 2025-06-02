@@ -35,8 +35,8 @@ const ClientCard: React.FC<ClientCardProps> = ({
 }) => {
   // Determine the progress color based on client status
   const getProgressColor = () => {
-    if (status === 'delivered') {
-      return "#A085E9"; // Purple for postpartum
+    if (status === 'past') {
+      return "#A085E9"; // Purple for past clients
     }
     if (isPastDue) {
       return "#A085E9"; // Purple for past due
@@ -75,15 +75,15 @@ const ClientCard: React.FC<ClientCardProps> = ({
           {name}
         </div>
         <div className="text-base text-gray-700 mb-1 font-light font-sans">
-          {status === 'delivered' ? `Delivered: ${dueDateLabel}` : `Due Date: ${dueDateLabel}`}
+          {status === 'past' ? `Past Client: ${dueDateLabel}` : `Due Date: ${dueDateLabel}`}
         </div>
         <div className="flex flex-col gap-0">
           <span className="font-sans font-normal text-2xl text-[#2B2939] leading-none drop-shadow-sm">
             {gestation}
           </span>
-          {status === 'delivered' ? (
+          {status === 'past' ? (
             <span className="text-sm text-purple-600 font-light font-sans">
-              Postpartum Care
+              Services Completed
             </span>
           ) : trimester && (
             <span className="text-sm text-gray-700 font-light font-sans">

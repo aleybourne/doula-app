@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MoreVertical, ArchiveIcon, Trash, AlertCircle } from "lucide-react";
+import { MoreVertical, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,11 +9,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -27,66 +23,42 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { archiveClient, deleteClient } from "../clientsData";
+import { updateClientStatus } from "../store/clientActions";
 import { useClientStore } from "../hooks/useClientStore";
 
 interface ClientManagementDropdownProps {
   clientName: string; // Keep using clientName for now but implement ID-based operations
 }
 
-const archiveReasons = [
-  { id: "postpartum", label: "Postpartum Period Complete" },
-  { id: "moved", label: "Client Moved" },
-  { id: "complete", label: "Services Complete" },
-  { id: "other", label: "Other" },
-];
-
-const deleteReasons = [
-  { id: "duplicate", label: "Duplicate Entry" },
-  { id: "request", label: "Client Request" },
-  { id: "early", label: "Service Ended Early" },
-  { id: "other", label: "Other" },
-];
-
 const ClientManagementDropdown: React.FC<ClientManagementDropdownProps> = ({ clientName }) => {
   const navigate = useNavigate();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedDeleteReason, setSelectedDeleteReason] = useState<string | null>(null);
+  const [statusChangeDialogOpen, setStatusChangeDialogOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<'active' | 'past' | null>(null);
   const { clients } = useClientStore();
   
   // Find client ID from name
   const client = clients.find(c => c.name === clientName);
   const clientId = client?.id || '';
 
-  const handleArchive = (reason: string) => {
-    if (!clientId) {
-      console.error("Client ID not found for:", clientName);
-      return;
-    }
-    
-    archiveClient(clientId, reason);
-    toast({
-      title: "Client Archived",
-      description: `${clientName} has been archived. Reason: ${reason}`,
-    });
-  };
-
-  const handleDelete = () => {
-    if (selectedDeleteReason && clientId) {
-      deleteClient(clientId, selectedDeleteReason);
+  const handleStatusChange = () => {
+    if (selectedStatus && clientId) {
+      const reason = selectedStatus === 'past' ? 'Services completed' : 'Client reactivated';
+      updateClientStatus(clientId, selectedStatus, reason);
       toast({
-        title: "Client Deleted",
-        description: `${clientName} has been deleted. Reason: ${selectedDeleteReason}`,
+        title: "Client Status Updated",
+        description: `${clientName} has been marked as ${selectedStatus}.`,
       });
-      setDeleteDialogOpen(false);
+      setStatusChangeDialogOpen(false);
       navigate("/clients");
     }
   };
 
-  const openDeleteConfirmation = (reason: string) => {
-    setSelectedDeleteReason(reason);
-    setDeleteDialogOpen(true);
+  const openStatusChangeDialog = (status: 'active' | 'past') => {
+    setSelectedStatus(status);
+    setStatusChangeDialogOpen(true);
   };
+
+  const currentStatus = client?.status || 'active';
 
   return (
     <>
@@ -101,57 +73,34 @@ const ClientManagementDropdown: React.FC<ClientManagementDropdownProps> = ({ cli
           <DropdownMenuLabel>Client Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <ArchiveIcon className="mr-2 h-4 w-4" />
-                <span>Archive Client</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  {archiveReasons.map((reason) => (
-                    <DropdownMenuItem key={reason.id} onClick={() => handleArchive(reason.label)}>
-                      {reason.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="text-red-600">
-                <Trash className="mr-2 h-4 w-4" />
-                <span>Delete Client</span>
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  {deleteReasons.map((reason) => (
-                    <DropdownMenuItem 
-                      key={reason.id} 
-                      onClick={() => openDeleteConfirmation(reason.label)}
-                      className="text-red-600"
-                    >
-                      {reason.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
+            {currentStatus !== 'active' && (
+              <DropdownMenuItem onClick={() => openStatusChangeDialog('active')}>
+                <AlertCircle className="mr-2 h-4 w-4" />
+                <span>Mark as Active</span>
+              </DropdownMenuItem>
+            )}
+            {currentStatus !== 'past' && (
+              <DropdownMenuItem onClick={() => openStatusChangeDialog('past')}>
+                <AlertCircle className="mr-2 h-4 w-4" />
+                <span>Mark as Past Client</span>
+              </DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialog open={statusChangeDialogOpen} onOpenChange={setStatusChangeDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Update Client Status</AlertDialogTitle>
             <AlertDialogDescription>
-              This action will delete the client record for <strong>{clientName}</strong>. 
-              This action cannot be undone.
+              Are you sure you want to mark <strong>{clientName}</strong> as {selectedStatus}?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
+            <AlertDialogAction onClick={handleStatusChange}>
+              Update Status
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

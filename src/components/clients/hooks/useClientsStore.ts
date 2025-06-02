@@ -1,7 +1,8 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { ClientData } from '../types/ClientTypes';
 import { clients, subscribeToClientChanges, getCurrentUserId, loadClientsForCurrentUser } from '../store/clientStore';
-import { addClient, updateClient, updateClientStatus, restoreClient } from '../store/clientActions';
+import { addClient, updateClient, updateClientStatus } from '../store/clientActions';
 
 export const useClientsStore = () => {
   const [forceUpdate, setForceUpdate] = useState(0);
@@ -78,10 +79,7 @@ export const useClientsStore = () => {
     console.log(`Input user clients: ${userClients.length}`);
     
     const activeClients = userClients.filter(client => {
-      const isActive = client.status === 'active' || 
-                      client.status === 'delivered' || 
-                      !client.status || 
-                      client.status === undefined;
+      const isActive = client.status === 'active' || !client.status;
       
       console.log(`Client ${client.name}:`);
       console.log(`  - Status: "${client.status}"`);
@@ -99,11 +97,6 @@ export const useClientsStore = () => {
     return activeClients;
   }, [forceUpdate, getCurrentUserClients]);
 
-  const getArchivedClients = useCallback(() => {
-    const userClients = getCurrentUserClients();
-    return userClients.filter(client => client.status === 'archived');
-  }, [forceUpdate, getCurrentUserClients]);
-
   return {
     clients: getCurrentUserClients(),
     forceUpdate,
@@ -111,8 +104,6 @@ export const useClientsStore = () => {
     addClient,
     updateClient,
     updateClientStatus,
-    restoreClient,
     getActiveClients,
-    getArchivedClients,
   };
 };

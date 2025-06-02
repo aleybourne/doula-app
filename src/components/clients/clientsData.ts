@@ -14,9 +14,5 @@ export {
 export { 
   addClient,
   updateClient,
-  updateClientStatus,
-  archiveClient,
-  deleteClient,
-  restoreClient,
-  markClientDelivered
+  updateClientStatus
 } from './store/clientActions';

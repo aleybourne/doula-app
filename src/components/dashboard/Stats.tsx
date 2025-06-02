@@ -74,13 +74,10 @@ export const Stats: React.FC = () => {
       const newClientsCount = filterClientsByType(userClients, "new").length;
       const upcomingBirthsCount = filterClientsByType(userClients, "upcoming").length;
       
-      // Count active clients - those that are not archived or deleted
+      // Count active clients - those with active status or no status (default to active)
       const activeClientsCount = userClients.filter(client => {
         const status = client.status;
-        const isActive = !status || 
-                        status === 'active' || 
-                        status === 'delivered' || 
-                        status === 'past';
+        const isActive = !status || status === 'active';
         
         console.log(`Client ${client.name}: status="${status || 'undefined'}", isActive=${isActive}`);
         return isActive;
