@@ -1,8 +1,9 @@
 
 import { ClientData } from '../types/ClientTypes';
 import { loadClientsFromFirestore, testFirebaseConnection } from './firebase/firebaseUtils';
-import { getCurrentUserId, subscribeToClientChanges, clientsChangeListeners, notifyClientsChanged } from './clientSubscriptions';
+import { getCurrentUserId, subscribeToClientChanges, notifyClientsChanged } from './clientSubscriptions';
 
+// Re-export functions from clientSubscriptions
 export { getCurrentUserId, subscribeToClientChanges, notifyClientsChanged };
 
 export let clients: ClientData[] = [];
@@ -71,7 +72,7 @@ export const loadClientsForCurrentUser = async () => {
     clients.push(...loadedClients);
     console.log(`Loaded ${clients.length} clients for current user`);
     
-    clientsChangeListeners.forEach(listener => listener());
+    notifyClientsChanged();
   } catch (error) {
     console.error("Error loading clients:", error);
     throw error;

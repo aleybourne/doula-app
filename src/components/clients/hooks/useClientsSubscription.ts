@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { clientsChangeListeners } from '../store/clientStore';
+import { clientsChangeListeners } from '../store/clientSubscriptions';
 
 export const useClientsSubscription = () => {
   const [, setForceUpdate] = useState(0);

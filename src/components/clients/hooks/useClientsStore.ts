@@ -39,7 +39,7 @@ export const useClientsStore = () => {
     const unsubscribe = subscribeToClientChanges(() => {
       console.log("useClientsStore: Detected client change, updating...");
       setForceUpdate(prev => prev + 1);
-    });
+    }, clients);
     return () => {
       console.log("useClientsStore: Cleaning up subscription");
       unsubscribe();
