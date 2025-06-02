@@ -1,4 +1,3 @@
-
 import React from "react";
 import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -13,7 +12,7 @@ interface AdminSectionProps {
 }
 
 export const AdminSection: React.FC<AdminSectionProps> = ({ form }) => {
-  const clientStatuses: ClientStatus[] = ['active', 'inquiry', 'past', 'on-hold'];
+  const clientStatuses: ClientStatus[] = ['active', 'past', 'on-hold'];
   const paymentStatuses: PaymentStatus[] = ['unpaid', 'partial', 'paid'];
 
   return (

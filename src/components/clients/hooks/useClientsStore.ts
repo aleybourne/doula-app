@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { ClientData } from '../types/ClientTypes';
 import { clients, subscribeToClientChanges, getCurrentUserId, loadClientsForCurrentUser } from '../store/clientStore';
@@ -81,7 +80,6 @@ export const useClientsStore = () => {
     const activeClients = userClients.filter(client => {
       const isActive = client.status === 'active' || 
                       client.status === 'delivered' || 
-                      client.status === 'inquiry' ||
                       !client.status || 
                       client.status === undefined;
       
