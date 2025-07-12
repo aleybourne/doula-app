@@ -3,6 +3,9 @@ import React from "react";
 import { ClientData } from "../types/ClientTypes";
 import ClientDetailsSection from "./ClientDetailsSection";
 import { format } from "date-fns";
+import { Button } from "../../ui/button";
+import { updateClient } from "../store/clientActions";
+import { useToast } from "@/hooks/use-toast";
 
 interface ClientStatusProps {
   dueDateLabel: string;
@@ -10,6 +13,32 @@ interface ClientStatusProps {
 }
 
 const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => {
+  const { toast } = useToast();
+
+  const handleMarkDelivered = async () => {
+    try {
+      const currentDate = new Date().toISOString();
+      const updatedClient = {
+        ...client,
+        deliveryDate: currentDate,
+        postpartumDate: currentDate,
+        status: 'active' as const // Keep as active but now postpartum
+      };
+      
+      await updateClient(updatedClient);
+      toast({
+        title: "Client marked as delivered",
+        description: "Client is now in postpartum status",
+      });
+    } catch (error) {
+      console.error("Error marking client as delivered:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update client status",
+        variant: "destructive",
+      });
+    }
+  };
 
   const renderDeliveryStatus = () => {
     if (client.deliveryDate) {
@@ -24,11 +53,20 @@ const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => 
     }
 
     return (
-      <div className="flex-1 bg-gray-100 shadow rounded-lg py-3 px-1 flex flex-col items-center">
+      <div className="flex-1 bg-gray-100 shadow rounded-lg py-3 px-1 flex flex-col items-center gap-2">
         <div className="text-xs text-gray-500">Status</div>
         <div className="text-[1.1rem] font-semibold text-gray-600">
           {client.status === 'past' ? 'Past Client' : 'Active'}
         </div>
+        {client.status !== 'past' && (
+          <Button 
+            size="sm" 
+            onClick={handleMarkDelivered}
+            className="text-xs h-6 px-2"
+          >
+            Delivered
+          </Button>
+        )}
       </div>
     );
   };
