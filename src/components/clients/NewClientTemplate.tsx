@@ -20,104 +20,66 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
   const [notFoundError, setNotFoundError] = useState(false);
-  const [clientData, setClientData] = useState(null);
+  
+  // Get client from live store data instead of local state
+  const clientData = React.useMemo(() => {
+    if (clientId) {
+      return clients.find(client => client.id === clientId && client.userId === currentUserId);
+    }
+    if (clientName) {
+      return clients.find(client => {
+        if (client.userId !== currentUserId) return false;
+        const normalizedName = client.name.toLowerCase().replace(/\s+/g, ' ').trim();
+        const normalizedSearch = decodeURIComponent(clientName).toLowerCase().replace(/\s+/g, ' ').trim();
+        return normalizedName === normalizedSearch;
+      });
+    }
+    return null;
+  }, [clients, clientId, clientName, currentUserId]);
   
   useEffect(() => {
     console.log("=== NewClientPage: Effect triggered ===");
     console.log("Client ID:", clientId);
     console.log("Client Name:", clientName);
     console.log("Current User ID:", currentUserId);
-    console.log("Retry Count:", retryCount);
+    console.log("Clients loaded:", clients.length);
+    console.log("Client found in store:", !!clientData);
     
-    const loadClient = async () => {
-      try {
-        // Prevent infinite retries
-        if (retryCount >= 3) {
-          console.error("Max retries reached, showing error");
-          setIsLoading(false);
-          setNotFoundError(true);
-          return;
-        }
-
-        // If we have an ID, use that first (preferred method)
-        if (clientId) {
-          console.log(`Looking for client with ID: ${clientId}`);
-          const client = await getClientById(clientId);
-          
-          if (client) {
-            console.log("Found client by ID:", client);
-            setClientData(client);
-            setIsLoading(false);
-            setNotFoundError(false);
-            return;
-          }
-        }
-        
-        // Fallback to name-based lookup for backward compatibility
-        if (clientName) {
-          console.log(`Looking for client by name: ${clientName}`);
-          // Try to find client in the existing array
-          const existingClient = clients.find(client => {
-            // Only include clients that belong to this user
-            if (client.userId !== currentUserId) {
-              return false;
-            }
-            
-            // Normalize both strings for comparison
-            const normalizedName = client.name.toLowerCase().replace(/\s+/g, ' ').trim();
-            const normalizedSearch = decodeURIComponent(clientName).toLowerCase().replace(/\s+/g, ' ').trim();
-            return normalizedName === normalizedSearch;
-          });
-          
-          if (existingClient) {
-            console.log("Found client by name:", existingClient);
-            // If we find by name, redirect to the ID-based URL
-            if (existingClient.id) {
-              console.log(`Redirecting to ID-based URL: /clients/id/${existingClient.id}`);
-              navigate(`/clients/id/${existingClient.id}`, { replace: true });
-              return;
-            }
-            
-            setClientData(existingClient);
-            setIsLoading(false);
-            setNotFoundError(false);
-            return;
-          }
-          
-          // If not found in the existing array, try to get from store by name
-          const clientByName = getClientByName(clientName);
-          if (clientByName) {
-            console.log("Retrieved client by name from store:", clientByName);
-            
-            // If we find by name, redirect to the ID-based URL
-            if (clientByName.id) {
-              console.log(`Redirecting to ID-based URL: /clients/id/${clientByName.id}`);
-              navigate(`/clients/id/${clientByName.id}`, { replace: true });
-              return;
-            }
-            
-            setClientData(clientByName);
-            setIsLoading(false);
-            setNotFoundError(false);
-            return;
-          }
-        }
-        
-        // If we get here and still haven't found the client, retry after a short delay
-        console.log(`Client not found, will retry (${retryCount + 1}/3)`);
-        setTimeout(() => {
-          setRetryCount(prev => prev + 1);
-        }, 1000);
-        
-      } catch (error) {
-        console.error("Error loading client:", error);
+    // If we have client data from the store, we're done loading
+    if (clientData) {
+      setIsLoading(false);
+      setNotFoundError(false);
+      
+      // If we found by name and have an ID, redirect to ID-based URL
+      if (clientName && clientData.id) {
+        console.log(`Redirecting to ID-based URL: /clients/id/${clientData.id}`);
+        navigate(`/clients/id/${clientData.id}`, { replace: true });
+        return;
+      }
+      return;
+    }
+    
+    // If we have clients loaded but no match found, show error
+    if (clients.length > 0 && !clientData) {
+      if (retryCount >= 2) {
+        console.log("Client not found after retries");
         setIsLoading(false);
         setNotFoundError(true);
+        return;
       }
-    };
+      
+      // Retry once more in case of timing issues
+      console.log(`Client not found, retrying (${retryCount + 1}/3)`);
+      setTimeout(() => {
+        setRetryCount(prev => prev + 1);
+      }, 1000);
+      return;
+    }
     
-    loadClient();
-  }, [clientId, clientName, currentUserId, retryCount, navigate]); // Removed clients dependency to prevent infinite loop
+    // Still waiting for clients to load
+    setIsLoading(true);
+    setNotFoundError(false);
+  }, [clientId, clientName, currentUserId, clients, clientData, retryCount, navigate]);
   
   // Add error boundary logic
   if (notFoundError || (!clientData && !isLoading)) {
