@@ -15,23 +15,25 @@ interface ClientStatusProps {
 const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => {
   const { toast } = useToast();
 
-  const handleMarkDelivered = async () => {
+  const handleToggleDelivery = async () => {
     try {
+      const isCurrentlyPostpartum = client.pregnancyStatus === 'postpartum';
       const currentDate = new Date().toISOString();
+      
       const updatedClient = {
         ...client,
-        deliveryDate: currentDate,
-        postpartumDate: currentDate,
-        status: 'active' as const // Keep as active but now postpartum
+        pregnancyStatus: isCurrentlyPostpartum ? 'pregnant' as const : 'postpartum' as const,
+        deliveryDate: isCurrentlyPostpartum ? undefined : currentDate,
+        postpartumDate: isCurrentlyPostpartum ? undefined : currentDate,
       };
       
       await updateClient(updatedClient);
       toast({
-        title: "Client marked as delivered",
-        description: "Client is now in postpartum status",
+        title: isCurrentlyPostpartum ? "Client marked as pregnant" : "Client marked as delivered",
+        description: isCurrentlyPostpartum ? "Client is now in pregnant status" : "Client is now in postpartum status",
       });
     } catch (error) {
-      console.error("Error marking client as delivered:", error);
+      console.error("Error updating client status:", error);
       toast({
         title: "Error",
         description: "Failed to update client status",
@@ -41,13 +43,26 @@ const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => 
   };
 
   const renderDeliveryStatus = () => {
-    if (client.deliveryDate) {
+    const isPostpartum = client.pregnancyStatus === 'postpartum';
+    
+    if (isPostpartum && client.deliveryDate) {
       return (
-        <div className="flex-1 bg-white shadow rounded-lg py-3 px-1 flex flex-col items-center border-green-200 border">
-          <div className="text-xs text-gray-500">Delivered Date</div>
-          <div className="text-[1.1rem] font-semibold text-green-600">
-            {format(new Date(client.deliveryDate), "MMMM d, yyyy")}
+        <div className="flex-1 bg-white shadow rounded-lg py-3 px-1 flex flex-col items-center gap-2 border-green-200 border">
+          <div className="text-xs text-gray-500">Status</div>
+          <div className="text-[1.1rem] font-semibold text-green-600">Postpartum</div>
+          <div className="text-xs text-gray-500">
+            {format(new Date(client.deliveryDate), "MMM d, yyyy")}
           </div>
+          {client.status !== 'past' && (
+            <Button 
+              size="sm" 
+              onClick={handleToggleDelivery}
+              className="text-xs h-6 px-2"
+              variant="outline"
+            >
+              Mark as Pregnant
+            </Button>
+          )}
         </div>
       );
     }
@@ -56,12 +71,12 @@ const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => 
       <div className="flex-1 bg-gray-100 shadow rounded-lg py-3 px-1 flex flex-col items-center gap-2">
         <div className="text-xs text-gray-500">Status</div>
         <div className="text-[1.1rem] font-semibold text-gray-600">
-          {client.status === 'past' ? 'Past Client' : 'Active'}
+          {client.status === 'past' ? 'Past Client' : 'Pregnant'}
         </div>
         {client.status !== 'past' && (
           <Button 
             size="sm" 
-            onClick={handleMarkDelivered}
+            onClick={handleToggleDelivery}
             className="text-xs h-6 px-2"
           >
             Delivered

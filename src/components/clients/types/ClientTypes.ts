@@ -24,6 +24,7 @@ export interface ClientData {
   statusDate?: string;
   postpartumDate?: string;
   deliveryDate?: string; // New field to track when client delivered
+  pregnancyStatus?: 'pregnant' | 'postpartum'; // Specific pregnancy status for dashboard view
   createdAt?: string; // Timestamp of when client was created
   userId?: string; // ID of the user who owns this client
   preferredName?: string;
