@@ -111,8 +111,55 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({
   client 
 }) => {
   const { updateClient } = useClientsStore();
-  const [allTags, setAllTags] = useState<TagsData>(() => {
-    if (Array.isArray(initialTags)) {
+  
+  // Initialize tags from client data with proper debugging
+  const initializeTagsFromClient = () => {
+    console.log("=== INITIALIZING TAGS FROM CLIENT ===");
+    console.log("Client:", client?.name);
+    console.log("Client tags:", client?.tags);
+    console.log("Initial tags prop:", initialTags);
+    
+    if (client?.tags && Array.isArray(client.tags)) {
+      // Use client.tags directly if available
+      const organizedTags: TagsData = {};
+      client.tags.forEach(tag => {
+        const colorMatch = tag.color.match(/bg-\[(#[A-Fa-f0-9]+)\]/);
+        let tagColor: TagColor = 'purple';
+        
+        if (colorMatch && colorMatch[1]) {
+          const hexColor = colorMatch[1].toLowerCase();
+          if (hexColor === '#f2fce2' || hexColor === '#a7ebb1') tagColor = 'green';
+          else if (hexColor === '#fec6a1' || hexColor === '#f499b7') tagColor = 'orange';
+          else if (hexColor === '#e5deff' || hexColor === '#a085e9') tagColor = 'purple';
+          else if (hexColor === '#d3e4fd' || hexColor === '#82a7e2') tagColor = 'blue';
+          else if (hexColor === '#fef7cd') tagColor = 'yellow';
+        }
+        
+        let categoryKey = 'common';
+        if (tag.description && tag.description.toLowerCase().includes('payment')) {
+          categoryKey = 'personal';
+        } else if (tag.description && tag.description.toLowerCase().includes('medical')) {
+          categoryKey = 'medical';
+        } else if (tag.description && tag.description.toLowerCase().includes('birth')) {
+          categoryKey = 'medical';
+        } else if (tag.description && tag.description.toLowerCase().includes('consult') || tag.description && tag.description.toLowerCase().includes('preferences')) {
+          categoryKey = 'preferences';
+        }
+        
+        if (!organizedTags[categoryKey]) {
+          organizedTags[categoryKey] = [];
+        }
+        
+        organizedTags[categoryKey].push({
+          label: tag.label,
+          color: tagColor
+        });
+      });
+      
+      console.log("Organized tags from client:", organizedTags);
+      return organizedTags;
+    } else if (Array.isArray(initialTags)) {
+      // Fallback to initialTags if client.tags not available
       const organizedTags: TagsData = {};
       initialTags.forEach(tag => {
         const colorMatch = tag.color.match(/bg-\[(#[A-Fa-f0-9]+)\]/);
@@ -130,6 +177,8 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({
         let categoryKey = 'common';
         if (tag.description && tag.description.toLowerCase().includes('payment')) {
           categoryKey = 'personal';
+        } else if (tag.description && tag.description.toLowerCase().includes('medical')) {
+          categoryKey = 'medical';
         } else if (tag.description && tag.description.toLowerCase().includes('birth')) {
           categoryKey = 'medical';
         } else if (tag.description && tag.description.toLowerCase().includes('consult')) {
@@ -147,8 +196,19 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({
       });
       return organizedTags;
     }
-    return initialTags as TagsData;
-  });
+    
+    console.log("No tags found, returning empty object");
+    return initialTags as TagsData || {};
+  };
+
+  const [allTags, setAllTags] = useState<TagsData>(initializeTagsFromClient);
+  
+  // Re-initialize tags when client data changes
+  React.useEffect(() => {
+    console.log("=== CLIENT DATA CHANGED, RE-INITIALIZING TAGS ===");
+    const newTags = initializeTagsFromClient();
+    setAllTags(newTags);
+  }, [client?.tags, client?.id]);
   
   const [addMenuOpen, setAddMenuOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
