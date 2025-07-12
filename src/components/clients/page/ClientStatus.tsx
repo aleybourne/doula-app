@@ -45,14 +45,16 @@ const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => 
   const renderDeliveryStatus = () => {
     const isPostpartum = client.pregnancyStatus === 'postpartum';
     
-    if (isPostpartum && client.deliveryDate) {
+    if (isPostpartum) {
       return (
         <div className="flex-1 bg-white shadow rounded-lg py-3 px-1 flex flex-col items-center gap-2 border-green-200 border">
           <div className="text-xs text-gray-500">Status</div>
           <div className="text-[1.1rem] font-semibold text-green-600">Postpartum</div>
-          <div className="text-xs text-gray-500">
-            {format(new Date(client.deliveryDate), "MMM d, yyyy")}
-          </div>
+          {client.deliveryDate && (
+            <div className="text-xs text-gray-500">
+              {format(new Date(client.deliveryDate), "MMM d, yyyy")}
+            </div>
+          )}
           {client.status !== 'past' && (
             <Button 
               size="sm" 
