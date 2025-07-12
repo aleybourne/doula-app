@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Plus, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Tag } from "./clientsTagsData";
 import { useClientsStore } from "./hooks/useClientsStore";
 import { ClientData } from "./types/ClientTypes";
+import { toast } from "@/hooks/use-toast";
 
 // Color mapping for selecting
 const TAG_COLORS = {
@@ -155,10 +156,14 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({
 
   // Function to save tags to client data
   const saveTagsToClient = async (newTagsData: TagsData) => {
-    if (!client) return;
+    if (!client) {
+      console.error("Cannot save tags: client is undefined");
+      return;
+    }
     
-    console.log("Saving tags to client:", client.name);
-    console.log("New tags data:", newTagsData);
+    console.log("=== SAVING TAGS TO FIREBASE ===");
+    console.log("Client:", client.name, "ID:", client.id);
+    console.log("Tags data to save:", newTagsData);
     
     try {
       // Convert TagsData back to Tag array format for storage
@@ -169,14 +174,14 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({
           categoryTags.forEach((tag, index) => {
             const colorHex = {
               green: '#A7EBB1',
-              orange: '#F499B7',
+              orange: '#F499B7', 
               purple: '#A085E9',
               blue: '#82A7E2',
               yellow: '#FEF7CD'
             }[tag.color];
             
             updatedTags.push({
-              id: `${categoryKey}-${index}`,
+              id: `${categoryKey}-${Date.now()}-${index}`, // Use timestamp for unique IDs
               label: tag.label,
               description: `${category.label} - ${tag.label}`,
               color: `bg-[${colorHex}]`,
@@ -186,17 +191,31 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({
         }
       });
       
+      console.log("Converted tags for storage:", updatedTags);
+      
       // Update the client with new tags
       const updatedClient = {
         ...client,
         tags: updatedTags
       };
       
+      console.log("Calling updateClient with:", updatedClient);
       await updateClient(updatedClient);
-      console.log("Successfully saved tags to client");
+      
+      toast({
+        title: "Tags Updated",
+        description: "Tags have been saved successfully.",
+      });
+      
+      console.log("✅ Successfully saved tags to Firebase");
       
     } catch (error) {
-      console.error("Failed to save tags to client:", error);
+      console.error("❌ Failed to save tags to Firebase:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save tags. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
