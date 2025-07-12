@@ -18,6 +18,7 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   
   // Ensure the client has the current user's ID and a unique ID
   if (!client.status) client.status = "active";
+  if (!client.birthStage) client.birthStage = "pregnant";
   
   // Always set createdAt to current timestamp when adding a new client
   client.createdAt = new Date().toISOString();

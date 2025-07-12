@@ -3,6 +3,7 @@ export type ClientStatus = 'active' | 'past';
 export type BirthLocationType = 'home' | 'hospital' | 'birthing-center' | 'TBD';
 export type BirthType = 'vaginal' | 'c-section' | 'VBAC' | 'unsure';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
+export type BirthStage = 'pregnant' | 'active-labor' | 'delivered';
 
 export interface Tag {
   id: string;
@@ -25,6 +26,9 @@ export interface ClientData {
   postpartumDate?: string;
   deliveryDate?: string; // New field to track when client delivered
   pregnancyStatus?: 'pregnant' | 'postpartum'; // Specific pregnancy status for dashboard view
+  birthStage?: BirthStage; // Current birth stage for live status tracking
+  laborStartTime?: string; // Timestamp when active labor stage begins
+  deliveryTime?: string; // Timestamp when delivery is completed
   createdAt?: string; // Timestamp of when client was created
   userId?: string; // ID of the user who owns this client
   preferredName?: string;

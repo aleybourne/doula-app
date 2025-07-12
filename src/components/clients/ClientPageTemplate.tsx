@@ -10,6 +10,8 @@ import ClientQuickLinks from "./page/ClientQuickLinks";
 import ClientProgressBar from "./page/ClientProgressBar";
 import ClientBirthPlans from "./page/ClientBirthPlans";
 import ClientAlertButton from "./page/ClientAlertButton";
+import ActiveLaborNotes from "./page/ActiveLaborNotes";
+import PostpartumNotes from "./page/PostpartumNotes";
 import { calculateGestationAndTrimester } from "./utils/gestationUtils";
 
 interface ClientInfo extends ClientData {
@@ -87,6 +89,16 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
 
       <ClientMeeting />
       <ClientQuickLinks />
+      
+      {/* Stage-specific content */}
+      {(clientInfo.birthStage === 'active-labor') && (
+        <ActiveLaborNotes client={clientInfo} />
+      )}
+      
+      {(clientInfo.birthStage === 'delivered') && (
+        <PostpartumNotes client={clientInfo} />
+      )}
+      
       <ClientProgressBar />
       <ClientBirthPlans />
       <ClientAlertButton />
