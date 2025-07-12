@@ -36,6 +36,7 @@ export interface ClientData {
   packageSelected?: string;
   contractSigned?: boolean;
   paymentStatus?: PaymentStatus;
+  referralSource?: string;
   notes?: string;
   tags?: Tag[]; // Add tags field to store client-specific tags
 }

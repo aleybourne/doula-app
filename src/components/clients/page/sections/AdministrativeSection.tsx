@@ -19,6 +19,7 @@ export const AdministrativeSection = ({ isEditing, editingClient, handleChange }
         <DisplayField label="Package" value={editingClient.packageSelected} />
         <DisplayField label="Payment Status" value={editingClient.paymentStatus} />
         <DisplayField label="Contract" value={editingClient.contractSigned ? "Signed" : "Not Signed"} />
+        <DisplayField label="Referral Source" value={editingClient.referralSource} />
       </div>
     );
   }
@@ -67,6 +68,15 @@ export const AdministrativeSection = ({ isEditing, editingClient, handleChange }
               <SelectItem value="signed">Signed</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="grid gap-2">
+          <Label>Referral Source</Label>
+          <Input
+            value={editingClient.referralSource || ''}
+            onChange={(e) => handleChange('referralSource', e.target.value)}
+            placeholder="How did they find you?"
+          />
         </div>
       </div>
     </div>
