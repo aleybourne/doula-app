@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Tag } from "./clientsTagsData";
-import { updateClient } from "./clientsData";
+import { useClientsStore } from "./hooks/useClientsStore";
 import { ClientData } from "./types/ClientTypes";
 
 // Color mapping for selecting
@@ -109,6 +109,7 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({
   bgColor = "bg-[#f9f5f2]", 
   client 
 }) => {
+  const { updateClient } = useClientsStore();
   const [allTags, setAllTags] = useState<TagsData>(() => {
     if (Array.isArray(initialTags)) {
       const organizedTags: TagsData = {};
