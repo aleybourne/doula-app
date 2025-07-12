@@ -92,12 +92,7 @@ const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => 
     <div className="space-y-4">
       <ClientDetailsSection client={client} />
       
-      <div className="flex justify-between gap-3 pb-2 px-2">
-        <div className="flex-1 bg-white shadow rounded-lg py-3 px-1 flex flex-col items-center">
-          <div className="text-xs text-gray-500">Due Date</div>
-          <div className="text-[1.1rem] font-semibold text-[#2b2939]">{dueDateLabel}</div>
-        </div>
-        
+      <div className="pb-2 px-2">
         {renderDeliveryStatus()}
       </div>
     </div>
