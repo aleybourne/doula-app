@@ -12,8 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ClientData } from "../types/ClientTypes";
+import DeliveryNotesButton from "./DeliveryNotesButton";
 
-const ClientHeader: React.FC = () => {
+interface ClientHeaderProps {
+  client?: ClientData;
+}
+
+const ClientHeader: React.FC<ClientHeaderProps> = ({ client }) => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   
@@ -28,6 +34,15 @@ const ClientHeader: React.FC = () => {
     navigate("/auth");
   };
 
+  const handleDeliveryNotesClick = () => {
+    // For now, we'll scroll to or focus on the PostpartumNotes component
+    // This could be enhanced to open a dedicated delivery notes modal
+    const notesSection = document.querySelector('[data-testid="postpartum-notes"]');
+    if (notesSection) {
+      notesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="px-3 py-2 flex items-center justify-between">
       <Button 
@@ -40,6 +55,15 @@ const ClientHeader: React.FC = () => {
         <ArrowLeft className="h-5 w-5" />
       </Button>
       <div className="flex-1"></div> {/* Spacer */}
+      
+      {/* Delivery Notes Button - only shown when client is delivered */}
+      {client && (
+        <DeliveryNotesButton 
+          client={client} 
+          onClick={handleDeliveryNotesClick}
+        />
+      )}
+      
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button 

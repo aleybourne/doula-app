@@ -29,6 +29,9 @@ export interface ClientData {
   birthStage?: BirthStage; // Current birth stage for live status tracking
   laborStartTime?: string; // Timestamp when active labor stage begins
   deliveryTime?: string; // Timestamp when delivery is completed
+  deliveryWeight?: string; // Baby's weight at delivery
+  deliveryLength?: string; // Baby's length at delivery
+  deliveryHeadCircumference?: string; // Baby's head circumference at delivery
   createdAt?: string; // Timestamp of when client was created
   userId?: string; // ID of the user who owns this client
   preferredName?: string;

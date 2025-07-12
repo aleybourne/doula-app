@@ -64,7 +64,7 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
 
   return (
     <div className="min-h-screen bg-white pb-4 flex flex-col max-w-md mx-auto">
-      <ClientHeader />
+      <ClientHeader client={clientInfo} />
       
       <ClientProgress
         name={clientInfo.name}
