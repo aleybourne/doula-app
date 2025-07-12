@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { Button } from "../../ui/button";
 import { updateClient } from "../store/clientActions";
 import { useToast } from "@/hooks/use-toast";
+import { deleteField } from "firebase/firestore";
 
 interface ClientStatusProps {
   dueDateLabel: string;
@@ -20,12 +21,20 @@ const ClientStatus: React.FC<ClientStatusProps> = ({ dueDateLabel, client }) => 
       const isCurrentlyPostpartum = client.pregnancyStatus === 'postpartum';
       const currentDate = new Date().toISOString();
       
-      const updatedClient = {
+      let updatedClient: any = {
         ...client,
         pregnancyStatus: isCurrentlyPostpartum ? 'pregnant' as const : 'postpartum' as const,
-        deliveryDate: isCurrentlyPostpartum ? undefined : currentDate,
-        postpartumDate: isCurrentlyPostpartum ? undefined : currentDate,
       };
+
+      if (isCurrentlyPostpartum) {
+        // When undoing delivery, remove the fields using deleteField
+        updatedClient.deliveryDate = deleteField();
+        updatedClient.postpartumDate = deleteField();
+      } else {
+        // When marking as delivered, set the dates
+        updatedClient.deliveryDate = currentDate;
+        updatedClient.postpartumDate = currentDate;
+      }
       
       await updateClient(updatedClient);
       toast({
