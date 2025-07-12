@@ -26,6 +26,26 @@ export const initializeClients = async (): Promise<ClientData[]> => {
     
     console.log(`Loaded ${firestoreClients.length} clients for user ${userId} from new structure`);
     
+    // If no clients found in Firebase, try localStorage as fallback
+    if (firestoreClients.length === 0) {
+      console.log("No clients found in Firebase, checking localStorage as fallback...");
+      try {
+        const localStorageData = localStorage.getItem('clients');
+        if (localStorageData) {
+          const localClients = JSON.parse(localStorageData) as ClientData[];
+          const userLocalClients = localClients.filter(client => client.userId === userId);
+          console.log(`Found ${userLocalClients.length} clients in localStorage for user ${userId}`);
+          
+          if (userLocalClients.length > 0) {
+            console.log("Using localStorage clients as fallback");
+            return userLocalClients;
+          }
+        }
+      } catch (error) {
+        console.error("Error reading from localStorage:", error);
+      }
+    }
+    
     // Debug: Log client-user associations
     firestoreClients.forEach((client, index) => {
       console.log(`Client ${index + 1}: ${client.name}, userId: ${client.userId}, matches current user: ${client.userId === userId}`);
@@ -34,6 +54,21 @@ export const initializeClients = async (): Promise<ClientData[]> => {
     return firestoreClients;
   } catch (error) {
     console.error(`❌ Failed to load clients from new Firestore structure for user ${userId}:`, error);
+    
+    // Try localStorage as fallback when Firebase completely fails
+    console.log("Firebase failed, trying localStorage as fallback...");
+    try {
+      const localStorageData = localStorage.getItem('clients');
+      if (localStorageData) {
+        const localClients = JSON.parse(localStorageData) as ClientData[];
+        const userLocalClients = localClients.filter(client => client.userId === userId);
+        console.log(`Fallback: Found ${userLocalClients.length} clients in localStorage`);
+        return userLocalClients;
+      }
+    } catch (localError) {
+      console.error("Error reading from localStorage fallback:", localError);
+    }
+    
     throw error;
   }
 };
