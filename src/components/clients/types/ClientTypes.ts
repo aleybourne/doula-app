@@ -4,6 +4,14 @@ export type BirthLocationType = 'home' | 'hospital' | 'birthing-center' | 'TBD';
 export type BirthType = 'vaginal' | 'c-section' | 'VBAC' | 'unsure';
 export type PaymentStatus = 'unpaid' | 'partial' | 'paid';
 
+export interface Tag {
+  id: string;
+  label: string;
+  description: string;
+  color: string;
+  checked: boolean;
+}
+
 export interface ClientData {
   id: string;  // Unique identifier
   name: string;
@@ -29,6 +37,7 @@ export interface ClientData {
   contractSigned?: boolean;
   paymentStatus?: PaymentStatus;
   notes?: string;
+  tags?: Tag[]; // Add tags field to store client-specific tags
 }
 
 export type ClientChangeListener = () => void;

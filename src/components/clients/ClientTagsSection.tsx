@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Plus, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -8,6 +9,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Tag } from "./clientsTagsData";
+import { updateClient } from "./clientsData";
+import { ClientData } from "./types/ClientTypes";
 
 // Color mapping for selecting
 const TAG_COLORS = {
@@ -98,9 +101,14 @@ const AddTagInputDialog: React.FC<{
 interface ClientTagsSectionProps {
   initialTags: Tag[] | TagsData;
   bgColor?: string;
+  client?: ClientData;
 }
 
-const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({ initialTags, bgColor = "bg-[#f9f5f2]" }) => {
+const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({ 
+  initialTags, 
+  bgColor = "bg-[#f9f5f2]", 
+  client 
+}) => {
   const [allTags, setAllTags] = useState<TagsData>(() => {
     if (Array.isArray(initialTags)) {
       const organizedTags: TagsData = {};
@@ -144,31 +152,85 @@ const ClientTagsSection: React.FC<ClientTagsSectionProps> = ({ initialTags, bgCo
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string | null>(null);
 
+  // Function to save tags to client data
+  const saveTagsToClient = async (newTagsData: TagsData) => {
+    if (!client) return;
+    
+    console.log("Saving tags to client:", client.name);
+    console.log("New tags data:", newTagsData);
+    
+    try {
+      // Convert TagsData back to Tag array format for storage
+      const updatedTags: Tag[] = [];
+      Object.entries(newTagsData).forEach(([categoryKey, categoryTags]) => {
+        const category = CATEGORIES.find(cat => cat.key === categoryKey);
+        if (category && categoryTags) {
+          categoryTags.forEach((tag, index) => {
+            const colorHex = {
+              green: '#A7EBB1',
+              orange: '#F499B7',
+              purple: '#A085E9',
+              blue: '#82A7E2',
+              yellow: '#FEF7CD'
+            }[tag.color];
+            
+            updatedTags.push({
+              id: `${categoryKey}-${index}`,
+              label: tag.label,
+              description: `${category.label} - ${tag.label}`,
+              color: `bg-[${colorHex}]`,
+              checked: true
+            });
+          });
+        }
+      });
+      
+      // Update the client with new tags
+      const updatedClient = {
+        ...client,
+        tags: updatedTags
+      };
+      
+      await updateClient(updatedClient);
+      console.log("Successfully saved tags to client");
+      
+    } catch (error) {
+      console.error("Failed to save tags to client:", error);
+    }
+  };
+
   const handleDropdownSelect = (categoryKey: string) => {
     setSelectedCategoryKey(categoryKey);
     setDialogOpen(true);
     setAddMenuOpen(false);
   };
   
-  const handleAddTag = (label: string) => {
+  const handleAddTag = async (label: string) => {
     if (!selectedCategoryKey) return;
     const catObj = CATEGORIES.find(cat => cat.key === selectedCategoryKey);
     if (!catObj) return;
-    setAllTags(prev => ({
-      ...prev,
+    
+    const newTagsData = {
+      ...allTags,
       [selectedCategoryKey]: [
-        ...prev[selectedCategoryKey] || [],
+        ...allTags[selectedCategoryKey] || [],
         { label, color: catObj.color }
       ]
-    }));
+    };
+    
+    setAllTags(newTagsData);
+    await saveTagsToClient(newTagsData);
     setSelectedCategoryKey(null);
   };
   
-  const handleDeleteTag = (categoryKey: string, tagIdx: number) => {
-    setAllTags(prev => ({
-      ...prev,
-      [categoryKey]: prev[categoryKey].filter((_, idx) => idx !== tagIdx)
-    }));
+  const handleDeleteTag = async (categoryKey: string, tagIdx: number) => {
+    const newTagsData = {
+      ...allTags,
+      [categoryKey]: allTags[categoryKey].filter((_, idx) => idx !== tagIdx)
+    };
+    
+    setAllTags(newTagsData);
+    await saveTagsToClient(newTagsData);
   };
   
   const selectedCategory =

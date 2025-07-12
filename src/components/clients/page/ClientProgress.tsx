@@ -47,6 +47,9 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
   const navigate = useNavigate();
   const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
   
+  // Find the current client data
+  const currentClient = clients.find(c => c.name === name);
+  
   const handleUpdateClient = (updatedClient: ClientData) => {
     const clientIndex = clients.findIndex(c => c.name === name);
     if (clientIndex !== -1) {
@@ -135,7 +138,11 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
         </div>
         <CollapsibleContent className="overflow-visible animate-fade-in" asChild>
           <div className={`rounded-2xl ${bgColor} shadow border border-[#f0e7f9] px-1 pt-1 pb-2 mx-1 mb-1`}>
-            <ClientTagsSection initialTags={tags} bgColor={bgColor} />
+            <ClientTagsSection 
+              initialTags={tags} 
+              bgColor={bgColor} 
+              client={currentClient}
+            />
           </div>
         </CollapsibleContent>
       </div>
