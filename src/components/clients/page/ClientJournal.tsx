@@ -137,44 +137,49 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
                 </Button>
               </div>
               
-              {/* Folder Filter Buttons */}
-              <div className="flex gap-1 mt-4 pb-1">
+              {/* Mobile-First Folder Filter Buttons */}
+              <div className="px-4 py-3 space-y-3">
                 <Button
-                  variant={selectedFolder === null ? "default" : "ghost"}
-                  size="sm"
+                  variant={selectedFolder === null ? "default" : "outline"}
+                  size="lg"
                   onClick={() => setSelectedFolder(null)}
-                  className={`h-8 px-3 rounded-lg font-medium text-xs ${
+                  className={`w-full h-12 text-base font-medium ${
                     selectedFolder === null 
                       ? 'bg-primary text-primary-foreground' 
-                      : 'bg-muted hover:bg-muted/80'
+                      : 'bg-background border-2 hover:bg-muted/50'
                   }`}
                 >
                   All Notes
                 </Button>
-                {folders.map((folder) => {
-                  const Icon = folder.icon;
-                  const isActive = selectedFolder === folder.id;
-                  return (
-                    <Button
-                      key={folder.id}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedFolder(folder.id)}
-                      className={`h-8 px-3 rounded-lg font-medium text-xs border transition-all ${
-                        isActive 
-                          ? `${folder.activeColor} border-primary/30 text-foreground shadow-sm` 
-                          : `${folder.color} border-transparent hover:border-primary/20 text-foreground/80`
-                      }`}
-                    >
-                      <Icon className="h-3 w-3 mr-1.5" />
-                      {folder.label}
-                    </Button>
-                  );
-                })}
+                
+                <div className="grid grid-cols-1 gap-2">
+                  {folders.map((folder) => {
+                    const Icon = folder.icon;
+                    const isActive = selectedFolder === folder.id;
+                    return (
+                      <Button
+                        key={folder.id}
+                        variant="outline"
+                        size="lg"
+                        onClick={() => setSelectedFolder(folder.id)}
+                        className={`w-full h-14 text-base font-medium border-2 transition-all ${
+                          isActive 
+                            ? `${folder.activeColor} border-primary text-foreground shadow-lg` 
+                            : `${folder.color} border-border hover:border-primary/30 text-foreground/90`
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="h-5 w-5" />
+                          <span>{folder.label}</span>
+                        </div>
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
             </DialogHeader>
 
-            <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full border-t">
               <div className="p-4 border-b shrink-0">
                 <div className="flex gap-2 mb-3">
                   <Button
