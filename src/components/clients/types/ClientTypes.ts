@@ -32,6 +32,22 @@ export interface ClientData {
   deliveryWeight?: string; // Baby's weight at delivery
   deliveryLength?: string; // Baby's length at delivery
   deliveryHeadCircumference?: string; // Baby's head circumference at delivery
+  // Detailed Postpartum Notes
+  apgar1Min?: string;
+  apgar5Min?: string;
+  babyInterventions?: string;
+  estimatedBloodLoss?: string;
+  umbilicalCordCondition?: string;
+  parentalDeliveryPosition?: string;
+  babyBirthPosition?: string;
+  postpartumNotes?: string;
+  pericareNotes?: string;
+  immediatePostpartumCare?: string;
+  feedingMethod?: 'breast' | 'pump' | 'formula';
+  initialFeedingTime?: string;
+  latchQuality?: string;
+  feedingNotes?: string;
+  babyBehaviorObservations?: string;
   createdAt?: string; // Timestamp of when client was created
   userId?: string; // ID of the user who owns this client
   preferredName?: string;

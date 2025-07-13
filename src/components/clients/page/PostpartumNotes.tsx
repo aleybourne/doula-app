@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Button } from "../../ui/button";
 import { Baby, Heart, ChevronDown, ChevronUp } from "lucide-react";
+import { DetailedPostpartumNotesDialog } from "./DetailedPostpartumNotesDialog";
+import { updateClient } from "../store/clientActions";
 
 interface PostpartumNotesProps {
   client: any; // Will be properly typed later if needed
@@ -13,9 +15,12 @@ const PostpartumNotes: React.FC<PostpartumNotesProps> = ({ client }) => {
     setIsExpanded(!isExpanded);
   };
 
-  const handlePostpartum = () => {
-    // TODO: Implement postpartum notes functionality
-    console.log("Opening postpartum notes for:", client.name);
+  const handleSaveDetailedNotes = async (updatedClient: any) => {
+    try {
+      await updateClient(updatedClient);
+    } catch (error) {
+      console.error("Failed to save detailed notes:", error);
+    }
   };
 
   return (
@@ -65,14 +70,18 @@ const PostpartumNotes: React.FC<PostpartumNotesProps> = ({ client }) => {
           </p>
           
           {/* Action button for detailed notes */}
-          <Button
-            onClick={handlePostpartum}
-            variant="outline"
-            size="sm"
-            className="w-full border-green-300 text-green-700 hover:bg-green-100"
+          <DetailedPostpartumNotesDialog
+            client={client}
+            onSave={handleSaveDetailedNotes}
           >
-            Open Detailed Notes
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full border-green-300 text-green-700 hover:bg-green-100"
+            >
+              Open Detailed Notes
+            </Button>
+          </DetailedPostpartumNotesDialog>
         </div>
       </div>
     </div>
