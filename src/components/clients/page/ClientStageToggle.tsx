@@ -173,7 +173,18 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
   }
 
   return (
-    <div className="bg-card rounded-lg border p-4 space-y-3">
+    <div className="relative bg-card rounded-lg border p-4 space-y-3">
+      {/* Triage Note Button - Only show when pregnant */}
+      {currentStage === 'pregnant' && (
+        <TriageNoteButton 
+          onClick={(e) => {
+            console.log("Triage button clicked");
+            e.stopPropagation();
+            setShowTriageModal(true);
+          }}
+        />
+      )}
+      
       <div className="text-center">
         <div className="text-sm text-muted-foreground mb-2">Current Stage</div>
         <div className="text-lg font-semibold">
@@ -190,21 +201,9 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
               variant={isActive ? "default" : "outline"}
               size="sm"
               onClick={() => handleStageChange(stage.value)}
-              className={`relative flex-1 transition-all duration-200 ${getStageColor(stage.value, isActive)}`}
+              className={`flex-1 transition-all duration-200 ${getStageColor(stage.value, isActive)}`}
               disabled={isActive}
             >
-              {stage.value === 'pregnant' && isActive && (
-                <>
-                  {console.log("Rendering triage button for pregnant stage")}
-                  <TriageNoteButton 
-                    onClick={(e) => {
-                      console.log("Triage button clicked");
-                      e.stopPropagation();
-                      setShowTriageModal(true);
-                    }}
-                  />
-                </>
-              )}
               <div className="flex items-center gap-1.5">
                 {getStageIcon(stage.value)}
                 <span className="text-xs">{stage.label}</span>
