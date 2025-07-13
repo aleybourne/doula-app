@@ -110,7 +110,7 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     <div className="space-y-6 max-h-[80vh] overflow-y-auto">
       {/* Header */}
       <div className="text-center border-b border-border pb-4">
-        <h2 className="text-xl font-bold text-primary">DETAILED BIRTH NOTES</h2>
+        <h2 className="text-xl font-bold text-primary">BIRTH REPORT</h2>
         <p className="text-sm text-muted-foreground mt-1">{client.name}</p>
       </div>
 
