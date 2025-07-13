@@ -68,9 +68,9 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     if (!value) return null;
     
     return (
-      <div className={`p-3 rounded-lg border text-center ${highlight ? 'bg-primary/10 border-primary/20' : 'bg-card border-border'}`}>
-        <div className="text-xs text-muted-foreground font-medium">{label}</div>
-        <div className={`text-lg font-bold mt-1 ${highlight ? 'text-primary' : 'text-foreground'}`}>
+      <div className={`p-2 sm:p-3 rounded-lg border text-center ${highlight ? 'bg-primary/10 border-primary/20' : 'bg-card border-border'}`}>
+        <div className="text-xs text-muted-foreground font-medium break-words">{label}</div>
+        <div className={`text-sm sm:text-lg font-bold mt-1 break-words ${highlight ? 'text-primary' : 'text-foreground'}`}>
           {value}
         </div>
       </div>
@@ -87,9 +87,9 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     if (!value) return null;
     
     return (
-      <div className="flex justify-between items-center py-2 border-b border-border/30 last:border-0">
-        <span className="text-sm text-muted-foreground font-medium">{label}</span>
-        <span className="text-sm font-semibold text-foreground text-right max-w-[60%] break-words">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-b border-border/30 last:border-0 gap-1 sm:gap-0">
+        <span className="text-xs sm:text-sm text-muted-foreground font-medium break-words">{label}</span>
+        <span className="text-xs sm:text-sm font-semibold text-foreground sm:text-right sm:max-w-[60%] break-words">
           {value}
         </span>
       </div>
@@ -116,24 +116,24 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
   };
 
   return (
-    <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+    <div className="space-y-4 sm:space-y-6 max-h-[80vh] overflow-y-auto px-1">
       {/* Header */}
-      <div className="text-center border-b border-border pb-4 space-y-1">
-        <h2 className="text-xl font-bold text-primary">BIRTH REPORT</h2>
-        <p className="text-sm text-muted-foreground">{client.name}</p>
+      <div className="text-center border-b border-border pb-3 sm:pb-4 space-y-1">
+        <h2 className="text-lg sm:text-xl font-bold text-primary break-words">BIRTH REPORT</h2>
+        <p className="text-sm text-muted-foreground break-words">{client.name}</p>
         {client.deliveryDate && (
-          <div className="text-sm font-medium text-foreground">
+          <div className="text-xs sm:text-sm font-medium text-foreground break-words">
             {formatDate(client.deliveryDate)}
           </div>
         )}
       </div>
 
       {/* Birth Stats - Key Metrics in Boxes */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-primary">Birth Stats</h3>
+      <div className="space-y-3 sm:space-y-4">
+        <h3 className="text-base sm:text-lg font-semibold text-primary">Birth Stats</h3>
         
         {/* Primary Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
           <StatBox label="Time" value={client.deliveryDate ? formatTime(client.deliveryDate) : undefined} />
           <StatBox label="Weight" value={client.deliveryWeight} />
           <StatBox label="Length" value={client.deliveryLength} />
@@ -143,9 +143,9 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
 
       {/* Additional Birth Information */}
       {(client.apgar1Min || client.apgar5Min || client.estimatedBloodLoss || client.umbilicalCordCondition || client.parentalDeliveryPosition || client.babyBirthPosition) && (
-        <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-primary">Additional Birth Information</h3>
-          <div className="bg-card/50 p-4 rounded-lg border border-border/50 space-y-1">
+        <div className="space-y-2 sm:space-y-3">
+          <h3 className="text-base sm:text-lg font-semibold text-primary">Additional Birth Information</h3>
+          <div className="bg-card/50 p-3 sm:p-4 rounded-lg border border-border/50 space-y-1">
             <InfoRow label="APGAR 1 Min" value={client.apgar1Min} />
             <InfoRow label="APGAR 5 Min" value={client.apgar5Min} />
             <InfoRow label="Estimated Blood Loss (EBL)" value={client.estimatedBloodLoss} />
@@ -207,9 +207,9 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
       )}
 
       {/* Edit Button */}
-      <div className="pt-4 border-t border-border">
-        <Button onClick={onEdit} variant="outline" size="sm" className="w-full">
-          <Edit className="h-4 w-4 mr-2" />
+      <div className="pt-3 sm:pt-4 border-t border-border">
+        <Button onClick={onEdit} variant="outline" size="sm" className="w-full text-xs sm:text-sm">
+          <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Edit Report
         </Button>
       </div>

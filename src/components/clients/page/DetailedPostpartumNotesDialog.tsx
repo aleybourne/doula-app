@@ -149,35 +149,35 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
         {children}
       </DialogTrigger>
       
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-4 border-b space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-auto h-[90vh] max-h-[90vh] overflow-y-auto box-border">
+        <DialogHeader className="pb-3 sm:pb-4 border-b space-y-3 sm:space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-xl md:text-2xl font-bold text-primary flex items-center gap-2 md:gap-3">
-                <Baby className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
+              <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-primary flex items-center gap-2 break-words">
+                <Baby className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
                 <span className="truncate">
                   {viewMode === 'edit' ? 'Detailed Birth Notes' : 'Birth Report'}
                 </span>
               </DialogTitle>
             </div>
             
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button
                 variant={viewMode === 'edit' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('edit')}
-                className="gap-1 md:gap-2 text-xs md:text-sm"
+                className="gap-1 sm:gap-2 text-xs sm:text-sm flex-1 sm:flex-none"
               >
-                <Edit className="h-3 w-3 md:h-4 md:w-4" />
+                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                 Edit
               </Button>
               <Button
                 variant={viewMode === 'report' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('report')}
-                className="gap-1 md:gap-2 text-xs md:text-sm"
+                className="gap-1 sm:gap-2 text-xs sm:text-sm flex-1 sm:flex-none"
               >
-                <Eye className="h-3 w-3 md:h-4 md:w-4" />
+                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                 Report
               </Button>
             </div>
@@ -185,32 +185,32 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
         </DialogHeader>
 
         {viewMode === 'report' ? (
-          <div className="py-6">
+          <div className="py-3 sm:py-6 px-1">
             <BirthReportView 
               client={client} 
               onEdit={() => setViewMode('edit')} 
             />
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 py-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 md:space-y-8 py-3 sm:py-6">
           {/* Delivery Information Section */}
-          <div className="bg-card/30 rounded-xl border border-border/50 p-6 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-8 bg-primary rounded-full"></div>
+          <div className="bg-card/30 rounded-xl border border-border/50 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-1 h-6 sm:h-8 bg-primary rounded-full"></div>
               <div>
-                <h3 className="text-xl font-semibold text-primary">Delivery Information</h3>
-                <p className="text-sm text-muted-foreground">Basic delivery details and measurements</p>
+                <h3 className="text-lg sm:text-xl font-semibold text-primary">Delivery Information</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">Basic delivery details and measurements</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label htmlFor="deliveryDate" className="text-sm font-medium">Delivery Date & Time</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+              <div className="space-y-2 sm:space-y-3">
+                <Label htmlFor="deliveryDate" className="text-xs sm:text-sm font-medium">Delivery Date & Time</Label>
                 <Input
                   id="deliveryDate"
                   type="datetime-local"
                   {...register('deliveryDate')}
-                  className="h-11"
+                  className="h-10 sm:h-11 text-sm"
                 />
               </div>
               
@@ -451,35 +451,34 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between gap-4 pt-6 border-t">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end border-t border-border pt-4 sm:pt-6">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="px-8 h-11"
+              className="w-full sm:w-auto text-xs sm:text-sm h-10 sm:h-11"
             >
               Cancel
             </Button>
             
-            <div className="flex gap-3">
-              <Button
-                type="submit"
-                variant="outline"
-                className="px-6 h-11"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-              
-              <Button
-                type="button"
-                onClick={handleSubmit(handleSaveAndViewReport)}
-                className="px-6 h-11 bg-primary hover:bg-primary/90"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Save & View Report
-              </Button>
-            </div>
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full sm:w-auto gap-1 sm:gap-2 text-xs sm:text-sm h-10 sm:h-11"
+            >
+              <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+              Save
+            </Button>
+            
+            <Button
+              type="button"
+              onClick={handleSubmit(handleSaveAndViewReport)}
+              className="w-full sm:w-auto gap-1 sm:gap-2 text-xs sm:text-sm h-10 sm:h-11 bg-primary hover:bg-primary/90"
+            >
+              <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Save & View Report</span>
+              <span className="sm:hidden">Save & View</span>
+            </Button>
           </div>
         </form>
         )}
