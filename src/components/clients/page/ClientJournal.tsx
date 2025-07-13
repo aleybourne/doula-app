@@ -153,19 +153,9 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
           <>
             {/* Notes List View */}
             <DialogHeader className="px-4 py-3 border-b shrink-0">
-              <div className="flex items-center justify-between">
-                <DialogTitle className="text-lg font-semibold">
-                  Notes
-                </DialogTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <DialogTitle className="text-lg font-semibold">
+                Notes
+              </DialogTitle>
               
               {/* Mobile-First Folder Filter Buttons */}
               <div className="px-4 py-3 space-y-3">
