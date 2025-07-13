@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { Button } from "../../ui/button";
-import { ClientData, BirthStage, TriageNote } from "../types/ClientTypes";
+import { ClientData, BirthStage, TriageNote, JournalEntry } from "../types/ClientTypes";
 import { updateClient } from "../store/clientActions";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Activity, Baby } from "lucide-react";
 import DeliveryDetailsDialog from "./DeliveryDetailsDialog";
 import { TriageNoteButton } from "./TriageNoteButton";
 import { TriageNoteModal } from "./TriageNoteModal";
+import { formatTriageNoteForJournal, generateTriageNoteTitle } from "@/utils/triageUtils";
 
 interface ClientStageToggleProps {
   client: ClientData;
@@ -109,14 +110,29 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
       const existingTriageNotes = client.triageNotes || [];
       const updatedTriageNotes = [...existingTriageNotes, triageNote];
       
+      // Create journal entry from triage note
+      const existingJournalEntries = client.journalEntries || [];
+      const journalEntry: JournalEntry = {
+        id: `journal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: generateTriageNoteTitle(triageNote),
+        content: formatTriageNoteForJournal(triageNote),
+        timestamp: triageNote.timestamp,
+        isPinned: false,
+        category: 'labor-birth'
+      };
+      
+      // Add journal entry to the top of the timeline
+      const updatedJournalEntries = [journalEntry, ...existingJournalEntries];
+      
       await updateClient({
         ...client,
         triageNotes: updatedTriageNotes,
+        journalEntries: updatedJournalEntries,
       });
 
       toast({
         title: "Success",
-        description: "Triage note saved successfully.",
+        description: "Triage note and journal entry saved successfully.",
       });
     } catch (error) {
       console.error('Error saving triage note:', error);
