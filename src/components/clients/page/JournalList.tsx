@@ -1,5 +1,5 @@
 import React from "react";
-import { Pin, PinOff } from "lucide-react";
+import { Pin, PinOff, FolderOpen, Baby, Heart } from "lucide-react";
 import { JournalEntry } from "../types/ClientTypes";
 import { Button } from "../../ui/button";
 
@@ -53,9 +53,20 @@ const JournalList: React.FC<JournalListProps> = ({
     })
   };
 
+  const folders = [
+    { id: 'engagement', label: 'Engagement', icon: Heart, color: 'bg-[#E8D5F3]' },
+    { id: 'labor-birth', label: 'Labor & Birth', icon: Baby, color: 'bg-[#FFD6CC]' },
+    { id: 'postpartum', label: 'Postpartum', icon: FolderOpen, color: 'bg-[#D5F3E8]' }
+  ];
+
+  const getCategoryInfo = (category?: string) => {
+    return folders.find(f => f.id === category);
+  };
+
   const EntryItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
     const isSelected = selectedEntry?.id === entry.id;
     const preview = entry.content.substring(0, 100);
+    const categoryInfo = getCategoryInfo(entry.category);
     
     return (
       <div
@@ -65,8 +76,16 @@ const JournalList: React.FC<JournalListProps> = ({
         onClick={() => onSelectEntry(entry)}
       >
         <div className="flex items-start justify-between mb-1">
-          <h4 className="font-medium text-sm truncate flex-1">{entry.title}</h4>
-          <div className="flex items-center gap-1 ml-2">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <h4 className="font-medium text-sm truncate">{entry.title}</h4>
+            {categoryInfo && (
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${categoryInfo.color} shrink-0`}>
+                <categoryInfo.icon className="h-2.5 w-2.5" />
+                <span className="text-foreground/70">{categoryInfo.label}</span>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-1 ml-2 shrink-0">
             <Button
               variant="ghost"
               size="sm"

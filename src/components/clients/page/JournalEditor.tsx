@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Save, Trash2, X, Pin, PinOff } from "lucide-react";
+import { Save, Trash2, X, Pin, PinOff, FolderOpen, Baby, Heart } from "lucide-react";
 import { JournalEntry } from "../types/ClientTypes";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 
 interface JournalEditorProps {
   entry: JournalEntry;
@@ -23,21 +24,30 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
   const [title, setTitle] = useState(entry.title);
   const [content, setContent] = useState(entry.content);
   const [isPinned, setIsPinned] = useState(entry.isPinned);
+  const [category, setCategory] = useState(entry.category || '');
   const [hasChanges, setHasChanges] = useState(false);
+
+  const folders = [
+    { id: 'engagement', label: 'Engagement', icon: Heart },
+    { id: 'labor-birth', label: 'Labor & Birth', icon: Baby },
+    { id: 'postpartum', label: 'Postpartum', icon: FolderOpen }
+  ];
 
   useEffect(() => {
     setTitle(entry.title);
     setContent(entry.content);
     setIsPinned(entry.isPinned);
+    setCategory(entry.category || '');
     setHasChanges(false);
   }, [entry]);
 
   useEffect(() => {
     const hasChange = title !== entry.title || 
                      content !== entry.content || 
-                     isPinned !== entry.isPinned;
+                     isPinned !== entry.isPinned ||
+                     category !== (entry.category || '');
     setHasChanges(hasChange);
-  }, [title, content, isPinned, entry]);
+  }, [title, content, isPinned, category, entry]);
 
   const handleSave = () => {
     const updatedEntry: JournalEntry = {
@@ -45,6 +55,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
       title: title.trim() || "Untitled Note",
       content,
       isPinned,
+      category: category || undefined,
       timestamp: isCreating ? new Date().toISOString() : entry.timestamp
     };
     onSave(updatedEntry);
@@ -120,6 +131,29 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
           placeholder="Note title..."
           className="text-lg font-semibold border-none shadow-none px-0 focus-visible:ring-0"
         />
+
+        {/* Category Selector */}
+        <div className="mt-3">
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-48 h-8 text-xs">
+              <SelectValue placeholder="Select folder..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">No folder</SelectItem>
+              {folders.map((folder) => {
+                const Icon = folder.icon;
+                return (
+                  <SelectItem key={folder.id} value={folder.id}>
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-3 w-3" />
+                      {folder.label}
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Content */}
