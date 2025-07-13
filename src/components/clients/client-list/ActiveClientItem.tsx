@@ -19,7 +19,7 @@ const ActiveClientItem: React.FC<ActiveClientItemProps> = ({ client, onClick }) 
     postpartumProgress 
   } = calculateGestationAndTrimester(
     client.dueDateISO, 
-    client.status, 
+    client.birthStage, 
     client.deliveryDate
   );
   

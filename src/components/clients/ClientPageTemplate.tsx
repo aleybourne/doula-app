@@ -54,7 +54,7 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
     postpartumProgress 
   } = calculateGestationAndTrimester(
     clientInfo.dueDateISO, 
-    clientInfo.status, 
+    clientInfo.birthStage, 
     clientInfo.deliveryDate
   );
 

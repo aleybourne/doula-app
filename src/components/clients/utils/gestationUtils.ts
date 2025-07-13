@@ -5,7 +5,7 @@ import { ClientData } from "../types/ClientTypes";
 // Number of weeks for postpartum period
 export const POSTPARTUM_WEEKS = 8;
 
-export function calculateGestationAndTrimester(dueDateISO: string, clientStatus?: string, deliveryDate?: string): {
+export function calculateGestationAndTrimester(dueDateISO: string, birthStage?: string, deliveryDate?: string): {
   gestation: string;
   trimester: string | null;
   isPastDue: boolean;
@@ -16,7 +16,7 @@ export function calculateGestationAndTrimester(dueDateISO: string, clientStatus?
   const today = new Date();
   
   // Handle delivered clients
-  if (clientStatus === 'delivered' && deliveryDate) {
+  if (birthStage === 'delivered' && deliveryDate) {
     const delivery = parseISO(deliveryDate);
     const postpartumEnd = addWeeks(delivery, POSTPARTUM_WEEKS);
     
@@ -46,7 +46,7 @@ export function calculateGestationAndTrimester(dueDateISO: string, clientStatus?
   
   const isPastDue = daysUntilDue < 0;
   
-  if (isPastDue && clientStatus !== 'delivered') {
+  if (isPastDue && birthStage !== 'delivered') {
     const daysPastDue = Math.abs(daysUntilDue);
     const weeks = Math.floor(daysPastDue / 7);
     const days = daysPastDue % 7;

@@ -53,7 +53,7 @@ export const countUpcomingBirths = (clients: ClientData[]): number => {
     }
     
     // Calculate gestation
-    const { gestation } = calculateGestationAndTrimester(client.dueDateISO);
+    const { gestation } = calculateGestationAndTrimester(client.dueDateISO, client.birthStage);
     
     // Parse the gestation string (format: "XXw+Yd")
     const weeks = parseInt(gestation.split('w')[0], 10);
