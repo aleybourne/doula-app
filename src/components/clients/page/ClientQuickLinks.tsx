@@ -14,6 +14,7 @@ interface QuickLink {
 interface ClientQuickLinksProps {
   client?: ClientData;
   onJournalClick?: () => void;
+  onDocumentsClick?: () => void;
 }
 
 const quickLinks: QuickLink[] = [
@@ -47,10 +48,12 @@ const quickLinks: QuickLink[] = [
   },
 ];
 
-const ClientQuickLinks: React.FC<ClientQuickLinksProps> = ({ client, onJournalClick }) => {
+const ClientQuickLinks: React.FC<ClientQuickLinksProps> = ({ client, onJournalClick, onDocumentsClick }) => {
   const handleQuickLink = (to: string, label: string) => {
     if (label === "Journal" && onJournalClick) {
       onJournalClick();
+    } else if (label === "Documents" && onDocumentsClick) {
+      onDocumentsClick();
     } else {
       console.log(`Quick link clicked: ${label}`);
     }

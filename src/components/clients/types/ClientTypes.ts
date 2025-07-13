@@ -52,6 +52,20 @@ export interface ActiveLaborNote {
   additionalNotes: string;
 }
 
+export type DocumentFolder = 'client-forms' | 'contracts-agreements' | 'birth-planning' | 'postpartum-support' | 'educational-resources';
+
+export interface Document {
+  id: string;
+  name: string;
+  fileName: string; // Original filename
+  fileType: string; // PDF, DOC, JPG, PNG
+  fileSize: number;
+  uploadDate: string;
+  folder: DocumentFolder;
+  storagePath: string; // Firebase Storage path
+  downloadURL: string; // Firebase download URL
+}
+
 export interface ClientData {
   id: string;  // Unique identifier
   name: string;
@@ -105,6 +119,7 @@ export interface ClientData {
   journalEntries?: JournalEntry[]; // Journal entries for the client
   triageNotes?: TriageNote[]; // Triage notes for the client
   activeLaborNotes?: ActiveLaborNote[]; // Active labor notes for the client
+  documents?: Document[]; // Documents for the client
 }
 
 export type ClientChangeListener = () => void;

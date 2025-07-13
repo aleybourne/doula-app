@@ -94,3 +94,91 @@ export const validateImageFile = (file: File): string | null => {
   
   return null; // No validation errors
 };
+
+export interface DocumentUploadResult {
+  url: string;
+  path: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+}
+
+/**
+ * Upload a document file to Firebase Storage
+ */
+export const uploadClientDocument = async (
+  file: File, 
+  clientId: string, 
+  folder: string
+): Promise<DocumentUploadResult> => {
+  try {
+    // Generate a unique filename
+    const fileExtension = file.name.split('.').pop() || 'pdf';
+    const fileName = `${Date.now()}-${file.name}`;
+    const filePath = `documents/${clientId}/${folder}/${fileName}`;
+    
+    // Create a reference to the file location
+    const storageRef = ref(storage, filePath);
+    
+    console.log(`Uploading document to Firebase Storage: ${filePath}`);
+    
+    // Upload the file
+    const snapshot = await uploadBytes(storageRef, file);
+    
+    // Get the download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+    
+    console.log(`Successfully uploaded document. Download URL: ${downloadURL}`);
+    
+    return {
+      url: downloadURL,
+      path: filePath,
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type
+    };
+  } catch (error) {
+    console.error('Error uploading document to Firebase Storage:', error);
+    throw new Error(`Failed to upload document: ${error.message}`);
+  }
+};
+
+/**
+ * Delete a document from Firebase Storage
+ */
+export const deleteClientDocument = async (documentPath: string): Promise<void> => {
+  try {
+    const storageRef = ref(storage, documentPath);
+    await deleteObject(storageRef);
+    
+    console.log(`Successfully deleted document: ${documentPath}`);
+  } catch (error) {
+    console.error('Error deleting document from Firebase Storage:', error);
+    throw new Error(`Failed to delete document: ${error.message}`);
+  }
+};
+
+/**
+ * Validate document file before upload
+ */
+export const validateDocumentFile = (file: File): string | null => {
+  // Check file size (max 10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    return 'Document file size must be less than 10MB';
+  }
+  
+  // Check file type
+  const allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/jpg', 
+    'image/png'
+  ];
+  if (!allowedTypes.includes(file.type)) {
+    return 'Only PDF, DOC, DOCX, JPG, and PNG files are allowed';
+  }
+  
+  return null; // No validation errors
+};

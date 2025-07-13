@@ -13,6 +13,7 @@ import ClientAlertButton from "./page/ClientAlertButton";
 import ActiveLaborNotes from "./page/ActiveLaborNotes";
 import PostpartumNotes from "./page/PostpartumNotes";
 import ClientJournal from "./page/ClientJournal";
+import ClientDocuments from "./page/ClientDocuments";
 import { calculateGestationAndTrimester } from "./utils/gestationUtils";
 
 interface ClientInfo extends ClientData {
@@ -27,6 +28,7 @@ interface ClientPageTemplateProps {
 const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) => {
   const [expanded, setExpanded] = React.useState(false);
   const [isJournalOpen, setIsJournalOpen] = React.useState(false);
+  const [isDocumentsOpen, setIsDocumentsOpen] = React.useState(false);
   
   // Add safety check for clientInfo
   if (!clientInfo || !clientInfo.id) {
@@ -98,6 +100,7 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
       <ClientQuickLinks 
         client={clientInfo}
         onJournalClick={() => setIsJournalOpen(true)}
+        onDocumentsClick={() => setIsDocumentsOpen(true)}
       />
       
       <ClientProgressBar />
@@ -109,6 +112,13 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
         client={clientInfo}
         isOpen={isJournalOpen}
         onClose={() => setIsJournalOpen(false)}
+      />
+
+      {/* Documents Modal */}
+      <ClientDocuments 
+        client={clientInfo}
+        isOpen={isDocumentsOpen}
+        onClose={() => setIsDocumentsOpen(false)}
       />
     </div>
   );
