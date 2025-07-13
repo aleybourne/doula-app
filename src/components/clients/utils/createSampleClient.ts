@@ -2,6 +2,20 @@ import { saveClientToFirestore } from '../store/firebase/firebaseUtils';
 import { ClientData, Tag, BirthStage, ClientStatus } from '../types/ClientTypes';
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * CLIENT STATUS vs BIRTH STAGE CLARIFICATION:
+ * 
+ * status: "active" | "past" 
+ * - Controls whether client appears in your active client list
+ * - "active" = currently working with this client
+ * - "past" = no longer working with this client (archived)
+ * 
+ * birthStage: "pregnant" | "active-labor" | "delivered"
+ * - Tracks pregnancy/birth progress for active clients
+ * - Used for dashboard stats and client progress tracking
+ * - Independent of client management status
+ */
+
 export const createSampleClient = async (userId: string): Promise<ClientData> => {
   const clientId = `client-f33ee714-4e52-4683-a754-34fd1aa3f9de`;
   
@@ -121,8 +135,8 @@ export const createMultipleSampleClients = async (userId: string): Promise<Clien
       image: "",
       email: "emily.chen@email.com",
       phone: "(555) 345-6789", 
-      status: "past" as ClientStatus,
-      birthStage: "delivered" as BirthStage,
+      status: "active" as ClientStatus, // FIXED: Changed from "past" to "active" so all clients appear in active list
+      birthStage: "delivered" as BirthStage, // birthStage tracks pregnancy progress separately
       deliveryTime: "2024-02-08T14:30:00Z",
       deliveryWeight: "7 lbs 3 oz",
       deliveryLength: "19 inches",
