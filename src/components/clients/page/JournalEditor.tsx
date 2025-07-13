@@ -162,9 +162,9 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         />
       </div>
 
-      {/* Unsaved changes indicator - make it more visible */}
+      {/* Unsaved changes indicator - positioned higher */}
       {hasChanges && (
-        <div className="px-6 py-3 border-t bg-muted/30">
+        <div className="px-6 py-3 border-t bg-muted/30 mb-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">
               Unsaved changes
