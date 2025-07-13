@@ -107,31 +107,17 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* Report Header */}
-      <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Baby className="h-5 w-5 text-primary" />
-          </div>
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold text-foreground">Birth Report</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{client.name}</span>
-              {client.deliveryDate && (
-                <>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="text-sm text-muted-foreground">{formatDate(client.deliveryDate)}</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <Button onClick={onEdit} variant="outline" size="sm">
-          <Edit className="h-4 w-4 mr-2" />
-          Edit Details
-        </Button>
-      </div>
+      {/* Delivery Details Section */}
+      <ReportSection 
+        title="Delivery Details" 
+        icon={Clock}
+        hasContent={!!(client.deliveryDate || client.deliveryWeight || client.deliveryLength || client.deliveryHeadCircumference)}
+      >
+        <DataPoint label="Time" value={client.deliveryDate ? formatDate(client.deliveryDate) : undefined} />
+        <DataPoint label="Weight" value={client.deliveryWeight} />
+        <DataPoint label="Length" value={client.deliveryLength} />
+        <DataPoint label="Head Circumference" value={client.deliveryHeadCircumference} />
+      </ReportSection>
 
       {/* Birth Stats Section */}
       <ReportSection 
