@@ -164,12 +164,12 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
       )}
 
       {/* Content */}
-      <div className="flex-1 px-6 pb-6">
+      <div className="flex-1 px-6 pb-20 overflow-y-auto">
         <RichTextEditor
           value={content}
           onChange={setContent}
           placeholder="Start writing your note..."
-          className="w-full h-full"
+          className="w-full min-h-96"
         />
       </div>
 
