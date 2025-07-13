@@ -47,9 +47,31 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
   const [open, setOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'edit' | 'report'>('edit');
   
-  const form = useForm<FormData>({
-    resolver: zodResolver(activeLaborFormSchema),
-    defaultValues: {
+  // Check if there's recent triage data to pre-populate
+  const getDefaultValues = () => {
+    const recentTriageNote = client.triageNotes?.slice(-1)[0];
+    const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
+    const hasExistingActiveLaborNotes = client.activeLaborNotes && client.activeLaborNotes.length > 0;
+    
+    if (hasAdmittedTriage && !hasExistingActiveLaborNotes) {
+      // Pre-populate with triage data if no active labor notes exist yet
+      return {
+        admissionTime: recentTriageNote.visitTime || "",
+        hospitalLocation: recentTriageNote.location || "",
+        cervicalExam: recentTriageNote.cervicalExam || "",
+        contractionPattern: recentTriageNote.contractionsPattern || "",
+        clientEmotionalState: recentTriageNote.clientCoping || "",
+        painManagement: [],
+        painManagementOther: "",
+        clientMobility: "",
+        supportOffered: "",
+        staffInteractions: "",
+        laborProgress: "",
+        additionalNotes: recentTriageNote.additionalNotes || ""
+      };
+    }
+    
+    return {
       admissionTime: "",
       hospitalLocation: "",
       cervicalExam: "",
@@ -62,7 +84,12 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
       staffInteractions: "",
       laborProgress: "",
       additionalNotes: "",
-    }
+    };
+  };
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(activeLaborFormSchema),
+    defaultValues: getDefaultValues()
   });
 
   const painManagementValues = form.watch('painManagement') || [];
@@ -163,15 +190,32 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
       </DialogTrigger>
       
       <DialogContent className="w-full max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-auto h-[90vh] max-h-[90vh] overflow-y-auto box-border">
-        <DialogHeader className="pb-3 sm:pb-4 border-b space-y-3 sm:space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-primary flex items-center gap-2 break-words">
-                <Heart className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
-                <span className="truncate">
-                  {viewMode === 'edit' ? 'Active Labor Notes' : 'Active Labor Report'}
-                </span>
+          <DialogHeader className="pb-3 sm:pb-4 border-b space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-primary flex items-center gap-2 break-words">
+                  <Heart className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+                  <span className="truncate">
+                    {viewMode === 'edit' ? 'Active Labor Notes' : 'Active Labor Report'}
+                  </span>
               </DialogTitle>
+              {(() => {
+                const recentTriageNote = client.triageNotes?.slice(-1)[0];
+                const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
+                const isFirstActiveLaborNote = client.activeLaborNotes?.length === 0;
+                
+                if (hasAdmittedTriage && isFirstActiveLaborNote) {
+                  return (
+                    <div className="text-sm text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>Some fields have been pre-filled from the recent triage note</span>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
