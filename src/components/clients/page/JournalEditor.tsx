@@ -111,14 +111,6 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCancel}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         </div>
 
