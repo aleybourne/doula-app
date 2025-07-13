@@ -73,18 +73,30 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    console.log("🚀 === FORM SUBMISSION STARTED ===");
     setIsSubmitting(true);
     
     try {
+      console.log("📝 Step 1: Form validation passed");
+      console.log("📋 Form values:", values);
+      
+      console.log("🔐 Step 2: Getting current user ID...");
       const currentUserId = getCurrentUserId();
+      console.log("👤 Current user ID result:", currentUserId);
+      
       if (!currentUserId) {
+        console.error("❌ No user ID found - authentication failed");
         throw new Error("User not authenticated. Please log in again.");
       }
+      console.log("✅ User authenticated with ID:", currentUserId);
 
       const fullName = `${values.firstName} ${values.lastName}`;
       const clientId = `client-${uuidv4()}`;
       
-      console.log("Creating client with userId:", currentUserId);
+      console.log("🏗️ Step 3: Constructing client object...");
+      console.log("👤 User ID for client:", currentUserId);
+      console.log("👶 Client name:", fullName);
+      console.log("🆔 Generated client ID:", clientId);
       
       const newClient = {
         id: clientId,
@@ -108,28 +120,42 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
         userId: currentUserId, // Explicitly set the userId
       };
       
-      console.log("Adding new client with data:", newClient);
-      const savedClient = await addClient(newClient);
+      console.log("✅ Step 4: Client object constructed successfully");
+      console.log("📋 Complete client data:", JSON.stringify(newClient, null, 2));
       
+      console.log("💾 Step 5: Starting save process...");
+      const savedClient = await addClient(newClient);
+      console.log("✅ Step 5 complete: Client saved successfully");
+      console.log("🎉 Saved client result:", savedClient);
+      
+      console.log("📢 Step 6: Showing success message...");
       toast({
         title: "Success",
         description: `${fullName} has been added to your clients.`,
       });
       
       if (onSuccess) {
+        console.log("🔄 Step 7: Calling onSuccess callback...");
         onSuccess();
       }
       
+      console.log("🧭 Step 8: Navigating to client page...");
       // Navigate to the client page using the ID
       navigate(`/clients/id/${savedClient.id}`);
+      console.log("✅ === FORM SUBMISSION COMPLETED SUCCESSFULLY ===");
     } catch (error) {
-      console.error("Error adding client:", error);
+      console.error("❌ === FORM SUBMISSION FAILED ===");
+      console.error("❌ Error details:", error);
+      console.error("❌ Error message:", error.message);
+      console.error("❌ Error stack:", error.stack);
+      
       toast({
         title: "Error",
         description: error.message || "There was a problem adding the client. Please try again.",
         variant: "destructive",
       });
     } finally {
+      console.log("🏁 Step 9: Cleaning up (setting isSubmitting to false)");
       setIsSubmitting(false);
     }
   };

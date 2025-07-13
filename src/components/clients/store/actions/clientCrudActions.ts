@@ -6,10 +6,17 @@ import { saveClientToFirestore, deleteClientFromFirestore } from '../firebase/fi
 import { v4 as uuidv4 } from 'uuid';
 
 export const addClient = async (client: ClientData): Promise<ClientData> => {
+  console.log("🔥 === ADD CLIENT FUNCTION CALLED ===");
+  
+  console.log("🔐 Step 1: Getting current user ID...");
   const userId = getCurrentUserId();
+  console.log("👤 Current user ID result:", userId);
+  
   if (!userId) {
+    console.error("❌ Authentication check failed in addClient - no user ID");
     throw new Error("Cannot add client - user not authenticated");
   }
+  console.log("✅ Authentication check passed in addClient");
   
   console.log("=== ADDING CLIENT TO NEW FIRESTORE STRUCTURE ===");
   console.log("User ID:", userId);
@@ -38,9 +45,11 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   
   try {
     console.log("🔥 === STARTING CLIENT SAVE PROCESS ===");
+    console.log("⏰ Timestamp:", new Date().toISOString());
     
     // Add to Firestore first using new structure
     console.log("📤 Step 1: Saving to Firestore...");
+    console.log("📋 About to save client:", JSON.stringify(client, null, 2));
     await saveClientToFirestore(client);
     console.log("✅ Step 1 complete: Client saved to Firestore");
     

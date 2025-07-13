@@ -108,19 +108,29 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
 };
 
 export const saveClientToFirestore = async (client: ClientData): Promise<void> => {
+  console.log("🚀 === FIRESTORE SAVE FUNCTION CALLED ===");
+  console.log("⏰ Timestamp:", new Date().toISOString());
+  
   try {
+    console.log("🔍 Step 1: Validating client data...");
+    console.log("📋 Client object received:", JSON.stringify(client, null, 2));
+    
     if (!client.userId) {
+      console.error("❌ CRITICAL: Cannot save client without userId");
       throw new Error("Cannot save client without userId");
     }
+    console.log("✅ Client has valid userId:", client.userId);
     
-    console.log(`🚀 === SAVING CLIENT TO FIRESTORE ===`);
+    console.log("🚀 === STARTING FIRESTORE SAVE PROCESS ===");
     
     // First, verify authentication is ready
-    console.log("🔐 Verifying authentication before save...");
+    console.log("🔐 Step 2: Verifying authentication before save...");
     const authResult = await waitForAuthentication();
+    console.log("🔐 Authentication result:", authResult);
     
     if (!authResult.isAuthenticated) {
-      console.error("❌ Authentication not ready for Firestore operation");
+      console.error("❌ CRITICAL: Authentication not ready for Firestore operation");
+      console.error("❌ Auth error:", authResult.error);
       throw new Error(`Authentication failed: ${authResult.error}`);
     }
     
@@ -134,30 +144,42 @@ export const saveClientToFirestore = async (client: ClientData): Promise<void> =
     // Use the new nested collection structure: /clients/{userId}/clients/{clientId}
     const clientDocRef = doc(db, 'clients', client.userId, 'clients', client.id);
     
-    console.log("💾 Attempting to save to Firestore...");
+    console.log("💾 Step 3: Attempting to save to Firestore...");
+    console.log("📍 Document reference path:", `clients/${client.userId}/clients/${client.id}`);
     await setDoc(clientDocRef, client);
     
     console.log(`✅ SUCCESSFULLY SAVED CLIENT TO FIRESTORE`);
     console.log(`✅ Client ${client.name} saved at: clients/${client.userId}/clients/${client.id}`);
+    console.log("⏰ Save completed at:", new Date().toISOString());
     
     // Verify the save by reading it back
-    console.log("🔍 Verifying save by reading back...");
+    console.log("🔍 Step 4: Verifying save by reading back...");
     const savedDoc = await getDoc(clientDocRef);
     if (savedDoc.exists()) {
-      console.log("✅ Verification successful - document exists in Firestore");
-      console.log("📋 Saved data:", savedDoc.data());
+      console.log("✅ VERIFICATION SUCCESSFUL - document exists in Firestore");
+      console.log("📋 Saved data preview:", {
+        id: savedDoc.data().id,
+        name: savedDoc.data().name,
+        userId: savedDoc.data().userId
+      });
+      console.log("🎉 === FIRESTORE SAVE COMPLETELY SUCCESSFUL ===");
     } else {
-      console.error("❌ Verification failed - document does not exist after save!");
+      console.error("❌ CRITICAL: VERIFICATION FAILED - document does not exist after save!");
+      throw new Error("Save verification failed - document not found after save");
     }
     
   } catch (error) {
+    console.error("❌ === FIRESTORE SAVE FAILED ===");
     console.error("❌ ERROR SAVING CLIENT TO FIRESTORE:", error);
-    console.error("🔍 Error details:", {
+    console.error("🔍 Detailed error information:", {
       code: (error as any)?.code,
       message: (error as any)?.message,
+      stack: (error as any)?.stack,
       userId: client.userId,
       clientId: client.id,
-      path: `clients/${client.userId}/clients/${client.id}`
+      clientName: client.name,
+      path: `clients/${client.userId}/clients/${client.id}`,
+      timestamp: new Date().toISOString()
     });
     throw new Error(`Failed to save client: ${error.message}`);
   }
