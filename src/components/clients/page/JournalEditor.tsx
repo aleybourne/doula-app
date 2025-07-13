@@ -162,33 +162,26 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         />
       </div>
 
-      {/* Auto-save indicator */}
+      {/* Unsaved changes indicator - make it more visible */}
       {hasChanges && (
-        <div className="px-6 py-2 border-t bg-muted/20">
+        <div className="px-6 py-3 border-t bg-muted/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground">
               Unsaved changes
             </span>
-            <Button
-              onClick={handleSave}
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs"
-            >
-              Save now
-            </Button>
           </div>
         </div>
       )}
 
-      {/* Floating Save Button */}
+      {/* Floating Save Now Button */}
       <Button
         onClick={handleSave}
         disabled={!hasChanges && !isCreating}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-pink-500 hover:bg-pink-600 text-white border-0 z-50"
+        className="fixed bottom-6 right-6 h-12 px-6 rounded-full shadow-lg text-white border-0 z-50 font-medium hover:opacity-90 transition-opacity"
+        style={{ backgroundColor: '#F499B7' }}
         size="lg"
       >
-        <Save className="h-6 w-6" />
+        Save now
       </Button>
     </div>
   );
