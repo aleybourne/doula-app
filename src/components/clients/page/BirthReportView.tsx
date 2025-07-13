@@ -16,18 +16,22 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
   onEdit
 }) => {
   const hasAnyData = client.apgar1Min || client.apgar5Min || client.postpartumNotes || 
-                     client.feedingMethod || client.babyBehaviorObservations;
+                     client.feedingMethod || client.babyBehaviorObservations || client.deliveryWeight ||
+                     client.deliveryLength || client.deliveryHeadCircumference || client.estimatedBloodLoss ||
+                     client.umbilicalCordCondition || client.parentalDeliveryPosition || client.babyBirthPosition ||
+                     client.pericareNotes || client.immediatePostpartumCare || client.initialFeedingTime ||
+                     client.latchQuality || client.feedingNotes;
 
   if (!hasAnyData) {
     return (
-      <div className="text-center py-6 md:py-8 space-y-3 md:space-y-4 bg-gradient-to-br from-primary/5 to-secondary/10 rounded-xl border border-primary/20">
-        <FileText className="h-10 w-10 md:h-12 md:w-12 text-primary/60 mx-auto" />
+      <div className="text-center py-6 space-y-4 bg-gradient-to-br from-primary/5 to-secondary/10 rounded-xl border border-primary/20">
+        <FileText className="h-12 w-12 text-primary/60 mx-auto" />
         <div className="space-y-2 px-4">
-          <h3 className="text-base md:text-lg font-semibold text-primary">No Report Data</h3>
-          <p className="text-muted-foreground text-xs md:text-sm max-w-md mx-auto">Start by adding detailed notes to generate your comprehensive birth report.</p>
+          <h3 className="text-lg font-semibold text-primary">No Report Data</h3>
+          <p className="text-muted-foreground text-sm max-w-md mx-auto">Start by adding detailed notes to generate your comprehensive birth report.</p>
         </div>
-        <Button onClick={onEdit} size="sm" className="mt-3 md:mt-4 bg-primary hover:bg-primary/90">
-          <Edit className="h-3 w-3 md:h-4 md:w-4 mr-2" />
+        <Button onClick={onEdit} size="sm" className="mt-4 bg-primary hover:bg-primary/90">
+          <Edit className="h-4 w-4 mr-2" />
           Add Birth Notes
         </Button>
       </div>
@@ -43,31 +47,7 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     }
   };
 
-  const ReportSection = ({ 
-    title, 
-    icon: Icon, 
-    children, 
-    hasContent 
-  }: { 
-    title: string; 
-    icon: React.ElementType; 
-    children: React.ReactNode; 
-    hasContent: boolean;
-  }) => (
-    <div className={`bg-gradient-to-br from-card to-secondary/5 rounded-lg p-3 md:p-4 space-y-2 md:space-y-3 shadow-sm border border-primary/10 ${hasContent ? '' : 'opacity-60'}`}>
-      <div className="flex items-center gap-2 md:gap-3">
-        <div className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10">
-          <Icon className="h-4 w-4 md:h-5 md:w-5 text-primary" />
-        </div>
-        <h3 className="text-base md:text-lg font-semibold text-primary">{title}</h3>
-      </div>
-      <div className="space-y-2">
-        {children}
-      </div>
-    </div>
-  );
-
-  const DataPoint = ({ 
+  const StatBox = ({ 
     label, 
     value, 
     highlight = false 
@@ -79,16 +59,35 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     if (!value) return null;
     
     return (
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2 py-2 px-3 rounded-md bg-gradient-to-r from-background to-secondary/20 border border-primary/5">
-        <span className="font-medium text-muted-foreground text-xs md:text-sm">{label}</span>
-        <span className={`text-xs md:text-sm break-words ${highlight ? 'font-semibold text-primary bg-primary/10 px-2 py-1 rounded-full' : 'text-foreground'}`}>
+      <div className={`p-3 rounded-lg border text-center ${highlight ? 'bg-primary/10 border-primary/20' : 'bg-card border-border'}`}>
+        <div className="text-xs text-muted-foreground font-medium">{label}</div>
+        <div className={`text-lg font-bold mt-1 ${highlight ? 'text-primary' : 'text-foreground'}`}>
+          {value}
+        </div>
+      </div>
+    );
+  };
+
+  const InfoRow = ({ 
+    label, 
+    value 
+  }: { 
+    label: string; 
+    value?: string;
+  }) => {
+    if (!value) return null;
+    
+    return (
+      <div className="flex justify-between items-center py-2 border-b border-border/30 last:border-0">
+        <span className="text-sm text-muted-foreground font-medium">{label}</span>
+        <span className="text-sm font-semibold text-foreground text-right max-w-[60%] break-words">
           {value}
         </span>
       </div>
     );
   };
 
-  const NarrativeNote = ({ 
+  const NotesSection = ({ 
     title, 
     content 
   }: { 
@@ -98,102 +97,112 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     if (!content) return null;
     
     return (
-      <div className="p-3 rounded-md bg-gradient-to-br from-primary/5 to-secondary/10 border border-primary/10 space-y-1">
-        <h4 className="font-semibold text-primary text-xs md:text-sm border-l-2 border-primary pl-2">{title}</h4>
-        <p className="text-foreground text-xs md:text-sm leading-relaxed whitespace-pre-wrap pl-4">{content}</p>
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-primary border-l-3 border-primary pl-3">{title}</h4>
+        <div className="bg-muted/20 p-3 rounded-lg border border-border/50">
+          <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{content}</p>
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="space-y-2 p-3 max-h-screen overflow-y-auto">
-      {/* Key Stats Grid - Mobile First */}
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        {client.deliveryWeight && (
-          <div className="bg-card p-2 rounded border text-center">
-            <div className="text-xs text-muted-foreground">Weight</div>
-            <div className="text-sm font-semibold">{client.deliveryWeight}</div>
-          </div>
-        )}
-        {client.deliveryLength && (
-          <div className="bg-card p-2 rounded border text-center">
-            <div className="text-xs text-muted-foreground">Length</div>
-            <div className="text-sm font-semibold">{client.deliveryLength}</div>
-          </div>
-        )}
-        {client.apgar1Min && (
-          <div className="bg-primary/10 p-2 rounded border text-center">
-            <div className="text-xs text-muted-foreground">APGAR 1min</div>
-            <div className="text-sm font-semibold text-primary">{client.apgar1Min}</div>
-          </div>
-        )}
-        {client.apgar5Min && (
-          <div className="bg-primary/10 p-2 rounded border text-center">
-            <div className="text-xs text-muted-foreground">APGAR 5min</div>
-            <div className="text-sm font-semibold text-primary">{client.apgar5Min}</div>
-          </div>
-        )}
+    <div className="space-y-6 max-h-[80vh] overflow-y-auto">
+      {/* Header */}
+      <div className="text-center border-b border-border pb-4">
+        <h2 className="text-xl font-bold text-primary">DETAILED BIRTH NOTES</h2>
+        <p className="text-sm text-muted-foreground mt-1">{client.name}</p>
       </div>
 
-      {/* Time & Details */}
-      {client.deliveryDate && (
-        <div className="bg-card p-2 rounded border">
-          <div className="text-xs text-muted-foreground">Delivery Time</div>
-          <div className="text-sm font-medium">{formatDate(client.deliveryDate)}</div>
+      {/* Birth Stats - Key Metrics in Boxes */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-primary">Birth Stats</h3>
+        
+        {/* Primary Stats Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <StatBox label="Time" value={client.deliveryDate ? formatDate(client.deliveryDate) : undefined} />
+          <StatBox label="Weight" value={client.deliveryWeight} />
+          <StatBox label="Length" value={client.deliveryLength} />
+          <StatBox label="Head Circumference" value={client.deliveryHeadCircumference} />
+        </div>
+
+        {/* APGAR Scores - Highlighted */}
+        <div className="grid grid-cols-2 gap-3">
+          <StatBox label="APGAR 1 Min" value={client.apgar1Min} highlight />
+          <StatBox label="APGAR 5 Min" value={client.apgar5Min} highlight />
+        </div>
+      </div>
+
+      {/* Additional Birth Information */}
+      {(client.estimatedBloodLoss || client.umbilicalCordCondition || client.parentalDeliveryPosition || client.babyBirthPosition) && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-primary">Additional Birth Information</h3>
+          <div className="bg-card/50 p-4 rounded-lg border border-border/50 space-y-1">
+            <InfoRow label="Estimated Blood Loss (EBL)" value={client.estimatedBloodLoss} />
+            <InfoRow label="Umbilical Cord Condition" value={client.umbilicalCordCondition} />
+            <InfoRow label="Parental Delivery Position" value={client.parentalDeliveryPosition} />
+            <InfoRow label="Baby Birth Position" value={client.babyBirthPosition} />
+          </div>
         </div>
       )}
 
-      {/* Additional Stats in Compact Format */}
-      <div className="space-y-1">
-        {client.deliveryHeadCircumference && (
-          <div className="flex justify-between py-1 text-sm border-b border-border/50">
-            <span className="text-muted-foreground">Head Circumference</span>
-            <span className="font-medium">{client.deliveryHeadCircumference}</span>
-          </div>
-        )}
-        {client.estimatedBloodLoss && (
-          <div className="flex justify-between py-1 text-sm border-b border-border/50">
-            <span className="text-muted-foreground">Blood Loss</span>
-            <span className="font-medium">{client.estimatedBloodLoss}</span>
-          </div>
-        )}
-        {client.umbilicalCordCondition && (
-          <div className="flex justify-between py-1 text-sm border-b border-border/50">
-            <span className="text-muted-foreground">Umbilical Cord</span>
-            <span className="font-medium">{client.umbilicalCordCondition}</span>
-          </div>
-        )}
-        {client.feedingMethod && (
-          <div className="flex justify-between py-1 text-sm border-b border-border/50">
-            <span className="text-muted-foreground">Feeding</span>
-            <Badge variant="outline" className="text-xs h-5">{client.feedingMethod}</Badge>
-          </div>
-        )}
-      </div>
+      {/* Postpartum Notes */}
+      {client.postpartumNotes && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-primary">Postpartum Notes</h3>
+          <NotesSection title="General Recovery Notes" content={client.postpartumNotes} />
+        </div>
+      )}
 
-      {/* Compact Notes - Only if they exist */}
-      {(client.postpartumNotes || client.babyBehaviorObservations) && (
-        <div className="space-y-2 mt-3">
-          {client.postpartumNotes && (
-            <div className="bg-muted/30 p-2 rounded border">
-              <div className="text-xs font-medium text-muted-foreground mb-1">Recovery Notes</div>
-              <div className="text-xs leading-relaxed">{client.postpartumNotes}</div>
+      {/* Pericare + Physical Recovery */}
+      {client.pericareNotes && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-primary">Pericare + Physical Recovery Notes</h3>
+          <NotesSection title="Recovery Details" content={client.pericareNotes} />
+        </div>
+      )}
+
+      {/* Immediate Postpartum Care */}
+      {client.immediatePostpartumCare && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-primary">Immediate Postpartum Care & Recommendations</h3>
+          <NotesSection title="Care Provided" content={client.immediatePostpartumCare} />
+        </div>
+      )}
+
+      {/* Infant Care and Wellness */}
+      {(client.feedingMethod || client.initialFeedingTime || client.latchQuality || client.feedingNotes || client.babyBehaviorObservations) && (
+        <div className="space-y-3">
+          <h3 className="text-lg font-semibold text-primary">Infant Care and Wellness</h3>
+          
+          {/* Feeding Info */}
+          {(client.feedingMethod || client.initialFeedingTime || client.latchQuality) && (
+            <div className="bg-card/50 p-4 rounded-lg border border-border/50 space-y-1">
+              <InfoRow label="Feeding Method" value={client.feedingMethod ? client.feedingMethod.charAt(0).toUpperCase() + client.feedingMethod.slice(1) : undefined} />
+              <InfoRow label="Initial Feeding Time" value={client.initialFeedingTime} />
+              <InfoRow label="Latch Quality/Concerns" value={client.latchQuality} />
             </div>
           )}
+
+          {/* Feeding Notes */}
+          {client.feedingNotes && (
+            <NotesSection title="Feeding Notes" content={client.feedingNotes} />
+          )}
+
+          {/* Baby Behavior */}
           {client.babyBehaviorObservations && (
-            <div className="bg-muted/30 p-2 rounded border">
-              <div className="text-xs font-medium text-muted-foreground mb-1">Baby Observations</div>
-              <div className="text-xs leading-relaxed">{client.babyBehaviorObservations}</div>
-            </div>
+            <NotesSection title="Observed Baby Cues or Behaviors" content={client.babyBehaviorObservations} />
           )}
         </div>
       )}
 
       {/* Edit Button */}
-      <Button onClick={onEdit} variant="outline" size="sm" className="w-full mt-3">
-        <Edit className="h-3 w-3 mr-2" />
-        Edit Report
-      </Button>
+      <div className="pt-4 border-t border-border">
+        <Button onClick={onEdit} variant="outline" size="sm" className="w-full">
+          <Edit className="h-4 w-4 mr-2" />
+          Edit Report
+        </Button>
+      </div>
     </div>
   );
 };
