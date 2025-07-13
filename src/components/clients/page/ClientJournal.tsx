@@ -21,6 +21,8 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
   const [searchQuery, setSearchQuery] = useState("");
 
   const journalEntries = client.journalEntries || [];
+  
+  console.log("ClientJournal opened for:", client.name, "Journal entries:", journalEntries);
 
   const handleCreateEntry = () => {
     const newEntry: JournalEntry = {
