@@ -124,15 +124,31 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
       // Add journal entry to the top of the timeline
       const updatedJournalEntries = [journalEntry, ...existingJournalEntries];
       
-      await updateClient({
+      // Check if outcome is "admitted" and auto-transition to active labor
+      const shouldTransitionToActiveLabor = triageNote.outcome === 'admitted';
+      const currentTime = new Date().toISOString();
+      
+      const clientUpdates: Partial<ClientData> = {
         ...client,
         triageNotes: updatedTriageNotes,
         journalEntries: updatedJournalEntries,
-      });
+      };
+
+      // If admitted, transition to active labor
+      if (shouldTransitionToActiveLabor) {
+        clientUpdates.birthStage = 'active-labor';
+        if (!client.laborStartTime) {
+          clientUpdates.laborStartTime = currentTime;
+        }
+      }
+      
+      await updateClient(clientUpdates as ClientData);
 
       toast({
         title: "Success",
-        description: "Triage note and journal entry saved successfully.",
+        description: shouldTransitionToActiveLabor 
+          ? "Triage note saved and client moved to Active Labor stage."
+          : "Triage note and journal entry saved successfully.",
       });
     } catch (error) {
       console.error('Error saving triage note:', error);
