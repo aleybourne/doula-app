@@ -27,6 +27,10 @@ export const verifyAuthenticationState = async (): Promise<AuthVerificationResul
 
   const userId = auth.currentUser.uid;
   console.log(`👤 Found user: ${userId}`);
+  console.log("🎯 === USER ID DEBUG ===");
+  console.log("📧 User email:", auth.currentUser.email);
+  console.log("🆔 User UID:", userId);
+  console.log("🎯 === END USER ID DEBUG ===");
 
   try {
     // Force refresh to ensure token is valid and up-to-date

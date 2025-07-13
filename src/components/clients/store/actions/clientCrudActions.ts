@@ -47,11 +47,29 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
     console.log("🔥 === STARTING CLIENT SAVE PROCESS ===");
     console.log("⏰ Timestamp:", new Date().toISOString());
     
+    // PRE-SAVE DEBUG STATEMENT
+    console.log("🎯 === PRE-SAVE DEBUG: DOULA/USER ID VERIFICATION ===");
+    console.log("👤 DOULA/USER ID being used:", userId);
+    console.log("👤 Client name being saved:", client.name);
+    console.log("📁 Full Firebase path that will be used:", `clients/${userId}/clients/${client.id}`);
+    console.log("🔗 Client userId field:", client.userId);
+    console.log("🎯 === END PRE-SAVE DEBUG ===");
+    
     // Add to Firestore first using new structure
     console.log("📤 Step 1: Saving to Firestore...");
     console.log("📋 About to save client:", JSON.stringify(client, null, 2));
     await saveClientToFirestore(client);
     console.log("✅ Step 1 complete: Client saved to Firestore");
+    
+    // POST-SAVE DEBUG STATEMENT
+    console.log("🎉 === POST-SAVE DEBUG: SAVE CONFIRMATION ===");
+    console.log("✅ SAVE COMPLETED SUCCESSFULLY");
+    console.log("👤 DOULA/USER ID that was used:", userId);
+    console.log("🆔 Client ID that was saved:", client.id);
+    console.log("👤 Client name that was saved:", client.name);
+    console.log("⏰ Save completion timestamp:", new Date().toISOString());
+    console.log("📁 Exact Firebase path used:", `clients/${userId}/clients/${client.id}`);
+    console.log("🎉 === END POST-SAVE DEBUG ===");
     
     // Update local array
     console.log("📋 Step 2: Adding to local array...");

@@ -9,6 +9,15 @@ let firestoreUnsubscribe: (() => void) | null = null;
 export const getCurrentUserId = (): string | null => {
   const userId = auth.currentUser?.uid || null;
   console.log("Current user ID:", userId);
+  
+  // ADDITIONAL USER ID DEBUG LOGGING
+  console.log("🎯 === getCurrentUserId DEBUG ===");
+  console.log("🔍 auth.currentUser exists:", !!auth.currentUser);
+  console.log("📧 auth.currentUser.email:", auth.currentUser?.email || "NO EMAIL");
+  console.log("🆔 auth.currentUser.uid:", auth.currentUser?.uid || "NO UID");
+  console.log("👤 Final userId being returned:", userId);
+  console.log("🎯 === END getCurrentUserId DEBUG ===");
+  
   return userId;
 };
 
