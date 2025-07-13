@@ -13,6 +13,7 @@ import ClientJasmine from "./pages/clients/ClientJasmine";
 import ClientJane from "./pages/clients/ClientJane";
 import ClientAustin from "./pages/clients/ClientAustin";
 import NewClientPage from "@/components/clients/NewClientTemplate";
+import NewClient from "./pages/NewClient";
 import { BottomNav } from "@/components/dashboard/BottomNav";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import SplashScreen from "./pages/SplashScreen";
@@ -124,6 +125,11 @@ const AppRoutes = () => {
           <Route path="/clients/new" element={
             <RequireAuth>
               <NewClientFormPage />
+            </RequireAuth>
+          } />
+          <Route path="/clients/new-page" element={
+            <RequireAuth>
+              <NewClient />
             </RequireAuth>
           } />
           

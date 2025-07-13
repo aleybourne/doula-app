@@ -18,7 +18,7 @@ const EmptyClientsList: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Link to="/clients/new">
+          <Link to="/clients/new-page">
             <Button className="w-full" size="lg">
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Client

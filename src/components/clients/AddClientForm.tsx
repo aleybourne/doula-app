@@ -158,9 +158,20 @@ export const AddClientForm = ({ onSuccess }: AddClientFormProps) => {
         </div>
 
         <div className="flex justify-end gap-3">
-          <DialogClose asChild>
-            <Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button>
-          </DialogClose>
+          {onSuccess ? (
+            <DialogClose asChild>
+              <Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button>
+            </DialogClose>
+          ) : (
+            <Button 
+              type="button" 
+              variant="outline" 
+              disabled={isSubmitting}
+              onClick={() => navigate('/clients')}
+            >
+              Cancel
+            </Button>
+          )}
           <Button 
             type="submit" 
             className="bg-[#F499B7] hover:bg-[#F499B7]/90"

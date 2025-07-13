@@ -149,7 +149,13 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName, mod
   
   // Handle new client mode
   if (mode === 'new') {
-    return <CreateFirstClient />;
+    // Redirect to the standalone new client page
+    window.location.href = '/clients/new-page';
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh]">
+        <p className="text-gray-500">Redirecting to client creation form...</p>
+      </div>
+    );
   }
 
   // Add error boundary logic
