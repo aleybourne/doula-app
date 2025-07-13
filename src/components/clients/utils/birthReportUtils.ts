@@ -46,85 +46,85 @@ export const hasAnyBirthData = (client: ClientData): boolean => {
   );
 };
 
-// Format birth report for journal entry
+// Format birth report for journal entry (as HTML)
 export const formatBirthReportForJournal = (client: ClientData): string => {
-  let content = `# Birth Report for ${client.name}\n\n`;
+  let content = `<h1>Birth Report for ${client.name}</h1>`;
   
   // Birth Stats Section
   const hasBirthStats = client.deliveryDate || client.deliveryWeight || client.deliveryLength || client.deliveryHeadCircumference;
   if (hasBirthStats) {
-    content += `## Birth Stats\n\n`;
+    content += `<h2>Birth Stats</h2>`;
     if (client.deliveryDate) {
-      content += `**Delivery Date & Time:** ${formatDate(client.deliveryDate)} at ${formatTime(client.deliveryDate)}\n\n`;
+      content += `<p><strong>Delivery Date & Time:</strong> ${formatDate(client.deliveryDate)} at ${formatTime(client.deliveryDate)}</p>`;
     }
     if (client.deliveryWeight) {
-      content += `**Weight:** ${client.deliveryWeight}\n\n`;
+      content += `<p><strong>Weight:</strong> ${client.deliveryWeight}</p>`;
     }
     if (client.deliveryLength) {
-      content += `**Length:** ${client.deliveryLength}\n\n`;
+      content += `<p><strong>Length:</strong> ${client.deliveryLength}</p>`;
     }
     if (client.deliveryHeadCircumference) {
-      content += `**Head Circumference:** ${client.deliveryHeadCircumference}\n\n`;
+      content += `<p><strong>Head Circumference:</strong> ${client.deliveryHeadCircumference}</p>`;
     }
   }
 
   // Additional Birth Information
   const hasAdditionalInfo = client.apgar1Min || client.apgar5Min || client.estimatedBloodLoss || client.umbilicalCordCondition || client.parentalDeliveryPosition || client.babyBirthPosition;
   if (hasAdditionalInfo) {
-    content += `## Additional Birth Information\n\n`;
+    content += `<h2>Additional Birth Information</h2>`;
     if (client.apgar1Min) {
-      content += `**APGAR 1 Min:** ${client.apgar1Min}\n\n`;
+      content += `<p><strong>APGAR 1 Min:</strong> ${client.apgar1Min}</p>`;
     }
     if (client.apgar5Min) {
-      content += `**APGAR 5 Min:** ${client.apgar5Min}\n\n`;
+      content += `<p><strong>APGAR 5 Min:</strong> ${client.apgar5Min}</p>`;
     }
     if (client.estimatedBloodLoss) {
-      content += `**Estimated Blood Loss:** ${client.estimatedBloodLoss}\n\n`;
+      content += `<p><strong>Estimated Blood Loss:</strong> ${client.estimatedBloodLoss}</p>`;
     }
     if (client.umbilicalCordCondition) {
-      content += `**Umbilical Cord Condition:** ${client.umbilicalCordCondition}\n\n`;
+      content += `<p><strong>Umbilical Cord Condition:</strong> ${client.umbilicalCordCondition}</p>`;
     }
     if (client.parentalDeliveryPosition) {
-      content += `**Parental Delivery Position:** ${client.parentalDeliveryPosition}\n\n`;
+      content += `<p><strong>Parental Delivery Position:</strong> ${client.parentalDeliveryPosition}</p>`;
     }
     if (client.babyBirthPosition) {
-      content += `**Baby Birth Position:** ${client.babyBirthPosition}\n\n`;
+      content += `<p><strong>Baby Birth Position:</strong> ${client.babyBirthPosition}</p>`;
     }
   }
 
   // Postpartum Notes
   if (client.postpartumNotes) {
-    content += `## Postpartum Notes\n\n${client.postpartumNotes}\n\n`;
+    content += `<h2>Postpartum Notes</h2><p>${client.postpartumNotes}</p>`;
   }
 
   // Pericare Notes
   if (client.pericareNotes) {
-    content += `## Pericare + Physical Recovery Notes\n\n${client.pericareNotes}\n\n`;
+    content += `<h2>Pericare + Physical Recovery Notes</h2><p>${client.pericareNotes}</p>`;
   }
 
   // Immediate Postpartum Care
   if (client.immediatePostpartumCare) {
-    content += `## Immediate Postpartum Care & Recommendations\n\n${client.immediatePostpartumCare}\n\n`;
+    content += `<h2>Immediate Postpartum Care & Recommendations</h2><p>${client.immediatePostpartumCare}</p>`;
   }
 
   // Infant Care and Wellness
   const hasInfantCare = client.feedingMethod || client.initialFeedingTime || client.latchQuality || client.feedingNotes || client.babyBehaviorObservations;
   if (hasInfantCare) {
-    content += `## Infant Care and Wellness\n\n`;
+    content += `<h2>Infant Care and Wellness</h2>`;
     if (client.feedingMethod) {
-      content += `**Feeding Method:** ${client.feedingMethod.charAt(0).toUpperCase() + client.feedingMethod.slice(1)}\n\n`;
+      content += `<p><strong>Feeding Method:</strong> ${client.feedingMethod.charAt(0).toUpperCase() + client.feedingMethod.slice(1)}</p>`;
     }
     if (client.initialFeedingTime) {
-      content += `**Initial Feeding Time:** ${client.initialFeedingTime}\n\n`;
+      content += `<p><strong>Initial Feeding Time:</strong> ${client.initialFeedingTime}</p>`;
     }
     if (client.latchQuality) {
-      content += `**Latch Quality:** ${client.latchQuality}\n\n`;
+      content += `<p><strong>Latch Quality:</strong> ${client.latchQuality}</p>`;
     }
     if (client.feedingNotes) {
-      content += `**Feeding Notes:** ${client.feedingNotes}\n\n`;
+      content += `<p><strong>Feeding Notes:</strong> ${client.feedingNotes}</p>`;
     }
     if (client.babyBehaviorObservations) {
-      content += `**Baby Behavior Observations:** ${client.babyBehaviorObservations}\n\n`;
+      content += `<p><strong>Baby Behavior Observations:</strong> ${client.babyBehaviorObservations}</p>`;
     }
   }
 

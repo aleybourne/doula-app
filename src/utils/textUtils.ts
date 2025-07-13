@@ -1,14 +1,27 @@
 /**
- * Utility function to strip HTML tags from text and convert to plain text
- * @param html - HTML string to clean
+ * Utility function to strip HTML tags and markdown from text and convert to plain text
+ * @param content - HTML or markdown string to clean
  * @returns Plain text string
  */
-export const stripHtmlTags = (html: string): string => {
-  if (!html) return '';
+export const stripHtmlTags = (content: string): string => {
+  if (!content) return '';
   
-  // Create a temporary div element to parse HTML
+  // First, strip markdown formatting
+  let cleanText = content
+    // Remove markdown headers
+    .replace(/^#{1,6}\s+/gm, '')
+    // Remove markdown bold/italic
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    // Remove markdown links
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Remove markdown code blocks
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1');
+  
+  // Then, create a temporary div element to parse any remaining HTML
   const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html;
+  tempDiv.innerHTML = cleanText;
   
   // Get text content and clean it up
   const textContent = tempDiv.textContent || tempDiv.innerText || '';

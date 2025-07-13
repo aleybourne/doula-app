@@ -148,7 +148,7 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto h-[90vh] max-h-[90vh] p-0 gap-0 top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]">
+      <DialogContent className="w-[95vw] max-w-md mx-auto h-[90vh] max-h-[90vh] p-0 gap-0">
         {view === 'list' ? (
           <>
             {/* Notes List View */}
