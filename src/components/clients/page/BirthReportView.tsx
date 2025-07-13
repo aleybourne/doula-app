@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import { Separator } from "../../ui/separator";
-import { Baby, Clock, Heart, Droplets, Edit, FileText, Calendar, User } from "lucide-react";
+import { Baby, Clock, Heart, Droplets, Edit, FileText, Calendar, User, Download, Loader2 } from "lucide-react";
 import { ClientData } from "../types/ClientTypes";
 import { format } from "date-fns";
+import { generateBirthReportPDF } from "../utils/pdfGenerator";
+import { uploadClientDocument } from "../utils/firebaseStorage";
+import { updateClient } from "../store/clientActions";
+import { useToast } from "../../ui/use-toast";
 
 interface BirthReportViewProps {
   client: ClientData;
@@ -15,6 +19,8 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
   client,
   onEdit
 }) => {
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { toast } = useToast();
   const hasAnyData = client.apgar1Min || client.apgar5Min || client.postpartumNotes || 
                      client.feedingMethod || client.babyBehaviorObservations || client.deliveryWeight ||
                      client.deliveryLength || client.deliveryHeadCircumference || client.estimatedBloodLoss ||
@@ -115,6 +121,59 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     );
   };
 
+  const handleSaveAsPDF = async () => {
+    try {
+      setIsGeneratingPDF(true);
+      
+      // Generate PDF
+      const pdfBlob = generateBirthReportPDF(client);
+      
+      // Create file object
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const fileName = `birth-report-${timestamp}.pdf`;
+      const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      
+      // Upload to Firebase Storage
+      const uploadResult = await uploadClientDocument(file, client.id, "client-forms");
+      
+      // Create document metadata
+      const newDocument = {
+        id: crypto.randomUUID(),
+        name: "Birth Report",
+        fileName: uploadResult.fileName,
+        fileType: uploadResult.fileType,
+        fileSize: uploadResult.fileSize,
+        folder: "client-forms" as const,
+        uploadDate: new Date().toISOString(),
+        downloadURL: uploadResult.url,
+        storagePath: uploadResult.path
+      };
+      
+      // Update client with new document
+      const updatedClient = {
+        ...client,
+        documents: [...(client.documents || []), newDocument]
+      };
+      
+      await updateClient(updatedClient);
+      
+      toast({
+        title: "Success",
+        description: "Birth report saved as PDF to documents"
+      });
+      
+    } catch (error) {
+      console.error('Error saving PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save PDF to documents",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   return (
     <div className="space-y-4 sm:space-y-6 max-h-[80vh] overflow-y-auto px-1">
       {/* Header */}
@@ -206,8 +265,23 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
         </div>
       )}
 
-      {/* Edit Button */}
-      <div className="pt-3 sm:pt-4 border-t border-border">
+      {/* Action Buttons */}
+      <div className="pt-3 sm:pt-4 border-t border-border space-y-2">
+        <Button 
+          onClick={handleSaveAsPDF} 
+          variant="default" 
+          size="sm" 
+          className="w-full text-xs sm:text-sm"
+          disabled={isGeneratingPDF}
+        >
+          {isGeneratingPDF ? (
+            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
+          ) : (
+            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          )}
+          {isGeneratingPDF ? "Saving PDF..." : "Save as PDF to Documents"}
+        </Button>
+        
         <Button onClick={onEdit} variant="outline" size="sm" className="w-full text-xs sm:text-sm">
           <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Edit Report
