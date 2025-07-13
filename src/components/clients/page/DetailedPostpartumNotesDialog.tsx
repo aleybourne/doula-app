@@ -141,7 +141,6 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
                   {viewMode === 'edit' ? 'Detailed Birth Notes' : 'Birth Report'}
                 </span>
               </DialogTitle>
-              <p className="text-muted-foreground text-sm mt-1 truncate">{client.name}</p>
             </div>
             
             <div className="flex gap-2 flex-shrink-0">
