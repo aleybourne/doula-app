@@ -94,10 +94,21 @@ const ClientDocuments: React.FC<ClientDocumentsProps> = ({
 
         <div className="flex-1 overflow-y-auto min-h-0">
           {currentView === 'folders' ? (
-            <DocumentFolders
-              client={client}
-              onFolderSelect={handleFolderSelect}
-            />
+            <div>
+              <div className="p-4 border-b">
+                <Button 
+                  onClick={handleToggleGroupedView}
+                  variant="outline"
+                  className="w-full"
+                >
+                  📂 View All Documents
+                </Button>
+              </div>
+              <DocumentFolders
+                client={client}
+                onFolderSelect={handleFolderSelect}
+              />
+            </div>
           ) : currentView === 'grouped' ? (
             <DocumentGroupedView
               client={client}
