@@ -102,15 +102,6 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSave}
-              size="sm"
-              className="h-8"
-              disabled={!hasChanges && !isCreating}
-            >
-              <Save className="h-4 w-4 mr-1" />
-              Save
-            </Button>
             {!isCreating && (
               <Button
                 variant="ghost"
@@ -189,6 +180,16 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
           </div>
         </div>
       )}
+
+      {/* Floating Save Button */}
+      <Button
+        onClick={handleSave}
+        disabled={!hasChanges && !isCreating}
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-pink-500 hover:bg-pink-600 text-white border-0 z-50"
+        size="lg"
+      >
+        <Save className="h-6 w-6" />
+      </Button>
     </div>
   );
 };
