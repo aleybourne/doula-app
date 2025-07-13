@@ -262,6 +262,54 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
           </div>
         ) : (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 md:space-y-8 py-3 sm:py-6">
+          {/* Triage Summary Section (if applicable) */}
+          {(() => {
+            const recentTriageNote = client.triageNotes?.slice(-1)[0];
+            const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
+            const isFirstActiveLaborNote = client.activeLaborNotes?.length === 0;
+            
+            if (hasAdmittedTriage && isFirstActiveLaborNote) {
+              return (
+                <div className="bg-muted/30 rounded-xl border border-muted-foreground/20 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-1 h-6 sm:h-8 bg-muted-foreground rounded-full"></div>
+                    <div>
+                      <h3 className="text-lg sm:text-xl font-medium text-muted-foreground">Triage Summary</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground/70">Information auto-filled from recent triage note</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 bg-background/50 rounded-lg p-3 sm:p-4 border border-muted-foreground/10">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">Triage Admission Time</Label>
+                      <p className="text-sm text-foreground">{recentTriageNote.visitTime || 'Not specified'}</p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">Triage Location</Label>
+                      <p className="text-sm text-foreground">{recentTriageNote.location || 'Not specified'}</p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">Cervical Exam</Label>
+                      <p className="text-sm text-foreground">{recentTriageNote.cervicalExam || 'Not specified'}</p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">Contraction Pattern</Label>
+                      <p className="text-sm text-foreground">{recentTriageNote.contractionsPattern || 'Not specified'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-muted-foreground/70 italic text-center bg-muted/20 rounded-lg p-2 border border-muted-foreground/10">
+                    📋 The fields below have been pre-filled with this triage information for your reference
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+          
           {/* Admission Information Section */}
           <div className="bg-card/30 rounded-xl border border-border/50 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">
