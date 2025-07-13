@@ -1,0 +1,165 @@
+import React, { useState, useEffect } from "react";
+import { Save, Trash2, X, Pin, PinOff } from "lucide-react";
+import { JournalEntry } from "../types/ClientTypes";
+import { Button } from "../../ui/button";
+import { Input } from "../../ui/input";
+import { Textarea } from "../../ui/textarea";
+
+interface JournalEditorProps {
+  entry: JournalEntry;
+  onSave: (entry: JournalEntry) => void;
+  onDelete: (entryId: string) => void;
+  onCancel: () => void;
+  isCreating: boolean;
+}
+
+const JournalEditor: React.FC<JournalEditorProps> = ({ 
+  entry, 
+  onSave, 
+  onDelete, 
+  onCancel, 
+  isCreating 
+}) => {
+  const [title, setTitle] = useState(entry.title);
+  const [content, setContent] = useState(entry.content);
+  const [isPinned, setIsPinned] = useState(entry.isPinned);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setTitle(entry.title);
+    setContent(entry.content);
+    setIsPinned(entry.isPinned);
+    setHasChanges(false);
+  }, [entry]);
+
+  useEffect(() => {
+    const hasChange = title !== entry.title || 
+                     content !== entry.content || 
+                     isPinned !== entry.isPinned;
+    setHasChanges(hasChange);
+  }, [title, content, isPinned, entry]);
+
+  const handleSave = () => {
+    const updatedEntry: JournalEntry = {
+      ...entry,
+      title: title.trim() || "Untitled Note",
+      content,
+      isPinned,
+      timestamp: isCreating ? new Date().toISOString() : entry.timestamp
+    };
+    onSave(updatedEntry);
+    setHasChanges(false);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this note?")) {
+      onDelete(entry.id);
+    }
+  };
+
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString([], { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="px-6 py-4 border-b">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsPinned(!isPinned)}
+              className="h-8 w-8 p-0"
+            >
+              {isPinned ? (
+                <Pin className="h-4 w-4 text-orange-500" />
+              ) : (
+                <PinOff className="h-4 w-4 text-muted-foreground" />
+              )}
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {isCreating ? "New note" : formatDate(entry.timestamp)}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {hasChanges && (
+              <Button
+                onClick={handleSave}
+                size="sm"
+                className="h-8"
+              >
+                <Save className="h-4 w-4 mr-1" />
+                Save
+              </Button>
+            )}
+            {!isCreating && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Note title..."
+          className="text-lg font-semibold border-none shadow-none px-0 focus-visible:ring-0"
+        />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 p-6">
+        <Textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Start writing your note..."
+          className="w-full h-full min-h-[400px] border-none shadow-none resize-none focus-visible:ring-0 text-base leading-relaxed"
+        />
+      </div>
+
+      {/* Auto-save indicator */}
+      {hasChanges && (
+        <div className="px-6 py-2 border-t bg-muted/20">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">
+              Unsaved changes
+            </span>
+            <Button
+              onClick={handleSave}
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs"
+            >
+              Save now
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default JournalEditor;

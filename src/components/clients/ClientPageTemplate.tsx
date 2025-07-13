@@ -12,6 +12,7 @@ import ClientBirthPlans from "./page/ClientBirthPlans";
 import ClientAlertButton from "./page/ClientAlertButton";
 import ActiveLaborNotes from "./page/ActiveLaborNotes";
 import PostpartumNotes from "./page/PostpartumNotes";
+import ClientJournal from "./page/ClientJournal";
 import { calculateGestationAndTrimester } from "./utils/gestationUtils";
 
 interface ClientInfo extends ClientData {
@@ -25,6 +26,7 @@ interface ClientPageTemplateProps {
 
 const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) => {
   const [expanded, setExpanded] = React.useState(false);
+  const [isJournalOpen, setIsJournalOpen] = React.useState(false);
   
   // Add safety check for clientInfo
   if (!clientInfo || !clientInfo.id) {
@@ -88,7 +90,10 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
       />
 
       <ClientMeeting />
-      <ClientQuickLinks />
+      <ClientQuickLinks 
+        client={clientInfo}
+        onJournalClick={() => setIsJournalOpen(true)}
+      />
       
       {/* Stage-specific content */}
       {(clientInfo.birthStage === 'active-labor') && (
@@ -98,6 +103,13 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
       <ClientProgressBar />
       <ClientBirthPlans />
       <ClientAlertButton />
+
+      {/* Journal Modal */}
+      <ClientJournal 
+        client={clientInfo}
+        isOpen={isJournalOpen}
+        onClose={() => setIsJournalOpen(false)}
+      />
     </div>
   );
 };

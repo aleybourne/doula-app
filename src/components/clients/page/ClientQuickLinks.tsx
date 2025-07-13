@@ -1,6 +1,7 @@
 
 import React from "react";
 import { FileText, Receipt, BookOpen, Book } from "lucide-react";
+import { ClientData } from "../types/ClientTypes";
 
 interface QuickLink {
   label: string;
@@ -8,6 +9,11 @@ interface QuickLink {
   bg: string;
   aria: string;
   to: string;
+}
+
+interface ClientQuickLinksProps {
+  client?: ClientData;
+  onJournalClick?: () => void;
 }
 
 const quickLinks: QuickLink[] = [
@@ -41,9 +47,13 @@ const quickLinks: QuickLink[] = [
   },
 ];
 
-const ClientQuickLinks: React.FC = () => {
+const ClientQuickLinks: React.FC<ClientQuickLinksProps> = ({ client, onJournalClick }) => {
   const handleQuickLink = (to: string, label: string) => {
-    console.log(`Quick link clicked: ${label}`);
+    if (label === "Journal" && onJournalClick) {
+      onJournalClick();
+    } else {
+      console.log(`Quick link clicked: ${label}`);
+    }
   };
 
   return (

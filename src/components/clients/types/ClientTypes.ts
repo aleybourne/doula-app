@@ -13,6 +13,15 @@ export interface Tag {
   checked: boolean;
 }
 
+export interface JournalEntry {
+  id: string;
+  title: string;
+  content: string;
+  timestamp: string;
+  isPinned: boolean;
+  category?: string;
+}
+
 export interface ClientData {
   id: string;  // Unique identifier
   name: string;
@@ -63,6 +72,7 @@ export interface ClientData {
   referralSource?: string;
   notes?: string;
   tags?: Tag[]; // Add tags field to store client-specific tags
+  journalEntries?: JournalEntry[]; // Journal entries for the client
 }
 
 export type ClientChangeListener = () => void;
