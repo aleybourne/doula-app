@@ -18,7 +18,7 @@ interface NewClientPageProps {
 
 const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName, mode }) => {
   const navigate = useNavigate();
-  const { clients } = useClientStore();
+  const { clients, isLoading: storeLoading } = useClientStore();
   const currentUserId = getCurrentUserId();
   const [isLoading, setIsLoading] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
@@ -113,6 +113,13 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName, mod
       return;
     }
     
+    // If no clients exist at all and store finished loading, redirect to create new client
+    if (clients.length === 0 && !mode && !storeLoading) {
+      console.log("🔀 No clients exist, redirecting to create new client");
+      navigate('/clients/new', { replace: true });
+      return;
+    }
+    
     // If we have clients loaded but no match found, show error
     if (clients.length > 0 && !clientData && !mode) {
       if (retryCount >= 2) {
@@ -138,7 +145,7 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName, mod
     }
     setIsLoading(true);
     setNotFoundError(false);
-  }, [clientId, clientName, currentUserId, clients, clientData, retryCount, navigate, mode]);
+  }, [clientId, clientName, currentUserId, clients, clientData, retryCount, navigate, mode, storeLoading]);
   
   // Handle new client mode
   if (mode === 'new') {
