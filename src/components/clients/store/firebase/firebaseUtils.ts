@@ -18,37 +18,73 @@ export const testFirebaseConnection = async (): Promise<boolean> => {
 
 export const loadClientsFromFirestore = async (userId: string): Promise<ClientData[]> => {
   try {
-    console.log(`=== loadClientsFromFirestore: START ===`);
-    console.log(`Loading clients from Firestore for user: ${userId}`);
-    console.log(`Using new collection path: clients/${userId}/clients`);
+    console.log(`🔍 === LOADING CLIENTS FROM FIRESTORE ===`);
+    console.log(`👤 User ID: ${userId}`);
+    console.log(`📁 Path: clients/${userId}/clients`);
+    
+    // Test Firebase connection first
+    const connectionOk = await testFirebaseConnection();
+    if (!connectionOk) {
+      console.error("❌ Firebase connection failed - cannot load clients");
+      return [];
+    }
     
     // Use the new nested collection structure: /clients/{userId}/clients
     const clientsRef = collection(db, 'clients', userId, 'clients');
     const querySnapshot = await getDocs(clientsRef);
     
-    console.log(`Query snapshot size: ${querySnapshot.size}`);
-    console.log(`Query snapshot empty: ${querySnapshot.empty}`);
+    console.log(`📊 Query Results:`);
+    console.log(`   - Documents found: ${querySnapshot.size}`);
+    console.log(`   - Collection empty: ${querySnapshot.empty}`);
     
     if (!querySnapshot.empty) {
       const firestoreClients = querySnapshot.docs.map(doc => {
         const data = doc.data() as ClientData;
-        console.log(`Loaded client from Firestore: ${data.name}, createdAt: ${data.createdAt}, ID: ${doc.id}`);
+        console.log(`✅ Client found: "${data.name}" (ID: ${doc.id})`);
+        console.log(`   - Created: ${data.createdAt}`);
+        console.log(`   - Birth Stage: ${data.birthStage || 'NOT SET'}`);
+        
         return {
           ...data,
-          id: doc.id, // Ensure we use the document ID
-          userId: userId // Ensure userId is set
+          id: doc.id,
+          userId: userId,
+          // Ensure birthStage field exists with default value
+          birthStage: data.birthStage || 'pregnant'
         };
       });
-      console.log(`=== loadClientsFromFirestore: SUCCESS ===`);
-      console.log(`Found ${firestoreClients.length} clients in Firestore for user ${userId}`);
+      
+      console.log(`🎉 Successfully loaded ${firestoreClients.length} clients`);
+      
+      // Log specific client we're looking for
+      const targetClient = firestoreClients.find(c => c.id === 'client-f33ee714-4e52-4683-a754-34fd1aa3f9de');
+      if (targetClient) {
+        console.log(`🎯 Found target client: ${targetClient.name}`);
+      } else {
+        console.log(`⚠️ Target client 'client-f33ee714-4e52-4683-a754-34fd1aa3f9de' NOT FOUND`);
+        console.log(`📋 Available client IDs:`, firestoreClients.map(c => c.id));
+      }
+      
       return firestoreClients;
     } else {
-      console.log("=== loadClientsFromFirestore: NO CLIENTS FOUND ===");
-      console.log("No clients found in Firestore for this user");
+      console.log(`⚠️ === NO CLIENTS FOUND ===`);
+      console.log(`🔧 Troubleshooting steps:`);
+      console.log(`   1. Check if documents exist at: /clients/${userId}/clients`);
+      console.log(`   2. Verify Firestore security rules allow read access`);
+      console.log(`   3. Confirm user is authenticated: ${!!userId}`);
+      console.log(`   4. Check Firestore console for data structure`);
+      
       return [];
     }
   } catch (error) {
-    console.error(`❌ Failed to load clients from Firestore for user ${userId}:`, error);
+    console.error(`❌ CRITICAL ERROR loading clients:`, error);
+    console.error(`🔍 Error details:`, {
+      code: (error as any)?.code,
+      message: (error as any)?.message,
+      userId,
+      path: `clients/${userId}/clients`
+    });
+    
+    // Re-throw to trigger fallback mechanisms
     throw error;
   }
 };

@@ -7,6 +7,7 @@ import { useClientStore } from "./clientsData";
 import { getCurrentUserId, getClientById, getClientByName } from "./store/clientStore";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import ClientDebugPanel from "./debug/ClientDebugPanel";
 
 interface NewClientPageProps {
   clientId?: string;
@@ -38,12 +39,28 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
   }, [clients, clientId, clientName, currentUserId]);
   
   useEffect(() => {
-    console.log("=== NewClientPage: Effect triggered ===");
-    console.log("Client ID:", clientId);
-    console.log("Client Name:", clientName);
-    console.log("Current User ID:", currentUserId);
-    console.log("Clients loaded:", clients.length);
-    console.log("Client found in store:", !!clientData);
+    console.log("🔄 === NewClientPage: Effect triggered ===");
+    console.log("🎯 Target Client ID:", clientId);
+    console.log("📝 Target Client Name:", clientName);
+    console.log("👤 Current User ID:", currentUserId);
+    console.log("📊 Clients in store:", clients.length);
+    console.log("✅ Client found in store:", !!clientData);
+    
+    if (clientData) {
+      console.log("🎉 Client data found:", {
+        id: clientData.id,
+        name: clientData.name,
+        birthStage: clientData.birthStage || 'NOT SET'
+      });
+    }
+    
+    // Debug: List all available client IDs in store
+    if (clients.length > 0) {
+      console.log("📋 Available clients in store:");
+      clients.forEach(client => {
+        console.log(`   - ${client.name} (ID: ${client.id}, User: ${client.userId})`);
+      });
+    }
     
     // If we have client data from the store, we're done loading
     if (clientData) {
@@ -52,7 +69,7 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
       
       // If we found by name and have an ID, redirect to ID-based URL
       if (clientName && clientData.id) {
-        console.log(`Redirecting to ID-based URL: /clients/id/${clientData.id}`);
+        console.log(`🔀 Redirecting to ID-based URL: /clients/id/${clientData.id}`);
         navigate(`/clients/id/${clientData.id}`, { replace: true });
         return;
       }
@@ -62,14 +79,16 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
     // If we have clients loaded but no match found, show error
     if (clients.length > 0 && !clientData) {
       if (retryCount >= 2) {
-        console.log("Client not found after retries");
+        console.log("❌ Client not found after maximum retries");
+        console.log(`🔍 Searched for ID: ${clientId || 'N/A'}`);
+        console.log(`🔍 Searched for name: ${clientName || 'N/A'}`);
         setIsLoading(false);
         setNotFoundError(true);
         return;
       }
       
       // Retry once more in case of timing issues
-      console.log(`Client not found, retrying (${retryCount + 1}/3)`);
+      console.log(`⏳ Client not found, retrying (${retryCount + 1}/3)`);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
       }, 1000);
@@ -77,6 +96,9 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
     }
     
     // Still waiting for clients to load
+    if (clients.length === 0) {
+      console.log("⏳ Still waiting for clients to load from Firestore...");
+    }
     setIsLoading(true);
     setNotFoundError(false);
   }, [clientId, clientName, currentUserId, clients, clientData, retryCount, navigate]);
@@ -85,7 +107,7 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
   if (notFoundError || (!clientData && !isLoading)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-6 text-center">
-        <div className="bg-red-50 p-6 rounded-lg border border-red-200">
+        <div className="bg-red-50 p-6 rounded-lg border border-red-200 max-w-md">
           <h2 className="text-xl font-semibold text-red-700 mb-2">Client Not Found</h2>
           <p className="text-gray-700 mb-4">
             {clientId ? (
@@ -94,12 +116,29 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
               <>We couldn't find the client: <strong>{decodeURIComponent(clientName || "")}</strong></>
             )}
           </p>
-          <p className="text-sm text-gray-500 mb-4">
-            This may happen if the client was just added and is still being processed.
-          </p>
-          <Link to="/clients" className="text-blue-600 underline">
-            Return to clients list
-          </Link>
+          <div className="text-sm text-gray-600 mb-4 text-left">
+            <p className="font-medium mb-2">Possible causes:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Client document doesn't exist in Firestore</li>
+              <li>Client belongs to a different user</li>
+              <li>Firestore security rules blocking access</li>
+              <li>Network connectivity issues</li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <Link 
+              to="/clients" 
+              className="block w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            >
+              Return to clients list
+            </Link>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="block w-full bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
+            >
+              Reload page
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -139,7 +178,12 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
   console.log("=== NewClientPage: Rendering ClientPageTemplate ===");
   console.log("Client info:", clientInfo);
 
-  return <ClientPageTemplate clientInfo={clientInfo} />;
+  return (
+    <>
+      <ClientPageTemplate clientInfo={clientInfo} />
+      <ClientDebugPanel />
+    </>
+  );
 };
 
 export default NewClientPage;
