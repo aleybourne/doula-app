@@ -102,16 +102,15 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {hasChanges && (
-              <Button
-                onClick={handleSave}
-                size="sm"
-                className="h-8"
-              >
-                <Save className="h-4 w-4 mr-1" />
-                Save
-              </Button>
-            )}
+            <Button
+              onClick={handleSave}
+              size="sm"
+              className="h-8"
+              disabled={!hasChanges && !isCreating}
+            >
+              <Save className="h-4 w-4 mr-1" />
+              Save
+            </Button>
             {!isCreating && (
               <Button
                 variant="ghost"
