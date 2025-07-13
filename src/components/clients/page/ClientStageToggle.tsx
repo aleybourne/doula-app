@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { Button } from "../../ui/button";
-import { ClientData, BirthStage } from "../types/ClientTypes";
+import { ClientData, BirthStage, TriageNote } from "../types/ClientTypes";
 import { updateClient } from "../store/clientActions";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Activity, Baby } from "lucide-react";
 import DeliveryDetailsDialog from "./DeliveryDetailsDialog";
+import { TriageNoteButton } from "./TriageNoteButton";
+import { TriageNoteModal } from "./TriageNoteModal";
 
 interface ClientStageToggleProps {
   client: ClientData;
@@ -14,6 +16,7 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
   const { toast } = useToast();
   const currentStage = client.birthStage || 'pregnant';
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false);
+  const [showTriageModal, setShowTriageModal] = useState(false);
 
   const handleStageChange = async (newStage: BirthStage) => {
     if (newStage === currentStage) return;
@@ -101,6 +104,30 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
     }
   };
 
+  const handleTriageSave = async (triageNote: TriageNote) => {
+    try {
+      const existingTriageNotes = client.triageNotes || [];
+      const updatedTriageNotes = [...existingTriageNotes, triageNote];
+      
+      await updateClient({
+        ...client,
+        triageNotes: updatedTriageNotes,
+      });
+
+      toast({
+        title: "Success",
+        description: "Triage note saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving triage note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save triage note. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStageIcon = (stage: BirthStage) => {
     switch (stage) {
       case 'pregnant':
@@ -163,9 +190,17 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
               variant={isActive ? "default" : "outline"}
               size="sm"
               onClick={() => handleStageChange(stage.value)}
-              className={`flex-1 transition-all duration-200 ${getStageColor(stage.value, isActive)}`}
+              className={`relative flex-1 transition-all duration-200 ${getStageColor(stage.value, isActive)}`}
               disabled={isActive}
             >
+              {stage.value === 'pregnant' && isActive && (
+                <TriageNoteButton 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowTriageModal(true);
+                  }}
+                />
+              )}
               <div className="flex items-center gap-1.5">
                 {getStageIcon(stage.value)}
                 <span className="text-xs">{stage.label}</span>
@@ -201,6 +236,13 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
         onOpenChange={setShowDeliveryDialog}
         onSubmit={handleDeliverySubmit}
         defaultTime={client.deliveryTime}
+      />
+
+      <TriageNoteModal
+        isOpen={showTriageModal}
+        onClose={() => setShowTriageModal(false)}
+        onSave={handleTriageSave}
+        clientName={client.name}
       />
     </div>
   );

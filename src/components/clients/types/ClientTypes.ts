@@ -22,6 +22,19 @@ export interface JournalEntry {
   category?: string;
 }
 
+export interface TriageNote {
+  id: string;
+  timestamp: string; // When the note was created
+  visitTime: string; // Time picker value (HH:MM format)
+  location: string;
+  cervicalExam: string;
+  contractionsPattern: string;
+  clientCoping: string;
+  doulaSupport: string;
+  outcome: 'sent-home' | 'admitted' | 'no-change' | 'other';
+  additionalNotes: string;
+}
+
 export interface ClientData {
   id: string;  // Unique identifier
   name: string;
@@ -73,6 +86,7 @@ export interface ClientData {
   notes?: string;
   tags?: Tag[]; // Add tags field to store client-specific tags
   journalEntries?: JournalEntry[]; // Journal entries for the client
+  triageNotes?: TriageNote[]; // Triage notes for the client
 }
 
 export type ClientChangeListener = () => void;
