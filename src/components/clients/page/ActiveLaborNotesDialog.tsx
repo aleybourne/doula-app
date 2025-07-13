@@ -268,6 +268,16 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
             const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
             const isFirstActiveLaborNote = client.activeLaborNotes?.length === 0;
             
+            // Debug logging
+            console.log('Triage Summary Debug:', {
+              clientTriageNotes: client.triageNotes,
+              recentTriageNote,
+              hasAdmittedTriage,
+              isFirstActiveLaborNote,
+              activeLaborNotesLength: client.activeLaborNotes?.length,
+              shouldShowTriageSummary: hasAdmittedTriage && isFirstActiveLaborNote
+            });
+            
             if (hasAdmittedTriage && isFirstActiveLaborNote) {
               return (
                 <div className="bg-muted/30 rounded-xl border border-muted-foreground/20 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
