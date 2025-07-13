@@ -129,7 +129,13 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Note title..."
+          dir="ltr"
           className="text-lg font-semibold border-none shadow-none px-0 focus-visible:ring-0"
+          style={{
+            direction: 'ltr',
+            textAlign: 'left',
+            unicodeBidi: 'bidi-override'
+          }}
         />
 
         {/* Category Selector */}
