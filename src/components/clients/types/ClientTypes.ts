@@ -43,7 +43,7 @@ export interface ActiveLaborNote {
   cervicalExam: string; // Dilation / Effacement / Station
   contractionPattern: string;
   clientEmotionalState: string;
-  painManagement: 'unmedicated' | 'iv-meds' | 'epidural' | 'nitrous-oxide' | 'other';
+  painManagement: string[]; // Array of selected pain management options
   painManagementOther?: string; // If "other" is selected
   clientMobility: string; // Movements, positions, tools used
   supportOffered: string; // Doula actions, tools, affirmations

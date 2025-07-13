@@ -6,7 +6,7 @@ import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import { Textarea } from "../../ui/textarea";
 import { Label } from "../../ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import { Checkbox } from "../../ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { Heart, Save, Plus, Edit, Eye } from "lucide-react";
 import { ClientData, ActiveLaborNote, JournalEntry } from "../types/ClientTypes";
@@ -21,9 +21,7 @@ const activeLaborFormSchema = z.object({
   cervicalExam: z.string().min(1, "Cervical exam is required"),
   contractionPattern: z.string().min(1, "Contraction pattern is required"),
   clientEmotionalState: z.string().min(1, "Client emotional state is required"),
-  painManagement: z.enum(['unmedicated', 'iv-meds', 'epidural', 'nitrous-oxide', 'other'], {
-    message: "Please select a pain management option"
-  }),
+  painManagement: z.array(z.string()).min(1, "Please select at least one pain management option"),
   painManagementOther: z.string().optional(),
   clientMobility: z.string().min(1, "Client mobility information is required"),
   supportOffered: z.string().min(1, "Support offered information is required"),
@@ -57,7 +55,7 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
       cervicalExam: "",
       contractionPattern: "",
       clientEmotionalState: "",
-      painManagement: "unmedicated",
+      painManagement: [],
       painManagementOther: "",
       clientMobility: "",
       supportOffered: "",
@@ -67,7 +65,7 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
     }
   });
 
-  const painManagementValue = form.watch('painManagement');
+  const painManagementValues = form.watch('painManagement') || [];
 
   const formatActiveNotesReport = (data: FormData): string => {
     return `
@@ -80,7 +78,7 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
 
 **Labor Progress:**
 - **Contraction Pattern:** ${data.contractionPattern}
-- **Pain Management:** ${data.painManagement === 'other' && data.painManagementOther ? `Other - ${data.painManagementOther}` : data.painManagement.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+- **Pain Management:** ${data.painManagement.map(pm => pm === 'other' && data.painManagementOther ? `Other - ${data.painManagementOther}` : pm.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())).join(', ')}
 
 **Client Care:**
 - **Emotional State:** ${data.clientEmotionalState}
@@ -302,28 +300,40 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
                 <div className="space-y-2 sm:space-y-3">
-                  <Label htmlFor="painManagement" className="text-xs sm:text-sm font-medium">Pain Management</Label>
-                  <Select
-                    value={painManagementValue}
-                    onValueChange={(value) => form.setValue('painManagement', value as any)}
-                  >
-                    <SelectTrigger className="h-10 sm:h-11">
-                      <SelectValue placeholder="Select pain management" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="unmedicated">Unmedicated</SelectItem>
-                      <SelectItem value="iv-meds">IV Meds</SelectItem>
-                      <SelectItem value="epidural">Epidural</SelectItem>
-                      <SelectItem value="nitrous-oxide">Nitrous Oxide</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label className="text-xs sm:text-sm font-medium">Pain Management</Label>
+                  <div className="space-y-3 border border-input rounded-lg p-3 bg-background/50">
+                    {[
+                      { value: 'unmedicated', label: 'Unmedicated' },
+                      { value: 'iv-meds', label: 'IV Meds' },
+                      { value: 'epidural', label: 'Epidural' },
+                      { value: 'nitrous-oxide', label: 'Nitrous Oxide' },
+                      { value: 'other', label: 'Other' }
+                    ].map((option) => (
+                      <div key={option.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`pain-${option.value}`}
+                          checked={painManagementValues.includes(option.value)}
+                          onCheckedChange={(checked) => {
+                            const current = painManagementValues;
+                            if (checked) {
+                              form.setValue('painManagement', [...current, option.value]);
+                            } else {
+                              form.setValue('painManagement', current.filter(v => v !== option.value));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`pain-${option.value}`} className="text-sm font-normal cursor-pointer">
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
                   {form.formState.errors.painManagement && (
                     <p className="text-sm text-destructive">{form.formState.errors.painManagement.message}</p>
                   )}
                 </div>
 
-                {painManagementValue === 'other' && (
+                {painManagementValues.includes('other') && (
                   <div className="space-y-2 sm:space-y-3">
                     <Label htmlFor="painManagementOther" className="text-xs sm:text-sm font-medium">Other Pain Management</Label>
                     <Input

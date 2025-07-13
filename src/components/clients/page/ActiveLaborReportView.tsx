@@ -42,11 +42,19 @@ export const ActiveLaborReportView: React.FC<ActiveLaborReportViewProps> = ({
     return timeString;
   };
 
-  const formatPainManagement = (painManagement: string, otherDetails?: string) => {
-    if (painManagement === 'other' && otherDetails) {
-      return `Other - ${otherDetails}`;
+  const formatPainManagement = (painManagement: string[], otherDetails?: string) => {
+    if (!painManagement || painManagement.length === 0) {
+      return "Not recorded";
     }
-    return painManagement.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    const formatted = painManagement.map(pm => {
+      if (pm === 'other' && otherDetails) {
+        return `Other - ${otherDetails}`;
+      }
+      return pm.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    });
+    
+    return formatted.join(', ');
   };
 
   const StatBox = ({ 
