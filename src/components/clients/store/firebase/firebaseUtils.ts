@@ -4,6 +4,29 @@ import { collection, query, getDocs, doc, setDoc, deleteDoc, getDoc } from 'fire
 import { ClientData } from '../../types/ClientTypes';
 import { verifyAuthenticationState, waitForAuthentication } from './authUtils';
 
+// Utility function to remove undefined values from objects (Firestore doesn't accept undefined)
+const sanitizeForFirestore = (obj: any): any => {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeForFirestore(item));
+  }
+  
+  if (typeof obj === 'object') {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        sanitized[key] = sanitizeForFirestore(value);
+      }
+    }
+    return sanitized;
+  }
+  
+  return obj;
+};
+
 export const testFirebaseConnection = async (): Promise<boolean> => {
   try {
     console.log("Testing Firebase connection...");
@@ -141,12 +164,17 @@ export const saveClientToFirestore = async (client: ClientData): Promise<void> =
     console.log(`📁 Path: clients/${client.userId}/clients/${client.id}`);
     console.log("📋 Full client object being saved:", JSON.stringify(client, null, 2));
     
+    // Sanitize the client data to remove undefined values (Firestore doesn't accept them)
+    console.log("🧹 Step 2.5: Sanitizing client data for Firestore...");
+    const sanitizedClient = sanitizeForFirestore(client);
+    console.log("✅ Client data sanitized, undefined values removed");
+    
     // Use the new nested collection structure: /clients/{userId}/clients/{clientId}
     const clientDocRef = doc(db, 'clients', client.userId, 'clients', client.id);
     
     console.log("💾 Step 3: Attempting to save to Firestore...");
     console.log("📍 Document reference path:", `clients/${client.userId}/clients/${client.id}`);
-    await setDoc(clientDocRef, client);
+    await setDoc(clientDocRef, sanitizedClient);
     
     console.log(`✅ SUCCESSFULLY SAVED CLIENT TO FIRESTORE`);
     console.log(`✅ Client ${client.name} saved at: clients/${client.userId}/clients/${client.id}`);
