@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Button } from "../../ui/button";
-import { ClientData, BirthStage, TriageNote, JournalEntry, ActiveLaborNote } from "../types/ClientTypes";
+import { ClientData, BirthStage, TriageNote, JournalEntry } from "../types/ClientTypes";
 import { updateClient } from "../store/clientActions";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Activity, Baby } from "lucide-react";
 import DeliveryDetailsDialog from "./DeliveryDetailsDialog";
 import { TriageNoteButton } from "./TriageNoteButton";
 import { TriageNoteModal } from "./TriageNoteModal";
-import { formatTriageNoteForJournal, generateTriageNoteTitle, mapTriageToActiveLaborFields } from "@/utils/triageUtils";
+import { formatTriageNoteForJournal, generateTriageNoteTitle } from "@/utils/triageUtils";
 
 interface ClientStageToggleProps {
   client: ClientData;
@@ -124,49 +124,16 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
       // Add journal entry to the top of the timeline
       const updatedJournalEntries = [journalEntry, ...existingJournalEntries];
       
-      let updatedClient = {
+      await updateClient({
         ...client,
         triageNotes: updatedTriageNotes,
         journalEntries: updatedJournalEntries,
-      };
+      });
 
-      // If triage outcome is "admitted", transition to active labor
-      if (triageNote.outcome === 'admitted') {
-        const currentTime = new Date().toISOString();
-        const activeLaborFields = mapTriageToActiveLaborFields(triageNote);
-        
-        // Create initial active labor note with mapped triage data
-        const activeLaborNote: ActiveLaborNote = {
-          id: `active-labor-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          timestamp: currentTime,
-          ...activeLaborFields,
-          // Additional fields specific to active labor
-          painManagement: [],
-          painManagementOther: '',
-          clientMobility: '',
-          staffInteractions: '',
-          laborProgress: ''
-        };
-
-        updatedClient = {
-          ...updatedClient,
-          birthStage: 'active-labor' as BirthStage,
-          laborStartTime: currentTime,
-          activeLaborNotes: [...(client.activeLaborNotes || []), activeLaborNote]
-        };
-
-        toast({
-          title: "Client admitted to active labor",
-          description: "Triage data has been carried forward to the active labor notes.",
-        });
-      } else {
-        toast({
-          title: "Success",
-          description: "Triage note and journal entry saved successfully.",
-        });
-      }
-
-      await updateClient(updatedClient);
+      toast({
+        title: "Success",
+        description: "Triage note and journal entry saved successfully.",
+      });
     } catch (error) {
       console.error('Error saving triage note:', error);
       toast({

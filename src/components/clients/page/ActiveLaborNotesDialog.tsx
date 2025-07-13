@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,7 +13,6 @@ import { ClientData, ActiveLaborNote, JournalEntry } from "../types/ClientTypes"
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 import { ActiveLaborReportView } from "./ActiveLaborReportView";
-import { mapTriageToActiveLaborFields } from "@/utils/triageUtils";
 
 // Form validation schema
 const activeLaborFormSchema = z.object({
@@ -47,7 +46,7 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'edit' | 'report'>('edit');
-
+  
   const form = useForm<FormData>({
     resolver: zodResolver(activeLaborFormSchema),
     defaultValues: {
@@ -65,29 +64,6 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
       additionalNotes: "",
     }
   });
-
-  // Pre-populate form when dialog opens with triage data
-  useEffect(() => {
-    if (open) {
-      const recentTriageNote = client.triageNotes?.slice(-1)[0];
-      const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
-      const hasExistingActiveLaborNotes = client.activeLaborNotes && client.activeLaborNotes.length > 0;
-      
-      if (hasAdmittedTriage && !hasExistingActiveLaborNotes) {
-        // Use the utility function to map triage data to active labor fields
-        const triageData = mapTriageToActiveLaborFields(recentTriageNote);
-        form.reset({
-          ...form.getValues(),
-          ...triageData,
-          painManagement: [],
-          painManagementOther: "",
-          clientMobility: "",
-          staffInteractions: "",
-          laborProgress: "",
-        });
-      }
-    }
-  }, [open, client.triageNotes, client.activeLaborNotes, form]);
 
   const painManagementValues = form.watch('painManagement') || [];
 
@@ -187,32 +163,15 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
       </DialogTrigger>
       
       <DialogContent className="w-full max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-auto h-[90vh] max-h-[90vh] overflow-y-auto box-border">
-          <DialogHeader className="pb-3 sm:pb-4 border-b space-y-3 sm:space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
-              <div className="flex-1 min-w-0">
-                <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-primary flex items-center gap-2 break-words">
-                  <Heart className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
-                  <span className="truncate">
-                    {viewMode === 'edit' ? 'Active Labor Notes' : 'Active Labor Report'}
-                  </span>
+        <DialogHeader className="pb-3 sm:pb-4 border-b space-y-3 sm:space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-primary flex items-center gap-2 break-words">
+                <Heart className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+                <span className="truncate">
+                  {viewMode === 'edit' ? 'Active Labor Notes' : 'Active Labor Report'}
+                </span>
               </DialogTitle>
-              {(() => {
-                const recentTriageNote = client.triageNotes?.slice(-1)[0];
-                const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
-                const isFirstActiveLaborNote = client.activeLaborNotes?.length === 0;
-                
-                if (hasAdmittedTriage && isFirstActiveLaborNote) {
-                  return (
-                    <div className="text-sm text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span>Some fields have been pre-filled from the recent triage note</span>
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -262,64 +221,6 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
           </div>
         ) : (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 md:space-y-8 py-3 sm:py-6">
-          {/* Triage Summary Section (if applicable) */}
-          {(() => {
-            const recentTriageNote = client.triageNotes?.slice(-1)[0];
-            const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
-            const isFirstActiveLaborNote = client.activeLaborNotes?.length === 0;
-            
-            // Debug logging
-            console.log('Triage Summary Debug:', {
-              clientTriageNotes: client.triageNotes,
-              recentTriageNote,
-              hasAdmittedTriage,
-              isFirstActiveLaborNote,
-              activeLaborNotesLength: client.activeLaborNotes?.length,
-              shouldShowTriageSummary: hasAdmittedTriage && isFirstActiveLaborNote
-            });
-            
-            if (hasAdmittedTriage && isFirstActiveLaborNote) {
-              return (
-                <div className="bg-muted/30 rounded-xl border border-muted-foreground/20 p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-1 h-6 sm:h-8 bg-muted-foreground rounded-full"></div>
-                    <div>
-                      <h3 className="text-lg sm:text-xl font-medium text-muted-foreground">Triage Summary</h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground/70">Information auto-filled from recent triage note</p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 bg-background/50 rounded-lg p-3 sm:p-4 border border-muted-foreground/10">
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">Triage Admission Time</Label>
-                      <p className="text-sm text-foreground">{recentTriageNote.visitTime || 'Not specified'}</p>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">Triage Location</Label>
-                      <p className="text-sm text-foreground">{recentTriageNote.location || 'Not specified'}</p>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">Cervical Exam</Label>
-                      <p className="text-sm text-foreground">{recentTriageNote.cervicalExam || 'Not specified'}</p>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label className="text-xs font-medium text-muted-foreground">Contraction Pattern</Label>
-                      <p className="text-sm text-foreground">{recentTriageNote.contractionsPattern || 'Not specified'}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="text-xs text-muted-foreground/70 italic text-center bg-muted/20 rounded-lg p-2 border border-muted-foreground/10">
-                    📋 The fields below have been pre-filled with this triage information for your reference
-                  </div>
-                </div>
-              );
-            }
-            return null;
-          })()}
-          
           {/* Admission Information Section */}
           <div className="bg-card/30 rounded-xl border border-border/50 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">

@@ -67,18 +67,3 @@ export const generateTriageNoteTitle = (triageNote: TriageNote): string => {
   const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   return `Triage Note – ${timeString}`;
 };
-
-/**
- * Maps triage note fields to active labor note fields for auto-population
- */
-export const mapTriageToActiveLaborFields = (triageNote: TriageNote) => {
-  return {
-    admissionTime: triageNote.visitTime || '',
-    hospitalLocation: triageNote.location || '',
-    cervicalExam: triageNote.cervicalExam || '',
-    contractionPattern: triageNote.contractionsPattern || '',
-    clientEmotionalState: triageNote.clientCoping || '',
-    supportOffered: triageNote.doulaSupport || '',
-    additionalNotes: triageNote.additionalNotes || ''
-  };
-};
