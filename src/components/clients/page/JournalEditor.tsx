@@ -24,7 +24,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
   const [title, setTitle] = useState(entry.title);
   const [content, setContent] = useState(entry.content);
   const [isPinned, setIsPinned] = useState(entry.isPinned);
-  const [category, setCategory] = useState(entry.category || '');
+  const [category, setCategory] = useState(entry.category || 'none');
   const [hasChanges, setHasChanges] = useState(false);
 
   const folders = [
@@ -37,7 +37,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
     setTitle(entry.title);
     setContent(entry.content);
     setIsPinned(entry.isPinned);
-    setCategory(entry.category || '');
+    setCategory(entry.category || 'none');
     setHasChanges(false);
   }, [entry]);
 
@@ -45,7 +45,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
     const hasChange = title !== entry.title || 
                      content !== entry.content || 
                      isPinned !== entry.isPinned ||
-                     category !== (entry.category || '');
+                     category !== (entry.category || 'none');
     setHasChanges(hasChange);
   }, [title, content, isPinned, category, entry]);
 
@@ -55,7 +55,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
       title: title.trim() || "Untitled Note",
       content,
       isPinned,
-      category: category || undefined,
+      category: category === "none" ? undefined : category,
       timestamp: isCreating ? new Date().toISOString() : entry.timestamp
     };
     onSave(updatedEntry);
@@ -139,7 +139,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
               <SelectValue placeholder="Select folder..." />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">No folder</SelectItem>
+              <SelectItem value="none">No folder</SelectItem>
               {folders.map((folder) => {
                 const Icon = folder.icon;
                 return (
