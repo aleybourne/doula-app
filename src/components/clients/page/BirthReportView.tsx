@@ -106,90 +106,94 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
   };
 
   return (
-    <div className="space-y-3 md:space-y-4">
-      {/* Delivery Details Section */}
-      <ReportSection 
-        title="Delivery Details" 
-        icon={Clock}
-        hasContent={!!(client.deliveryDate || client.deliveryWeight || client.deliveryLength || client.deliveryHeadCircumference)}
-      >
-        <DataPoint label="Time" value={client.deliveryDate ? formatDate(client.deliveryDate) : undefined} />
-        <DataPoint label="Weight" value={client.deliveryWeight} />
-        <DataPoint label="Length" value={client.deliveryLength} />
-        <DataPoint label="Head Circumference" value={client.deliveryHeadCircumference} />
-      </ReportSection>
-
-      {/* Birth Stats Section */}
-      <ReportSection 
-        title="Birth Statistics" 
-        icon={Droplets}
-        hasContent={!!(client.apgar1Min || client.apgar5Min || client.estimatedBloodLoss)}
-      >
-        <DataPoint label="APGAR at 1 minute" value={client.apgar1Min} highlight />
-        <DataPoint label="APGAR at 5 minutes" value={client.apgar5Min} highlight />
-        <DataPoint label="Estimated Blood Loss" value={client.estimatedBloodLoss} />
-        <DataPoint label="Umbilical Cord" value={client.umbilicalCordCondition} />
-        <DataPoint label="Delivery Position" value={client.parentalDeliveryPosition} />
-        <DataPoint label="Baby's Birth Position" value={client.babyBirthPosition} />
-      </ReportSection>
-
-      {/* Postpartum Recovery Section */}
-      <ReportSection 
-        title="Recovery & Care" 
-        icon={Heart}
-        hasContent={!!(client.postpartumNotes || client.pericareNotes || client.immediatePostpartumCare)}
-      >
-        <NarrativeNote 
-          title="Recovery Observations" 
-          content={client.postpartumNotes} 
-        />
-        <NarrativeNote 
-          title="Physical Care Notes" 
-          content={client.pericareNotes} 
-        />
-        <NarrativeNote 
-          title="Immediate Postpartum Support" 
-          content={client.immediatePostpartumCare} 
-        />
-      </ReportSection>
-
-      {/* Infant Care Section */}
-      <ReportSection 
-        title="Infant Care & Feeding" 
-        icon={Baby}
-        hasContent={!!(client.feedingMethod || client.babyBehaviorObservations)}
-      >
-        {client.feedingMethod && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2 py-2 px-3 rounded-md bg-gradient-to-r from-primary/5 to-secondary/10 border border-primary/10">
-            <span className="font-medium text-muted-foreground text-xs md:text-sm">Feeding Method</span>
-            <Badge variant="secondary" className="capitalize font-medium text-xs bg-primary/20 text-primary border-primary/30 w-fit">
-              {client.feedingMethod}
-            </Badge>
+    <div className="space-y-2 p-3 max-h-screen overflow-y-auto">
+      {/* Key Stats Grid - Mobile First */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {client.deliveryWeight && (
+          <div className="bg-card p-2 rounded border text-center">
+            <div className="text-xs text-muted-foreground">Weight</div>
+            <div className="text-sm font-semibold">{client.deliveryWeight}</div>
           </div>
         )}
-        
-        <DataPoint label="First Feeding" value={client.initialFeedingTime} />
-        <DataPoint label="Latch Assessment" value={client.latchQuality} />
-        
-        <NarrativeNote 
-          title="Feeding Notes" 
-          content={client.feedingNotes} 
-        />
-        <NarrativeNote 
-          title="Baby's Behavior & Cues" 
-          content={client.babyBehaviorObservations} 
-        />
-      </ReportSection>
-
-      {/* Footer Note */}
-      <div className="text-center pt-2 md:pt-3 pb-2">
-        <p className="text-xs text-muted-foreground leading-relaxed max-w-md mx-auto">
-          This report documents the birth experience and early care observations.
-          {client.createdAt && (
-            <span className="block mt-1 text-primary/70"> Report created: {formatDate(client.createdAt)}</span>
-          )}
-        </p>
+        {client.deliveryLength && (
+          <div className="bg-card p-2 rounded border text-center">
+            <div className="text-xs text-muted-foreground">Length</div>
+            <div className="text-sm font-semibold">{client.deliveryLength}</div>
+          </div>
+        )}
+        {client.apgar1Min && (
+          <div className="bg-primary/10 p-2 rounded border text-center">
+            <div className="text-xs text-muted-foreground">APGAR 1min</div>
+            <div className="text-sm font-semibold text-primary">{client.apgar1Min}</div>
+          </div>
+        )}
+        {client.apgar5Min && (
+          <div className="bg-primary/10 p-2 rounded border text-center">
+            <div className="text-xs text-muted-foreground">APGAR 5min</div>
+            <div className="text-sm font-semibold text-primary">{client.apgar5Min}</div>
+          </div>
+        )}
       </div>
+
+      {/* Time & Details */}
+      {client.deliveryDate && (
+        <div className="bg-card p-2 rounded border">
+          <div className="text-xs text-muted-foreground">Delivery Time</div>
+          <div className="text-sm font-medium">{formatDate(client.deliveryDate)}</div>
+        </div>
+      )}
+
+      {/* Additional Stats in Compact Format */}
+      <div className="space-y-1">
+        {client.deliveryHeadCircumference && (
+          <div className="flex justify-between py-1 text-sm border-b border-border/50">
+            <span className="text-muted-foreground">Head Circumference</span>
+            <span className="font-medium">{client.deliveryHeadCircumference}</span>
+          </div>
+        )}
+        {client.estimatedBloodLoss && (
+          <div className="flex justify-between py-1 text-sm border-b border-border/50">
+            <span className="text-muted-foreground">Blood Loss</span>
+            <span className="font-medium">{client.estimatedBloodLoss}</span>
+          </div>
+        )}
+        {client.umbilicalCordCondition && (
+          <div className="flex justify-between py-1 text-sm border-b border-border/50">
+            <span className="text-muted-foreground">Umbilical Cord</span>
+            <span className="font-medium">{client.umbilicalCordCondition}</span>
+          </div>
+        )}
+        {client.feedingMethod && (
+          <div className="flex justify-between py-1 text-sm border-b border-border/50">
+            <span className="text-muted-foreground">Feeding</span>
+            <Badge variant="outline" className="text-xs h-5">{client.feedingMethod}</Badge>
+          </div>
+        )}
+      </div>
+
+      {/* Compact Notes - Only if they exist */}
+      {(client.postpartumNotes || client.babyBehaviorObservations) && (
+        <div className="space-y-2 mt-3">
+          {client.postpartumNotes && (
+            <div className="bg-muted/30 p-2 rounded border">
+              <div className="text-xs font-medium text-muted-foreground mb-1">Recovery Notes</div>
+              <div className="text-xs leading-relaxed">{client.postpartumNotes}</div>
+            </div>
+          )}
+          {client.babyBehaviorObservations && (
+            <div className="bg-muted/30 p-2 rounded border">
+              <div className="text-xs font-medium text-muted-foreground mb-1">Baby Observations</div>
+              <div className="text-xs leading-relaxed">{client.babyBehaviorObservations}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Edit Button */}
+      <Button onClick={onEdit} variant="outline" size="sm" className="w-full mt-3">
+        <Edit className="h-3 w-3 mr-2" />
+        Edit Report
+      </Button>
     </div>
   );
 };
