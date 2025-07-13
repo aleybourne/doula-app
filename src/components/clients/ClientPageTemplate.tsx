@@ -89,16 +89,16 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
         client={clientInfo}
       />
 
+      {/* Stage-specific content */}
+      {(clientInfo.birthStage === 'active-labor') && (
+        <ActiveLaborNotes client={clientInfo} />
+      )}
+
       <ClientMeeting />
       <ClientQuickLinks 
         client={clientInfo}
         onJournalClick={() => setIsJournalOpen(true)}
       />
-      
-      {/* Stage-specific content */}
-      {(clientInfo.birthStage === 'active-labor') && (
-        <ActiveLaborNotes client={clientInfo} />
-      )}
       
       <ClientProgressBar />
       <ClientBirthPlans />
