@@ -3,8 +3,8 @@ import { Save, Trash2, X, Pin, PinOff, FolderOpen, Baby, Heart } from "lucide-re
 import { JournalEntry } from "../types/ClientTypes";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
-import { Textarea } from "../../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import RichTextEditor from "./RichTextEditor";
 
 interface JournalEditorProps {
   entry: JournalEntry;
@@ -157,12 +157,12 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-6">
-        <Textarea
+      <div className="flex-1 px-6 pb-6">
+        <RichTextEditor
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={setContent}
           placeholder="Start writing your note..."
-          className="w-full h-full min-h-[400px] border-none shadow-none resize-none focus-visible:ring-0 text-base leading-relaxed"
+          className="w-full h-full"
         />
       </div>
 
