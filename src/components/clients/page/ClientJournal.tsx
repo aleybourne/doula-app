@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Plus, Search, Pin } from "lucide-react";
+import { X, Plus, Search, Pin, ArrowLeft } from "lucide-react";
 import { ClientData, JournalEntry } from "../types/ClientTypes";
 import { updateClient } from "../store/clientActions";
 import { Button } from "../../ui/button";
@@ -19,6 +19,7 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [view, setView] = useState<'list' | 'editor'>('list');
 
   const journalEntries = client.journalEntries || [];
   
@@ -34,6 +35,19 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
     };
     setSelectedEntry(newEntry);
     setIsCreating(true);
+    setView('editor');
+  };
+
+  const handleSelectEntry = (entry: JournalEntry) => {
+    setSelectedEntry(entry);
+    setIsCreating(false);
+    setView('editor');
+  };
+
+  const handleBackToList = () => {
+    setView('list');
+    setSelectedEntry(null);
+    setIsCreating(false);
   };
 
   const handleSaveEntry = async (entry: JournalEntry) => {
@@ -49,6 +63,7 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
 
       await updateClient(updatedClient);
       setIsCreating(false);
+      setView('list');
     } catch (error) {
       console.error("Error saving journal entry:", error);
     }
@@ -64,6 +79,7 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
 
       await updateClient(updatedClient);
       setSelectedEntry(null);
+      setView('list');
     } catch (error) {
       console.error("Error deleting journal entry:", error);
     }
@@ -92,82 +108,101 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] p-0 gap-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold">
-              Journal - {client.name}
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </DialogHeader>
-
-        <div className="flex h-[700px]">
-          {/* Left Panel - Notes List */}
-          <div className="w-80 border-r bg-muted/20 flex flex-col">
-            <div className="p-4 border-b">
-              <div className="flex gap-2 mb-3">
+      <DialogContent className="w-full max-w-md mx-auto h-[90vh] max-h-[90vh] p-0 gap-0 sm:max-w-lg md:max-w-2xl">
+        {view === 'list' ? (
+          <>
+            {/* Notes List View */}
+            <DialogHeader className="px-4 py-3 border-b shrink-0">
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-lg font-semibold">
+                  Notes
+                </DialogTitle>
                 <Button
-                  onClick={handleCreateEntry}
+                  variant="ghost"
                   size="sm"
-                  className="flex-1 h-8"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0"
                 >
-                  <Plus className="h-4 w-4 mr-1" />
-                  New Note
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search notes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-8"
+            </DialogHeader>
+
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b shrink-0">
+                <div className="flex gap-2 mb-3">
+                  <Button
+                    onClick={handleCreateEntry}
+                    size="sm"
+                    className="flex-1 h-9"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Note
+                  </Button>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search notes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9"
+                  />
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto">
+                <JournalList
+                  entries={filteredEntries}
+                  selectedEntry={selectedEntry}
+                  onSelectEntry={handleSelectEntry}
+                  onTogglePin={handleTogglePin}
                 />
               </div>
             </div>
-
-            <div className="flex-1 overflow-y-auto">
-              <JournalList
-                entries={filteredEntries}
-                selectedEntry={selectedEntry}
-                onSelectEntry={setSelectedEntry}
-                onTogglePin={handleTogglePin}
-              />
-            </div>
-          </div>
-
-          {/* Right Panel - Note Editor/Viewer */}
-          <div className="flex-1 flex flex-col">
-            {selectedEntry ? (
-              <JournalEditor
-                entry={selectedEntry}
-                onSave={handleSaveEntry}
-                onDelete={handleDeleteEntry}
-                onCancel={() => {
-                  setSelectedEntry(null);
-                  setIsCreating(false);
-                }}
-                isCreating={isCreating}
-              />
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <Pin className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium mb-2">No note selected</p>
-                  <p className="text-sm">Select a note from the list or create a new one</p>
+          </>
+        ) : (
+          <>
+            {/* Note Editor View */}
+            <DialogHeader className="px-4 py-3 border-b shrink-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleBackToList}
+                    className="h-8 w-8 p-0"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <DialogTitle className="text-lg font-semibold">
+                    {isCreating ? "New Note" : "Edit Note"}
+                  </DialogTitle>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClose}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-            )}
-          </div>
-        </div>
+            </DialogHeader>
+
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {selectedEntry && (
+                <JournalEditor
+                  entry={selectedEntry}
+                  onSave={handleSaveEntry}
+                  onDelete={handleDeleteEntry}
+                  onCancel={handleBackToList}
+                  isCreating={isCreating}
+                />
+              )}
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
