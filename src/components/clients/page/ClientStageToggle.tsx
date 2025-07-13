@@ -194,12 +194,16 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
               disabled={isActive}
             >
               {stage.value === 'pregnant' && isActive && (
-                <TriageNoteButton 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowTriageModal(true);
-                  }}
-                />
+                <>
+                  {console.log("Rendering triage button for pregnant stage")}
+                  <TriageNoteButton 
+                    onClick={(e) => {
+                      console.log("Triage button clicked");
+                      e.stopPropagation();
+                      setShowTriageModal(true);
+                    }}
+                  />
+                </>
               )}
               <div className="flex items-center gap-1.5">
                 {getStageIcon(stage.value)}
