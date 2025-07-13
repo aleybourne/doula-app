@@ -197,6 +197,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       <div
         ref={editorRef}
         contentEditable
+        dir="ltr"
         className={cn(
           "flex-1 p-4 mt-2 min-h-[400px] border-none outline-none text-base leading-relaxed",
           "focus:ring-0 focus:border-none",
@@ -211,7 +212,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         style={{ 
           whiteSpace: 'pre-wrap',
           direction: 'ltr',
-          textAlign: 'left'
+          textAlign: 'left',
+          unicodeBidi: 'bidi-override',
+          writingMode: 'horizontal-tb'
         }}
         dangerouslySetInnerHTML={{ __html: displayContent }}
       />
