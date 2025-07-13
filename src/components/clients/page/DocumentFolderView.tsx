@@ -17,6 +17,8 @@ import {
   downloadDocument,
   getFolderInfo
 } from "../utils/documentUtils";
+import { deleteClientDocument } from "../utils/firebaseStorage";
+import { updateClient } from "../store/clientActions";
 import DocumentUpload from "./DocumentUpload";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,12 +51,32 @@ const DocumentFolderView: React.FC<DocumentFolderViewProps> = ({
     });
   };
 
-  const handleDeleteDocument = (document: Document) => {
-    // TODO: Implement delete functionality with client store
-    toast({
-      title: "Delete document",
-      description: "Document deletion functionality will be implemented with client store integration",
-    });
+  const handleDeleteDocument = async (document: Document) => {
+    try {
+      // Delete from Firebase Storage
+      await deleteClientDocument(document.storagePath);
+      
+      // Remove from client's documents array
+      const updatedDocuments = client.documents?.filter(doc => doc.id !== document.id) || [];
+      const updatedClient = {
+        ...client,
+        documents: updatedDocuments
+      };
+      
+      await updateClient(updatedClient);
+      
+      toast({
+        title: "Document deleted",
+        description: `${document.name} has been deleted successfully`,
+      });
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast({
+        title: "Delete failed",
+        description: "There was an error deleting the document. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUploadComplete = () => {

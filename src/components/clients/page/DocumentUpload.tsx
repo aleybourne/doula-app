@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Upload, X, FileIcon, AlertCircle } from "lucide-react";
-import { ClientData, DocumentFolder } from "../types/ClientTypes";
-import { validateDocumentFile } from "../utils/firebaseStorage";
+import { ClientData, DocumentFolder, Document } from "../types/ClientTypes";
+import { validateDocumentFile, uploadClientDocument } from "../utils/firebaseStorage";
 import { getFileTypeIcon, formatFileSize } from "../utils/documentUtils";
+import { updateClient } from "../store/clientActions";
 import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 interface DocumentUploadProps {
   client: ClientData;
@@ -87,39 +89,44 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({
     setUploadProgress(0);
 
     try {
-      // Simulate upload progress for now
-      // TODO: Implement actual upload with Firebase Storage
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 10;
-        });
-      }, 200);
+      // Start progress indicator
+      setUploadProgress(10);
 
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      clearInterval(progressInterval);
+      // Upload to Firebase Storage
+      const uploadResult = await uploadClientDocument(selectedFile, client.id, folder);
+      setUploadProgress(70);
+
+      // Create document object
+      const newDocument: Document = {
+        id: uuidv4(),
+        name: documentName,
+        fileName: uploadResult.fileName,
+        fileType: uploadResult.fileType,
+        fileSize: uploadResult.fileSize,
+        uploadDate: new Date().toISOString(),
+        folder: folder,
+        storagePath: uploadResult.path,
+        downloadURL: uploadResult.url
+      };
+
+      setUploadProgress(90);
+
+      // Update client with new document
+      const updatedDocuments = [...(client.documents || []), newDocument];
+      const updatedClient = {
+        ...client,
+        documents: updatedDocuments
+      };
+
+      await updateClient(updatedClient);
       setUploadProgress(100);
 
-      // TODO: Implement actual document save to client store
-      console.log("Uploading document:", {
-        file: selectedFile,
-        name: documentName,
-        folder,
-        clientId: client.id
+      toast({
+        title: "Upload successful",
+        description: `${documentName} has been uploaded successfully`,
       });
-
-      setTimeout(() => {
-        toast({
-          title: "Upload successful",
-          description: `${documentName} has been uploaded successfully`,
-        });
-        onComplete();
-      }, 500);
+      
+      onComplete();
 
     } catch (error) {
       console.error("Upload error:", error);
