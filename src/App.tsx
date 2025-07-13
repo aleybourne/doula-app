@@ -30,6 +30,14 @@ const DynamicClientByIdPage = () => {
   return <NewClientPage clientId={clientId || ''} />;
 };
 
+const FirstClientPage = () => {
+  return <NewClientPage mode="first" />;
+};
+
+const NewClientFormPage = () => {
+  return <NewClientPage mode="new" />;
+};
+
 // Protected route component
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const { user, isLoading } = useAuth();
@@ -107,7 +115,19 @@ const AppRoutes = () => {
             </RequireAuth>
           } />
           
-          {/* New ID-based client route (preferred) */}
+          {/* New flexible client routes */}
+          <Route path="/clients/first" element={
+            <RequireAuth>
+              <FirstClientPage />
+            </RequireAuth>
+          } />
+          <Route path="/clients/new" element={
+            <RequireAuth>
+              <NewClientFormPage />
+            </RequireAuth>
+          } />
+          
+          {/* ID-based client route (preferred) */}
           <Route path="/clients/id/:clientId" element={
             <RequireAuth>
               <DynamicClientByIdPage />

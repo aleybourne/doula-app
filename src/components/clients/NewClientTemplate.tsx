@@ -8,13 +8,15 @@ import { getCurrentUserId, getClientById, getClientByName } from "./store/client
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import ClientDebugPanel from "./debug/ClientDebugPanel";
+import CreateFirstClient from "./CreateFirstClient";
 
 interface NewClientPageProps {
   clientId?: string;
   clientName?: string;
+  mode?: 'first' | 'new';
 }
 
-const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) => {
+const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName, mode }) => {
   const navigate = useNavigate();
   const { clients } = useClientStore();
   const currentUserId = getCurrentUserId();
@@ -24,6 +26,14 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
   
   // Get client from live store data instead of local state
   const clientData = React.useMemo(() => {
+    if (mode === 'first') {
+      // Return the first available client for the current user
+      return clients.find(client => client.userId === currentUserId);
+    }
+    if (mode === 'new') {
+      // Return null for new client mode
+      return null;
+    }
     if (clientId) {
       return clients.find(client => client.id === clientId && client.userId === currentUserId);
     }
@@ -36,10 +46,11 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
       });
     }
     return null;
-  }, [clients, clientId, clientName, currentUserId]);
+  }, [clients, clientId, clientName, currentUserId, mode]);
   
   useEffect(() => {
     console.log("🔄 === NewClientPage: Effect triggered ===");
+    console.log("🎯 Mode:", mode);
     console.log("🎯 Target Client ID:", clientId);
     console.log("📝 Target Client Name:", clientName);
     console.log("👤 Current User ID:", currentUserId);
@@ -62,6 +73,32 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
       });
     }
     
+    // Handle different modes
+    if (mode === 'new') {
+      setIsLoading(false);
+      setNotFoundError(false);
+      return;
+    }
+    
+    if (mode === 'first') {
+      if (clients.length > 0) {
+        if (clientData) {
+          console.log(`🔀 Redirecting to first client: /clients/id/${clientData.id}`);
+          navigate(`/clients/id/${clientData.id}`, { replace: true });
+          return;
+        } else {
+          // No clients exist, redirect to create new client
+          console.log("🔀 No clients found, redirecting to create new client");
+          navigate(`/clients/new`, { replace: true });
+          return;
+        }
+      } else {
+        // Still loading clients
+        setIsLoading(true);
+        return;
+      }
+    }
+    
     // If we have client data from the store, we're done loading
     if (clientData) {
       setIsLoading(false);
@@ -77,7 +114,7 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
     }
     
     // If we have clients loaded but no match found, show error
-    if (clients.length > 0 && !clientData) {
+    if (clients.length > 0 && !clientData && !mode) {
       if (retryCount >= 2) {
         console.log("❌ Client not found after maximum retries");
         console.log(`🔍 Searched for ID: ${clientId || 'N/A'}`);
@@ -96,15 +133,20 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
     }
     
     // Still waiting for clients to load
-    if (clients.length === 0) {
+    if (clients.length === 0 && !mode) {
       console.log("⏳ Still waiting for clients to load from Firestore...");
     }
     setIsLoading(true);
     setNotFoundError(false);
-  }, [clientId, clientName, currentUserId, clients, clientData, retryCount, navigate]);
+  }, [clientId, clientName, currentUserId, clients, clientData, retryCount, navigate, mode]);
   
+  // Handle new client mode
+  if (mode === 'new') {
+    return <CreateFirstClient />;
+  }
+
   // Add error boundary logic
-  if (notFoundError || (!clientData && !isLoading)) {
+  if (notFoundError || (!clientData && !isLoading && !mode)) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] p-6 text-center">
         <div className="bg-red-50 p-6 rounded-lg border border-red-200 max-w-md">
@@ -131,6 +173,12 @@ const NewClientPage: React.FC<NewClientPageProps> = ({ clientId, clientName }) =
               className="block w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
             >
               Return to clients list
+            </Link>
+            <Link 
+              to="/clients/new" 
+              className="block w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+            >
+              Create new client
             </Link>
             <button 
               onClick={() => window.location.reload()} 

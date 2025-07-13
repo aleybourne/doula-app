@@ -30,20 +30,8 @@ const Clients: React.FC = () => {
     console.log("Clients page filter value:", filter);
   }, [filter]);
   
-  useEffect(() => {
-  const fetchClientsFromFirestore = async () => {
-    try {
-      const snapshot = await getDocs(collection(db, "clients"));
-      snapshot.forEach((doc) => {
-        console.log("CLIENT FROM FIRESTORE:", doc.id, doc.data());
-      });
-    } catch (error) {
-      console.error("Error fetching clients from Firestore:", error);
-    }
-  };
-
-  fetchClientsFromFirestore();
-}, []);
+  // Remove the old direct Firestore query that used the wrong path structure
+  // The clients are now loaded through the proper store mechanism
 
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);

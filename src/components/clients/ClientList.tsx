@@ -99,11 +99,12 @@ const ClientList: React.FC<ClientListProps> = ({ searchQuery = "", filter }) => 
         title={getFilterTitle()}
         clients={filteredClients}
         onCardClick={handleCardClick}
+        showEmptyState={!filter && filteredClients.length === 0}
         emptyMessage={
           userId ? (
             filter ? 
             `No ${filter === "new" ? "new" : "upcoming"} clients found.` :
-            "No active clients found. Add your first client!"
+            undefined // Use EmptyClientsList component instead
           ) : "Please log in to view your clients."
         }
       />
