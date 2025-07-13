@@ -24,7 +24,7 @@ const formSchema = z.object({
   phone: z.string().regex(phoneRegex, "Invalid phone number").optional().or(z.literal("")),
   email: z.string().email("Invalid email address").optional().or(z.literal("")),
   dueDate: z.date({
-    required_error: "Due date is required",
+    message: "Due date is required",
   }),
   careProvider: z.string().optional(),
   birthLocation: z.string().optional(),

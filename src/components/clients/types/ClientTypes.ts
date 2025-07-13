@@ -35,6 +35,23 @@ export interface TriageNote {
   additionalNotes: string;
 }
 
+export interface ActiveLaborNote {
+  id: string;
+  timestamp: string; // When the note was created
+  admissionTime: string; // Time admitted to L&D
+  hospitalLocation: string;
+  cervicalExam: string; // Dilation / Effacement / Station
+  contractionPattern: string;
+  clientEmotionalState: string;
+  painManagement: 'unmedicated' | 'iv-meds' | 'epidural' | 'nitrous-oxide' | 'other';
+  painManagementOther?: string; // If "other" is selected
+  clientMobility: string; // Movements, positions, tools used
+  supportOffered: string; // Doula actions, tools, affirmations
+  staffInteractions: string; // Notable events with hospital staff
+  laborProgress: string; // Changes over time
+  additionalNotes: string;
+}
+
 export interface ClientData {
   id: string;  // Unique identifier
   name: string;
@@ -87,6 +104,7 @@ export interface ClientData {
   tags?: Tag[]; // Add tags field to store client-specific tags
   journalEntries?: JournalEntry[]; // Journal entries for the client
   triageNotes?: TriageNote[]; // Triage notes for the client
+  activeLaborNotes?: ActiveLaborNote[]; // Active labor notes for the client
 }
 
 export type ClientChangeListener = () => void;
