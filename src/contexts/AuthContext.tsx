@@ -47,32 +47,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // User is signed in, get their profile data from Firestore
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          const user: User = {
-            id: firebaseUser.uid,
-            firstName: userData.firstName || '',
-            lastName: userData.lastName || '',
-            email: firebaseUser.email || '',
-            profileComplete: userData.profileComplete || false,
-          };
-          setUser(user);
-          loadClientsForCurrentUser();
-        } else {
-          // User document doesn't exist, create a basic one
-          const user: User = {
-            id: firebaseUser.uid,
-            firstName: '',
-            lastName: '',
-            email: firebaseUser.email || '',
-            profileComplete: false,
-          };
-          setUser(user);
+        console.log("🔐 User authentication state changed, verifying token...");
+        
+        try {
+          // Ensure we have a valid token before proceeding
+          const token = await firebaseUser.getIdToken();
+          console.log("✅ Authentication token verified, proceeding with user setup");
+          
+          // User is signed in, get their profile data from Firestore
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const user: User = {
+              id: firebaseUser.uid,
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              email: firebaseUser.email || '',
+              profileComplete: userData.profileComplete || false,
+            };
+            setUser(user);
+            
+            // Only load clients after full authentication is confirmed
+            console.log("👤 User profile loaded, now loading clients...");
+            loadClientsForCurrentUser();
+          } else {
+            // User document doesn't exist, create a basic one
+            const user: User = {
+              id: firebaseUser.uid,
+              firstName: '',
+              lastName: '',
+              email: firebaseUser.email || '',
+              profileComplete: false,
+            };
+            setUser(user);
+            
+            // Still load clients even if profile is incomplete
+            console.log("👤 Basic user profile created, loading clients...");
+            loadClientsForCurrentUser();
+          }
+        } catch (error) {
+          console.error("❌ Error during authentication setup:", error);
+          // If token verification fails, treat as unauthenticated
+          setUser(null);
         }
       } else {
         // User is signed out
+        console.log("🚪 User signed out");
         setUser(null);
       }
       setIsLoading(false);

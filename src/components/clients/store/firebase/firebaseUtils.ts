@@ -2,6 +2,7 @@
 import { db } from '../../../../config/firebase';
 import { collection, query, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { ClientData } from '../../types/ClientTypes';
+import { verifyAuthenticationState, waitForAuthentication } from './authUtils';
 
 export const testFirebaseConnection = async (): Promise<boolean> => {
   try {
@@ -28,6 +29,17 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
       console.error("❌ Firebase connection failed - cannot load clients");
       return [];
     }
+    
+    // Verify authentication is ready before loading clients
+    console.log("🔐 Verifying authentication before loading clients...");
+    const authResult = await waitForAuthentication();
+    
+    if (!authResult.isAuthenticated) {
+      console.error("❌ Authentication not ready for loading clients");
+      throw new Error(`Authentication failed: ${authResult.error}`);
+    }
+    
+    console.log("✅ Authentication verified - proceeding with client load");
     
     // Use the new nested collection structure: /clients/{userId}/clients
     const clientsRef = collection(db, 'clients', userId, 'clients');
@@ -84,6 +96,12 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
       path: `clients/${userId}/clients`
     });
     
+    // Check if it's a permissions error
+    if ((error as any)?.code === 'permission-denied') {
+      console.error("❌ Permission denied - user may not be authenticated properly");
+      console.error("❌ Check Firestore security rules and authentication state");
+    }
+    
     // Re-throw to trigger fallback mechanisms
     throw error;
   }
@@ -96,6 +114,17 @@ export const saveClientToFirestore = async (client: ClientData): Promise<void> =
     }
     
     console.log(`🚀 === SAVING CLIENT TO FIRESTORE ===`);
+    
+    // First, verify authentication is ready
+    console.log("🔐 Verifying authentication before save...");
+    const authResult = await waitForAuthentication();
+    
+    if (!authResult.isAuthenticated) {
+      console.error("❌ Authentication not ready for Firestore operation");
+      throw new Error(`Authentication failed: ${authResult.error}`);
+    }
+    
+    console.log("✅ Authentication verified - proceeding with save");
     console.log(`👤 User ID: ${client.userId}`);
     console.log(`📝 Client Name: ${client.name}`);
     console.log(`🆔 Client ID: ${client.id}`);
