@@ -148,7 +148,7 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto h-[90vh] max-h-[90vh] p-0 gap-0">
+      <DialogContent className="w-full max-w-md mx-auto h-[90vh] max-h-[90vh] p-0 gap-0 sm:max-w-lg md:max-w-2xl">
         {view === 'list' ? (
           <>
             {/* Notes List View */}
@@ -156,11 +156,9 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
               <DialogTitle className="text-lg font-semibold">
                 Notes
               </DialogTitle>
-            </DialogHeader>
-
-            <div className="flex flex-col h-full">
+              
               {/* Mobile-First Folder Filter Buttons */}
-              <div className="px-4 py-3 space-y-3 border-b">
+              <div className="px-4 py-3 space-y-3">
                 <Button
                   variant={selectedFolder === null ? "default" : "outline"}
                   size="lg"
@@ -199,6 +197,9 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
                   })}
                 </div>
               </div>
+            </DialogHeader>
+
+            <div className="flex flex-col h-full border-t">
               <div className="p-4 border-b shrink-0">
                 <div className="flex gap-2 mb-3">
                   <Button
