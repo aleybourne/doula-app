@@ -20,13 +20,13 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
 
   if (!hasAnyData) {
     return (
-      <div className="text-center py-16 space-y-6 bg-muted/30 rounded-2xl">
-        <FileText className="h-16 w-16 text-muted-foreground/40 mx-auto" />
-        <div className="space-y-3">
-          <h3 className="text-xl font-semibold text-foreground">No Report Data</h3>
-          <p className="text-muted-foreground max-w-md mx-auto">Start by adding detailed notes to generate your comprehensive birth report.</p>
+      <div className="text-center py-8 md:py-16 space-y-4 md:space-y-6 bg-card rounded-lg md:rounded-2xl shadow-sm border">
+        <FileText className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground/40 mx-auto" />
+        <div className="space-y-2 md:space-y-3 px-4">
+          <h3 className="text-lg md:text-xl font-semibold text-foreground">No Report Data</h3>
+          <p className="text-muted-foreground text-sm md:text-base max-w-md mx-auto">Start by adding detailed notes to generate your comprehensive birth report.</p>
         </div>
-        <Button onClick={onEdit} size="lg" className="mt-6">
+        <Button onClick={onEdit} size="lg" className="mt-4 md:mt-6 w-full max-w-xs">
           <Edit className="h-4 w-4 mr-2" />
           Add Birth Notes
         </Button>
@@ -54,14 +54,14 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     children: React.ReactNode; 
     hasContent: boolean;
   }) => (
-    <div className={`bg-muted/30 rounded-2xl p-6 space-y-6 ${hasContent ? '' : 'opacity-60'}`}>
-      <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/15">
-          <Icon className="h-6 w-6 text-primary" />
+    <div className={`bg-card rounded-lg md:rounded-2xl p-4 md:p-6 space-y-4 md:space-y-6 shadow-sm border ${hasContent ? '' : 'opacity-60'}`}>
+      <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-primary/10">
+          <Icon className="h-5 w-5 md:h-6 md:w-6 text-primary" />
         </div>
-        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+        <h3 className="text-lg md:text-xl font-semibold text-foreground">{title}</h3>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {children}
       </div>
     </div>
@@ -79,9 +79,9 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     if (!value) return null;
     
     return (
-      <div className="flex justify-between items-center py-3 px-4 rounded-xl bg-background/80 border border-border/50">
-        <span className="font-medium text-muted-foreground">{label}</span>
-        <span className={`text-right max-w-[60%] ${highlight ? 'font-semibold text-primary' : 'text-foreground'}`}>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 py-3 px-3 md:px-4 rounded-lg bg-muted/50 border border-border/30">
+        <span className="font-medium text-muted-foreground text-sm md:text-base">{label}</span>
+        <span className={`text-sm md:text-base ${highlight ? 'font-semibold text-primary' : 'text-foreground'}`}>
           {value}
         </span>
       </div>
@@ -98,35 +98,35 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
     if (!content) return null;
     
     return (
-      <div className="p-5 rounded-xl bg-background/80 border border-border/50 space-y-3">
-        <h4 className="font-semibold text-primary">{title}</h4>
-        <p className="text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
+      <div className="p-4 md:p-5 rounded-lg bg-muted/50 border border-border/30 space-y-2 md:space-y-3">
+        <h4 className="font-semibold text-primary text-sm md:text-base">{title}</h4>
+        <p className="text-foreground text-sm md:text-base leading-relaxed whitespace-pre-wrap">{content}</p>
       </div>
     );
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8 px-4 md:px-0">
       {/* Report Header */}
-      <div className="text-center space-y-6 p-8 bg-muted/30 rounded-2xl">
-        <div className="flex items-center justify-center gap-4">
-          <div className="p-3 rounded-xl bg-primary/15">
-            <Baby className="h-8 w-8 text-primary" />
+      <div className="text-center space-y-4 md:space-y-6 p-4 md:p-8 bg-card rounded-lg md:rounded-2xl shadow-sm border">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 md:gap-4">
+          <div className="p-2 md:p-3 rounded-lg md:rounded-xl bg-primary/10">
+            <Baby className="h-6 w-6 md:h-8 md:w-8 text-primary" />
           </div>
-          <h2 className="text-3xl font-bold text-primary">Birth Report</h2>
+          <h2 className="text-xl md:text-3xl font-bold text-primary">Birth Report</h2>
         </div>
         
-        <div className="space-y-3">
-          <h3 className="text-2xl font-semibold text-foreground">{client.name}</h3>
+        <div className="space-y-2 md:space-y-3">
+          <h3 className="text-lg md:text-2xl font-semibold text-foreground">{client.name}</h3>
           {client.deliveryDate && (
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Calendar className="h-5 w-5" />
-              <span>Born: {formatDate(client.deliveryDate)}</span>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm md:text-base">
+              <Calendar className="h-4 w-4 md:h-5 md:w-5" />
+              <span className="break-words">Born: {formatDate(client.deliveryDate)}</span>
             </div>
           )}
         </div>
 
-        <Button onClick={onEdit} variant="outline" size="lg" className="gap-2 mt-4">
+        <Button onClick={onEdit} variant="outline" size="lg" className="gap-2 mt-3 md:mt-4 w-full max-w-xs">
           <Edit className="h-4 w-4" />
           Edit Details
         </Button>
@@ -179,11 +179,11 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
         icon={Baby}
         hasContent={!!(client.feedingMethod || client.babyBehaviorObservations)}
       >
-        <div className="space-y-3">
+        <div className="space-y-3 md:space-y-4">
           {client.feedingMethod && (
-            <div className="flex items-center justify-between p-4 rounded-xl bg-background/80 border border-border/50">
-              <span className="font-medium text-muted-foreground">Feeding Method</span>
-              <Badge variant="secondary" className="capitalize font-medium">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 p-3 md:p-4 rounded-lg bg-muted/50 border border-border/30">
+              <span className="font-medium text-muted-foreground text-sm md:text-base">Feeding Method</span>
+              <Badge variant="secondary" className="capitalize font-medium text-xs md:text-sm w-fit">
                 {client.feedingMethod}
               </Badge>
             </div>
@@ -204,12 +204,13 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
       </ReportSection>
 
       {/* Footer Note */}
-      <div className="text-center pt-8 pb-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">
+      <div className="text-center pt-4 md:pt-8 pb-4 px-4 md:px-0">
+        <p className="text-xs md:text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
           This report was generated to document the birth experience and early care observations.
           {client.createdAt && (
             <>
-              <br />Report created: {formatDate(client.createdAt)}
+              <br className="hidden sm:block" />
+              <span className="block sm:inline mt-1 sm:mt-0"> Report created: {formatDate(client.createdAt)}</span>
             </>
           )}
         </p>
