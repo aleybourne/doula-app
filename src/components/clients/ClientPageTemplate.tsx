@@ -95,10 +95,6 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
         <ActiveLaborNotes client={clientInfo} />
       )}
       
-      {(clientInfo.birthStage === 'delivered') && (
-        <PostpartumNotes client={clientInfo} />
-      )}
-      
       <ClientProgressBar />
       <ClientBirthPlans />
       <ClientAlertButton />
