@@ -40,8 +40,8 @@ const ClientDocuments: React.FC<ClientDocumentsProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px] h-[80vh] flex flex-col p-0">
-        <DialogHeader className="flex flex-row items-center justify-between p-4 pb-2 border-b">
+      <DialogContent className="sm:max-w-[425px] max-h-[85vh] flex flex-col p-0 overflow-hidden">&\
+        <DialogHeader className="flex flex-row items-center justify-between p-4 pb-2 border-b shrink-0">
           <div className="flex items-center gap-2">
             {currentView === 'folder-contents' && (
               <Button
@@ -71,7 +71,7 @@ const ClientDocuments: React.FC<ClientDocumentsProps> = ({
           </Button>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {currentView === 'folders' ? (
             <DocumentFolders
               client={client}
