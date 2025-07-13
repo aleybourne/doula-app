@@ -208,7 +208,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         onKeyDown={handleKeyDown}
         onFocus={updateActiveFormats}
         suppressContentEditableWarning={true}
-        style={{ whiteSpace: 'pre-wrap' }}
+        style={{ 
+          whiteSpace: 'pre-wrap',
+          direction: 'ltr',
+          textAlign: 'left'
+        }}
         dangerouslySetInnerHTML={{ __html: displayContent }}
       />
     </div>
