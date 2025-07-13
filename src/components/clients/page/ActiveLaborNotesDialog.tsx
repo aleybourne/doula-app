@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,6 +13,7 @@ import { ClientData, ActiveLaborNote, JournalEntry } from "../types/ClientTypes"
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
 import { ActiveLaborReportView } from "./ActiveLaborReportView";
+import { mapTriageToActiveLaborFields } from "@/utils/triageUtils";
 
 // Form validation schema
 const activeLaborFormSchema = z.object({
@@ -46,32 +47,10 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<'edit' | 'report'>('edit');
-  
-  // Check if there's recent triage data to pre-populate
-  const getDefaultValues = () => {
-    const recentTriageNote = client.triageNotes?.slice(-1)[0];
-    const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
-    const hasExistingActiveLaborNotes = client.activeLaborNotes && client.activeLaborNotes.length > 0;
-    
-    if (hasAdmittedTriage && !hasExistingActiveLaborNotes) {
-      // Pre-populate with triage data if no active labor notes exist yet
-      return {
-        admissionTime: recentTriageNote.visitTime || "",
-        hospitalLocation: recentTriageNote.location || "",
-        cervicalExam: recentTriageNote.cervicalExam || "",
-        contractionPattern: recentTriageNote.contractionsPattern || "",
-        clientEmotionalState: recentTriageNote.clientCoping || "",
-        painManagement: [],
-        painManagementOther: "",
-        clientMobility: "",
-        supportOffered: "",
-        staffInteractions: "",
-        laborProgress: "",
-        additionalNotes: recentTriageNote.additionalNotes || ""
-      };
-    }
-    
-    return {
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(activeLaborFormSchema),
+    defaultValues: {
       admissionTime: "",
       hospitalLocation: "",
       cervicalExam: "",
@@ -84,13 +63,31 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
       staffInteractions: "",
       laborProgress: "",
       additionalNotes: "",
-    };
-  };
-
-  const form = useForm<FormData>({
-    resolver: zodResolver(activeLaborFormSchema),
-    defaultValues: getDefaultValues()
+    }
   });
+
+  // Pre-populate form when dialog opens with triage data
+  useEffect(() => {
+    if (open) {
+      const recentTriageNote = client.triageNotes?.slice(-1)[0];
+      const hasAdmittedTriage = recentTriageNote?.outcome === 'admitted';
+      const hasExistingActiveLaborNotes = client.activeLaborNotes && client.activeLaborNotes.length > 0;
+      
+      if (hasAdmittedTriage && !hasExistingActiveLaborNotes) {
+        // Use the utility function to map triage data to active labor fields
+        const triageData = mapTriageToActiveLaborFields(recentTriageNote);
+        form.reset({
+          ...form.getValues(),
+          ...triageData,
+          painManagement: [],
+          painManagementOther: "",
+          clientMobility: "",
+          staffInteractions: "",
+          laborProgress: "",
+        });
+      }
+    }
+  }, [open, client.triageNotes, client.activeLaborNotes, form]);
 
   const painManagementValues = form.watch('painManagement') || [];
 
