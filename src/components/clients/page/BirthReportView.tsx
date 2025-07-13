@@ -41,7 +41,16 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Not recorded";
     try {
-      return format(new Date(dateString), "PPP 'at' p");
+      return format(new Date(dateString), "PPP");
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatTime = (dateString?: string) => {
+    if (!dateString) return "Not recorded";
+    try {
+      return format(new Date(dateString), "p");
     } catch {
       return dateString;
     }
@@ -109,9 +118,14 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
   return (
     <div className="space-y-6 max-h-[80vh] overflow-y-auto">
       {/* Header */}
-      <div className="text-center border-b border-border pb-4">
+      <div className="text-center border-b border-border pb-4 space-y-3">
         <h2 className="text-xl font-bold text-primary">BIRTH REPORT</h2>
-        <p className="text-sm text-muted-foreground mt-1">{client.name}</p>
+        <p className="text-sm text-muted-foreground">{client.name}</p>
+        {client.deliveryDate && (
+          <div className="text-sm font-medium text-foreground">
+            {formatDate(client.deliveryDate)}
+          </div>
+        )}
       </div>
 
       {/* Birth Stats - Key Metrics in Boxes */}
@@ -120,7 +134,7 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
         
         {/* Primary Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
-          <StatBox label="Time" value={client.deliveryDate ? formatDate(client.deliveryDate) : undefined} />
+          <StatBox label="Time" value={client.deliveryDate ? formatTime(client.deliveryDate) : undefined} />
           <StatBox label="Weight" value={client.deliveryWeight} />
           <StatBox label="Length" value={client.deliveryLength} />
           <StatBox label="Head Circumference" value={client.deliveryHeadCircumference} />
