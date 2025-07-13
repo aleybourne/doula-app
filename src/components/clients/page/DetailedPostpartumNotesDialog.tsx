@@ -11,6 +11,7 @@ import { Baby, Save, FileText, Edit, Eye } from "lucide-react";
 import { ClientData } from "../types/ClientTypes";
 import { useToast } from "@/hooks/use-toast";
 import { BirthReportView } from "./BirthReportView";
+import { hasAnyBirthData, createBirthReportJournalEntry } from "../utils/birthReportUtils";
 
 interface DetailedPostpartumNotesDialogProps {
   client: ClientData;
@@ -137,7 +138,74 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
   };
 
   const handleSaveAndViewReport = (data: FormData) => {
-    onSubmit(data);
+    // First, save the birth data
+    const updatedClient: ClientData = {
+      ...client,
+      deliveryDate: data.deliveryDate,
+      deliveryWeight: data.deliveryWeight,
+      deliveryLength: data.deliveryLength,
+      deliveryHeadCircumference: data.deliveryHeadCircumference,
+      apgar1Min: data.apgar1Min,
+      apgar5Min: data.apgar5Min,
+      estimatedBloodLoss: data.estimatedBloodLoss,
+      umbilicalCordCondition: data.umbilicalCordCondition,
+      parentalDeliveryPosition: data.parentalDeliveryPosition,
+      babyBirthPosition: data.babyBirthPosition,
+      postpartumNotes: data.postpartumNotes,
+      pericareNotes: data.pericareNotes,
+      immediatePostpartumCare: data.immediatePostpartumCare,
+      feedingMethod: data.feedingMethod as 'breast' | 'pump' | 'formula' | undefined,
+      initialFeedingTime: data.initialFeedingTime,
+      latchQuality: data.latchQuality,
+      feedingNotes: data.feedingNotes,
+      babyBehaviorObservations: data.babyBehaviorObservations,
+    };
+
+    // Check if there's any birth data to create a journal entry
+    if (hasAnyBirthData(updatedClient)) {
+      // Create journal entry for the birth report
+      const birthReportEntry = createBirthReportJournalEntry(updatedClient);
+      
+      // Add the journal entry to the client's existing entries
+      const existingEntries = updatedClient.journalEntries || [];
+      
+      // Check if a birth report entry already exists to avoid duplicates
+      const existingBirthReportIndex = existingEntries.findIndex(entry => 
+        entry.title.includes('Birth Report') && entry.title.includes(updatedClient.name)
+      );
+      
+      let finalJournalEntries;
+      if (existingBirthReportIndex >= 0) {
+        // Update existing birth report entry
+        finalJournalEntries = [...existingEntries];
+        finalJournalEntries[existingBirthReportIndex] = birthReportEntry;
+      } else {
+        // Add new birth report entry
+        finalJournalEntries = [birthReportEntry, ...existingEntries];
+      }
+      
+      // Update client with both birth data and journal entry
+      const finalUpdatedClient = {
+        ...updatedClient,
+        journalEntries: finalJournalEntries
+      };
+      
+      onSave(finalUpdatedClient);
+      
+      toast({
+        title: "Notes Saved & Report Added to Journal",
+        description: "Birth notes saved and report has been added to the Postpartum journal folder.",
+      });
+    } else {
+      // Just save the birth data if no data exists
+      onSave(updatedClient);
+      
+      toast({
+        title: "Notes Saved",
+        description: "Detailed postpartum notes have been saved successfully.",
+      });
+    }
+    
     setViewMode('report');
   };
 
