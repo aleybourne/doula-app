@@ -67,7 +67,6 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
   };
 
   const handleDeliverySubmit = async (deliveryData: {
-    deliveryDate: string;
     deliveryTime: string;
     deliveryWeight: string;
     deliveryLength: string;
@@ -77,12 +76,12 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
       const updates: Partial<ClientData> = {
         ...client,
         birthStage: 'delivered',
-        deliveryDate: deliveryData.deliveryDate,
         deliveryTime: deliveryData.deliveryTime,
         deliveryWeight: deliveryData.deliveryWeight,
         deliveryLength: deliveryData.deliveryLength,
         deliveryHeadCircumference: deliveryData.deliveryHeadCircumference,
-        postpartumDate: deliveryData.deliveryDate,
+        deliveryDate: deliveryData.deliveryTime,
+        postpartumDate: deliveryData.deliveryTime,
         pregnancyStatus: 'postpartum',
       };
 
@@ -183,10 +182,10 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
         </div>
       )}
       
-      {currentStage === 'delivered' && (client.deliveryDate || client.deliveryTime) && (
+      {currentStage === 'delivered' && client.deliveryTime && (
         <div className="text-xs text-muted-foreground text-center space-y-1">
           <div>
-            Delivered: {client.deliveryDate} {client.deliveryTime && `at ${client.deliveryTime}`}
+            Delivered: {new Date(client.deliveryTime).toLocaleString()}
           </div>
           {(client.deliveryWeight || client.deliveryLength) && (
             <div className="flex justify-center gap-2 text-xs">
@@ -201,7 +200,6 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
         open={showDeliveryDialog}
         onOpenChange={setShowDeliveryDialog}
         onSubmit={handleDeliverySubmit}
-        defaultDate={client.deliveryDate}
         defaultTime={client.deliveryTime}
       />
     </div>

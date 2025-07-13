@@ -53,12 +53,11 @@ const PostpartumNotes: React.FC<PostpartumNotesProps> = ({ client }) => {
           </div>
           
           {/* Delivery Details */}
-          {(client.deliveryDate || client.deliveryTime) && (
+          {client.deliveryTime && (
             <div className="mb-3 p-2 bg-white rounded border border-green-100">
               <div className="text-green-700 text-xs font-medium mb-1">Delivery Details</div>
               <div className="grid grid-cols-2 gap-1 text-xs text-green-600">
-                {client.deliveryDate && <div>Date: {client.deliveryDate}</div>}
-                {client.deliveryTime && <div>Time: {client.deliveryTime}</div>}
+                <div>Time: {new Date(client.deliveryTime).toLocaleString()}</div>
                 {client.deliveryWeight && <div>Weight: {client.deliveryWeight}</div>}
                 {client.deliveryLength && <div>Length: {client.deliveryLength}</div>}
                 {client.deliveryHeadCircumference && <div>Head Circumference: {client.deliveryHeadCircumference}</div>}

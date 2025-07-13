@@ -23,7 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Baby } from "lucide-react";
 
 const deliveryDetailsSchema = z.object({
-  deliveryDate: z.string().min(1, "Delivery date is required"),
   deliveryTime: z.string().min(1, "Delivery time is required"),
   deliveryWeight: z.string().min(1, "Weight is required"),
   deliveryLength: z.string().min(1, "Length is required"),
@@ -36,7 +35,6 @@ interface DeliveryDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: DeliveryDetailsFormData) => void;
-  defaultDate?: string;
   defaultTime?: string;
 }
 
@@ -44,14 +42,12 @@ const DeliveryDetailsDialog: React.FC<DeliveryDetailsDialogProps> = ({
   open,
   onOpenChange,
   onSubmit,
-  defaultDate,
   defaultTime,
 }) => {
   const form = useForm<DeliveryDetailsFormData>({
     resolver: zodResolver(deliveryDetailsSchema),
     defaultValues: {
-      deliveryDate: defaultDate || new Date().toISOString().split('T')[0], // Date only (YYYY-MM-DD)
-      deliveryTime: defaultTime || new Date().toLocaleTimeString("en-US", { hour12: false, hour: '2-digit', minute: '2-digit' }), // Time only (HH:MM)
+      deliveryTime: defaultTime || new Date().toLocaleString("sv-SE").slice(0, 16), // ISO format for datetime-local
       deliveryWeight: "",
       deliveryLength: "",
       deliveryHeadCircumference: "",
@@ -59,7 +55,12 @@ const DeliveryDetailsDialog: React.FC<DeliveryDetailsDialogProps> = ({
   });
 
   const handleSubmit = (data: DeliveryDetailsFormData) => {
-    onSubmit(data);
+    // Convert the datetime-local string to ISO string
+    const deliveryTimeISO = new Date(data.deliveryTime).toISOString();
+    onSubmit({
+      ...data,
+      deliveryTime: deliveryTimeISO,
+    });
     onOpenChange(false);
     form.reset();
   };
@@ -86,31 +87,13 @@ const DeliveryDetailsDialog: React.FC<DeliveryDetailsDialogProps> = ({
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="deliveryDate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Delivery Date</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
               name="deliveryTime"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Delivery Time</FormLabel>
                   <FormControl>
                     <Input
-                      type="time"
+                      type="datetime-local"
                       {...field}
                       className="w-full"
                     />

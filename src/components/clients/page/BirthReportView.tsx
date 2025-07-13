@@ -134,8 +134,7 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
         
         {/* Primary Stats Grid */}
         <div className="grid grid-cols-2 gap-3">
-          <StatBox label="Date" value={client.deliveryDate ? formatDate(client.deliveryDate) : undefined} />
-          <StatBox label="Time" value={client.deliveryTime} />
+          <StatBox label="Time" value={client.deliveryDate ? formatTime(client.deliveryDate) : undefined} />
           <StatBox label="Weight" value={client.deliveryWeight} />
           <StatBox label="Length" value={client.deliveryLength} />
           <StatBox label="Head Circumference" value={client.deliveryHeadCircumference} />

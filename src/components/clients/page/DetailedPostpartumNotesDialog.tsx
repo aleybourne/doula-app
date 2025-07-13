@@ -21,7 +21,6 @@ interface DetailedPostpartumNotesDialogProps {
 interface FormData {
   // Birth Info
   deliveryDate: string;
-  deliveryTime: string;
   deliveryWeight: string;
   deliveryLength: string;
   deliveryHeadCircumference: string;
@@ -61,7 +60,6 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
   const { register, handleSubmit, setValue, watch, reset } = useForm<FormData>({
     defaultValues: {
       deliveryDate: client.deliveryDate || '',
-      deliveryTime: client.deliveryTime || '',
       deliveryWeight: client.deliveryWeight || '',
       deliveryLength: client.deliveryLength || '',
       deliveryHeadCircumference: client.deliveryHeadCircumference || '',
@@ -86,7 +84,6 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
     if (open) {
       reset({
         deliveryDate: client.deliveryDate || '',
-        deliveryTime: client.deliveryTime || '',
         deliveryWeight: client.deliveryWeight || '',
         deliveryLength: client.deliveryLength || '',
         deliveryHeadCircumference: client.deliveryHeadCircumference || '',
@@ -112,7 +109,6 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
     const updatedClient: ClientData = {
       ...client,
       deliveryDate: data.deliveryDate,
-      deliveryTime: data.deliveryTime,
       deliveryWeight: data.deliveryWeight,
       deliveryLength: data.deliveryLength,
       deliveryHeadCircumference: data.deliveryHeadCircumference,
@@ -209,21 +205,11 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label htmlFor="deliveryDate" className="text-sm font-medium">Delivery Date</Label>
+                <Label htmlFor="deliveryDate" className="text-sm font-medium">Delivery Date & Time</Label>
                 <Input
                   id="deliveryDate"
-                  type="date"
+                  type="datetime-local"
                   {...register('deliveryDate')}
-                  className="h-11"
-                />
-              </div>
-              
-              <div className="space-y-3">
-                <Label htmlFor="deliveryTime" className="text-sm font-medium">Delivery Time</Label>
-                <Input
-                  id="deliveryTime"
-                  type="time"
-                  {...register('deliveryTime')}
                   className="h-11"
                 />
               </div>
