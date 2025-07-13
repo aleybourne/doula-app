@@ -8,10 +8,11 @@ import { Textarea } from "../../ui/textarea";
 import { Label } from "../../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
-import { Heart, Save, Plus } from "lucide-react";
+import { Heart, Save, Plus, Edit, Eye } from "lucide-react";
 import { ClientData, ActiveLaborNote, JournalEntry } from "../types/ClientTypes";
 import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from "uuid";
+import { ActiveLaborReportView } from "./ActiveLaborReportView";
 
 // Form validation schema
 const activeLaborFormSchema = z.object({
@@ -46,6 +47,7 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
 }) => {
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<'edit' | 'report'>('edit');
   
   const form = useForm<FormData>({
     resolver: zodResolver(activeLaborFormSchema),
@@ -146,6 +148,16 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
     setOpen(false);
   };
 
+  const handleSaveAndViewReport = (data: FormData) => {
+    onSubmit(data);
+    setViewMode('report');
+  };
+
+  // Get the most recent active labor note for the report view
+  const latestActiveLaborNote = client.activeLaborNotes && client.activeLaborNotes.length > 0 
+    ? client.activeLaborNotes[client.activeLaborNotes.length - 1]
+    : null;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -154,13 +166,63 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
       
       <DialogContent className="w-full max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl mx-auto h-[90vh] max-h-[90vh] overflow-y-auto box-border">
         <DialogHeader className="pb-3 sm:pb-4 border-b space-y-3 sm:space-y-4">
-          <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-primary flex items-center gap-2 break-words">
-            <Heart className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
-            <span className="truncate">Active Labor Notes</span>
-          </DialogTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold text-primary flex items-center gap-2 break-words">
+                <Heart className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+                <span className="truncate">
+                  {viewMode === 'edit' ? 'Active Labor Notes' : 'Active Labor Report'}
+                </span>
+              </DialogTitle>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button
+                variant={viewMode === 'edit' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('edit')}
+                className="gap-1 sm:gap-2 text-xs sm:text-sm flex-1 sm:flex-none"
+              >
+                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                Edit
+              </Button>
+              <Button
+                variant={viewMode === 'report' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('report')}
+                className="gap-1 sm:gap-2 text-xs sm:text-sm flex-1 sm:flex-none"
+              >
+                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                Report
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 md:space-y-8 py-3 sm:py-6">
+        {viewMode === 'report' ? (
+          <div className="py-3 sm:py-6 px-1">
+            {latestActiveLaborNote ? (
+              <ActiveLaborReportView 
+                client={client} 
+                activeLaborNote={latestActiveLaborNote}
+                onEdit={() => setViewMode('edit')} 
+              />
+            ) : (
+              <div className="text-center py-6 space-y-4 bg-gradient-to-br from-primary/5 to-secondary/10 rounded-xl border border-primary/20">
+                <Heart className="h-12 w-12 text-primary/60 mx-auto" />
+                <div className="space-y-2 px-4">
+                  <h3 className="text-lg font-semibold text-primary">No Active Labor Notes</h3>
+                  <p className="text-muted-foreground text-sm max-w-md mx-auto">Start documenting labor progress to generate your comprehensive active labor report.</p>
+                </div>
+                <Button onClick={() => setViewMode('edit')} size="sm" className="mt-4 bg-primary hover:bg-primary/90">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Add Labor Notes
+                </Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 md:space-y-8 py-3 sm:py-6">
           {/* Admission Information Section */}
           <div className="bg-card/30 rounded-xl border border-border/50 p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -399,6 +461,7 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
             </Button>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
