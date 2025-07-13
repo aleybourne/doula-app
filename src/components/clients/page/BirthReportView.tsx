@@ -108,26 +108,27 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
   return (
     <div className="space-y-3 md:space-y-4">
       {/* Report Header */}
-      <div className="text-center space-y-2 md:space-y-3 p-3 md:p-4 bg-gradient-to-br from-primary/10 via-card to-secondary/5 rounded-xl shadow-sm border border-primary/20">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 md:gap-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-primary/30 to-primary/20">
-            <Baby className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+      <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Baby className="h-5 w-5 text-primary" />
           </div>
-          <h2 className="text-lg md:text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Birth Report</h2>
-        </div>
-        
-        <div className="space-y-1 md:space-y-2">
-          <h3 className="text-base md:text-xl font-semibold text-foreground">{client.name}</h3>
-          {client.deliveryDate && (
-            <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs md:text-sm">
-              <Calendar className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="break-words">Born: {formatDate(client.deliveryDate)}</span>
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold text-foreground">Birth Report</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{client.name}</span>
+              {client.deliveryDate && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="text-sm text-muted-foreground">{formatDate(client.deliveryDate)}</span>
+                </>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        <Button onClick={onEdit} variant="outline" size="sm" className="gap-2 mt-2 border-primary/30 text-primary hover:bg-primary/10">
-          <Edit className="h-3 w-3 md:h-4 md:w-4" />
+        <Button onClick={onEdit} variant="outline" size="sm">
+          <Edit className="h-4 w-4 mr-2" />
           Edit Details
         </Button>
       </div>
