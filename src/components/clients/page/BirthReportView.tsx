@@ -111,7 +111,6 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
       {/* Header */}
       <div className="text-center border-b border-border pb-4">
         <h2 className="text-xl font-bold text-primary">DETAILED BIRTH NOTES</h2>
-        <p className="text-sm text-muted-foreground mt-1">{client.name}</p>
       </div>
 
       {/* Birth Stats - Key Metrics in Boxes */}
