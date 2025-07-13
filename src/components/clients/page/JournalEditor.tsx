@@ -152,6 +152,17 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         </div>
       </div>
 
+      {/* Unsaved changes indicator - positioned right after header */}
+      {hasChanges && (
+        <div className="px-6 py-3 bg-muted/30 border-b">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Unsaved changes
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Content */}
       <div className="flex-1 px-6 pb-6">
         <RichTextEditor
@@ -161,17 +172,6 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
           className="w-full h-full"
         />
       </div>
-
-      {/* Unsaved changes indicator - positioned higher */}
-      {hasChanges && (
-        <div className="px-6 py-3 border-t bg-muted/30 mb-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Unsaved changes
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Floating Save Now Button */}
       <Button
