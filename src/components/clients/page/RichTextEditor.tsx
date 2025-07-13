@@ -22,8 +22,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   // Initialize editor content
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value || "";
+    if (editorRef.current) {
+      const displayContent = value && !value.includes('<') ? 
+        value.replace(/\n/g, '<br>') : value;
+      
+      // Only update if content actually differs to avoid cursor jumps
+      if (editorRef.current.innerHTML !== (displayContent || "")) {
+        editorRef.current.innerHTML = displayContent || "";
+      }
     }
   }, [value]);
 
@@ -180,10 +186,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     return () => document.removeEventListener('selectionchange', handleSelectionChange);
   }, [updateActiveFormats]);
 
-  // Convert plain text to HTML if needed
-  const displayContent = value && !value.includes('<') ? 
-    value.replace(/\n/g, '<br>') : value;
-
   return (
     <div className="flex flex-col h-full">
       <FormattingToolbar
@@ -216,7 +218,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           unicodeBidi: 'bidi-override',
           writingMode: 'horizontal-tb'
         }}
-        dangerouslySetInnerHTML={{ __html: displayContent }}
       />
     </div>
   );
