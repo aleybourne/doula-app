@@ -132,33 +132,35 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
       </DialogTrigger>
       
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-4 border-b">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-bold text-primary flex items-center gap-3">
-                <Baby className="h-6 w-6" />
-                {viewMode === 'edit' ? 'Detailed Postpartum & Birth Notes' : 'Birth Report'}
+        <DialogHeader className="pb-4 border-b space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-xl md:text-2xl font-bold text-primary flex items-center gap-2 md:gap-3">
+                <Baby className="h-5 w-5 md:h-6 md:w-6 flex-shrink-0" />
+                <span className="truncate">
+                  {viewMode === 'edit' ? 'Detailed Birth Notes' : 'Birth Report'}
+                </span>
               </DialogTitle>
-              <p className="text-muted-foreground text-sm mt-1">{client.name}</p>
+              <p className="text-muted-foreground text-sm mt-1 truncate">{client.name}</p>
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <Button
                 variant={viewMode === 'edit' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('edit')}
-                className="gap-2"
+                className="gap-1 md:gap-2 text-xs md:text-sm"
               >
-                <Edit className="h-4 w-4" />
+                <Edit className="h-3 w-3 md:h-4 md:w-4" />
                 Edit
               </Button>
               <Button
                 variant={viewMode === 'report' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setViewMode('report')}
-                className="gap-2"
+                className="gap-1 md:gap-2 text-xs md:text-sm"
               >
-                <Eye className="h-4 w-4" />
+                <Eye className="h-3 w-3 md:h-4 md:w-4" />
                 Report
               </Button>
             </div>
