@@ -19,6 +19,12 @@ interface DetailedPostpartumNotesDialogProps {
 }
 
 interface FormData {
+  // Birth Info
+  deliveryDate: string;
+  deliveryWeight: string;
+  deliveryLength: string;
+  deliveryHeadCircumference: string;
+  
   // Birth Stats
   apgar1Min: string;
   apgar5Min: string;
@@ -53,6 +59,10 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
   
   const { register, handleSubmit, setValue, watch, reset } = useForm<FormData>({
     defaultValues: {
+      deliveryDate: client.deliveryDate || '',
+      deliveryWeight: client.deliveryWeight || '',
+      deliveryLength: client.deliveryLength || '',
+      deliveryHeadCircumference: client.deliveryHeadCircumference || '',
       apgar1Min: client.apgar1Min || '',
       apgar5Min: client.apgar5Min || '',
       estimatedBloodLoss: client.estimatedBloodLoss || '',
@@ -73,6 +83,10 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
   React.useEffect(() => {
     if (open) {
       reset({
+        deliveryDate: client.deliveryDate || '',
+        deliveryWeight: client.deliveryWeight || '',
+        deliveryLength: client.deliveryLength || '',
+        deliveryHeadCircumference: client.deliveryHeadCircumference || '',
         apgar1Min: client.apgar1Min || '',
         apgar5Min: client.apgar5Min || '',
         estimatedBloodLoss: client.estimatedBloodLoss || '',
@@ -94,6 +108,10 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
   const onSubmit = (data: FormData) => {
     const updatedClient: ClientData = {
       ...client,
+      deliveryDate: data.deliveryDate,
+      deliveryWeight: data.deliveryWeight,
+      deliveryLength: data.deliveryLength,
+      deliveryHeadCircumference: data.deliveryHeadCircumference,
       apgar1Min: data.apgar1Min,
       apgar5Min: data.apgar5Min,
       estimatedBloodLoss: data.estimatedBloodLoss,
@@ -175,6 +193,59 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 py-6">
+          {/* Delivery Information Section */}
+          <div className="bg-card/30 rounded-xl border border-border/50 p-6 space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-primary rounded-full"></div>
+              <div>
+                <h3 className="text-xl font-semibold text-primary">Delivery Information</h3>
+                <p className="text-sm text-muted-foreground">Basic delivery details and measurements</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label htmlFor="deliveryDate" className="text-sm font-medium">Delivery Date & Time</Label>
+                <Input
+                  id="deliveryDate"
+                  type="datetime-local"
+                  {...register('deliveryDate')}
+                  className="h-11"
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="deliveryWeight" className="text-sm font-medium">Weight</Label>
+                <Input
+                  id="deliveryWeight"
+                  {...register('deliveryWeight')}
+                  placeholder="e.g., 7 lbs 8 oz"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="deliveryLength" className="text-sm font-medium">Length</Label>
+                <Input
+                  id="deliveryLength"
+                  {...register('deliveryLength')}
+                  placeholder="e.g., 20 inches"
+                  className="h-11"
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="deliveryHeadCircumference" className="text-sm font-medium">Head Circumference</Label>
+                <Input
+                  id="deliveryHeadCircumference"
+                  {...register('deliveryHeadCircumference')}
+                  placeholder="e.g., 14 inches"
+                  className="h-11"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Birth Stats Section */}
           <div className="bg-card/30 rounded-xl border border-border/50 p-6 space-y-6">
             <div className="flex items-center gap-3">
