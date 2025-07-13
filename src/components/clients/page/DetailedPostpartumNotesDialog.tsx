@@ -7,9 +7,10 @@ import { Label } from "../../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { Separator } from "../../ui/separator";
-import { Baby, Save, FileText } from "lucide-react";
+import { Baby, Save, FileText, Edit, Eye } from "lucide-react";
 import { ClientData } from "../types/ClientTypes";
 import { useToast } from "@/hooks/use-toast";
+import { BirthReportView } from "./BirthReportView";
 
 interface DetailedPostpartumNotesDialogProps {
   client: ClientData;
@@ -48,6 +49,7 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
 }) => {
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<'edit' | 'report'>('edit');
   
   const { register, handleSubmit, setValue, watch, reset } = useForm<FormData>({
     defaultValues: {
@@ -109,12 +111,16 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
     };
 
     onSave(updatedClient);
-    setOpen(false);
     
     toast({
       title: "Notes Saved",
       description: "Detailed postpartum notes have been saved successfully.",
     });
+  };
+
+  const handleSaveAndViewReport = (data: FormData) => {
+    onSubmit(data);
+    setViewMode('report');
   };
 
   const feedingMethodValue = watch('feedingMethod');
@@ -126,15 +132,48 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
       </DialogTrigger>
       
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-6 border-b">
-          <DialogTitle className="text-2xl font-bold text-primary flex items-center gap-3">
-            <Baby className="h-6 w-6" />
-            Detailed Postpartum & Birth Notes
-          </DialogTitle>
-          <p className="text-muted-foreground text-sm mt-1">{client.name}</p>
+        <DialogHeader className="pb-4 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle className="text-2xl font-bold text-primary flex items-center gap-3">
+                <Baby className="h-6 w-6" />
+                {viewMode === 'edit' ? 'Detailed Postpartum & Birth Notes' : 'Birth Report'}
+              </DialogTitle>
+              <p className="text-muted-foreground text-sm mt-1">{client.name}</p>
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === 'edit' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('edit')}
+                className="gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit
+              </Button>
+              <Button
+                variant={viewMode === 'report' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('report')}
+                className="gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Report
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 py-6">
+        {viewMode === 'report' ? (
+          <div className="py-6">
+            <BirthReportView 
+              client={client} 
+              onEdit={() => setViewMode('edit')} 
+            />
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 py-6">
           {/* Birth Stats Section */}
           <div className="bg-card/30 rounded-xl border border-border/50 p-6 space-y-6">
             <div className="flex items-center gap-3">
@@ -340,7 +379,7 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-4 pt-6 border-t">
+          <div className="flex justify-between gap-4 pt-6 border-t">
             <Button
               type="button"
               variant="outline"
@@ -350,15 +389,28 @@ export const DetailedPostpartumNotesDialog: React.FC<DetailedPostpartumNotesDial
               Cancel
             </Button>
             
-            <Button
-              type="submit"
-              className="px-8 h-11 bg-primary hover:bg-primary/90"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save Detailed Notes
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="submit"
+                variant="outline"
+                className="px-6 h-11"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Save
+              </Button>
+              
+              <Button
+                type="button"
+                onClick={handleSubmit(handleSaveAndViewReport)}
+                className="px-6 h-11 bg-primary hover:bg-primary/90"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Save & View Report
+              </Button>
+            </div>
           </div>
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );
