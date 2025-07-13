@@ -125,19 +125,15 @@ export const BirthReportView: React.FC<BirthReportViewProps> = ({
           <StatBox label="Length" value={client.deliveryLength} />
           <StatBox label="Head Circumference" value={client.deliveryHeadCircumference} />
         </div>
-
-        {/* APGAR Scores - Highlighted */}
-        <div className="grid grid-cols-2 gap-3">
-          <StatBox label="APGAR 1 Min" value={client.apgar1Min} highlight />
-          <StatBox label="APGAR 5 Min" value={client.apgar5Min} highlight />
-        </div>
       </div>
 
       {/* Additional Birth Information */}
-      {(client.estimatedBloodLoss || client.umbilicalCordCondition || client.parentalDeliveryPosition || client.babyBirthPosition) && (
+      {(client.apgar1Min || client.apgar5Min || client.estimatedBloodLoss || client.umbilicalCordCondition || client.parentalDeliveryPosition || client.babyBirthPosition) && (
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-primary">Additional Birth Information</h3>
           <div className="bg-card/50 p-4 rounded-lg border border-border/50 space-y-1">
+            <InfoRow label="APGAR 1 Min" value={client.apgar1Min} />
+            <InfoRow label="APGAR 5 Min" value={client.apgar5Min} />
             <InfoRow label="Estimated Blood Loss (EBL)" value={client.estimatedBloodLoss} />
             <InfoRow label="Umbilical Cord Condition" value={client.umbilicalCordCondition} />
             <InfoRow label="Parental Delivery Position" value={client.parentalDeliveryPosition} />
