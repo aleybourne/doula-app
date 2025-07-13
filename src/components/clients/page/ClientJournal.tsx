@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../../ui/dialo
 import { Input } from "../../ui/input";
 import JournalList from "./JournalList";
 import JournalEditor from "./JournalEditor";
+import { useToast } from "@/hooks/use-toast";
 import { v4 as uuidv4 } from 'uuid';
 
 interface ClientJournalProps {
@@ -21,6 +22,7 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
   const [searchQuery, setSearchQuery] = useState("");
   const [view, setView] = useState<'list' | 'editor'>('list');
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const journalEntries = client.journalEntries || [];
   
@@ -53,21 +55,49 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
   };
 
   const handleSaveEntry = async (entry: JournalEntry) => {
+    console.log("🔥 === JOURNAL SAVE ENTRY CALLED ===");
+    console.log("Entry to save:", entry);
+    console.log("Is creating:", isCreating);
+    console.log("Current client:", client.name, client.id);
+    
     try {
       const updatedEntries = isCreating
         ? [...journalEntries, entry]
         : journalEntries.map(e => e.id === entry.id ? entry : e);
+
+      console.log("Updated entries:", updatedEntries);
 
       const updatedClient = {
         ...client,
         journalEntries: updatedEntries
       };
 
+      console.log("About to call updateClient with:", updatedClient);
       await updateClient(updatedClient);
+      
+      console.log("✅ updateClient completed successfully");
+      
+      toast({
+        title: "Note saved",
+        description: isCreating ? "New note created successfully" : "Note updated successfully",
+      });
+      
       setIsCreating(false);
       setView('list');
+      
+      console.log("✅ View switched to list, save complete");
     } catch (error) {
-      console.error("Error saving journal entry:", error);
+      console.error("❌ Error saving journal entry:", error);
+      
+      toast({
+        title: "Save failed",
+        description: error instanceof Error ? error.message : "Failed to save note. Please try again.",
+        variant: "destructive",
+      });
+      
+      // Still switch back to list view even on error, so user isn't stuck
+      console.log("⚠️ Switching to list view despite error");
+      setView('list');
     }
   };
 
