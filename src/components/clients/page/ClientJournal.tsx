@@ -235,18 +235,10 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
                     {isCreating ? "New Note" : "Edit Note"}
                   </DialogTitle>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  className="h-8 w-8 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
               </div>
             </DialogHeader>
 
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden pb-4">
               {selectedEntry && (
                 <JournalEditor
                   entry={selectedEntry}
