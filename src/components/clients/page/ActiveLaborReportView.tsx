@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
 import { Separator } from "../../ui/separator";
-import { Activity, Clock, Heart, User, Edit, FileText, Timer } from "lucide-react";
+import { Activity, Clock, Heart, User, Edit, FileText, Timer, Download, Loader2 } from "lucide-react";
 import { ClientData, ActiveLaborNote } from "../types/ClientTypes";
+import { generateActiveLaborReportPDF } from "../utils/pdfGenerator";
+import { uploadClientDocument } from "../utils/firebaseStorage";
+import { updateClient } from "../store/clientActions";
+import { useToast } from "@/hooks/use-toast";
 
 interface ActiveLaborReportViewProps {
   client: ClientData;
@@ -16,10 +20,63 @@ export const ActiveLaborReportView: React.FC<ActiveLaborReportViewProps> = ({
   activeLaborNote,
   onEdit
 }) => {
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { toast } = useToast();
+  
   const hasAnyData = activeLaborNote.admissionTime || activeLaborNote.hospitalLocation || 
                      activeLaborNote.cervicalExam || activeLaborNote.contractionPattern ||
                      activeLaborNote.clientEmotionalState || activeLaborNote.supportOffered ||
                      activeLaborNote.clientMobility || activeLaborNote.laborProgress;
+
+  const handleSaveAsPDF = async () => {
+    try {
+      setIsGeneratingPDF(true);
+      
+      // Generate PDF
+      const pdfBlob = generateActiveLaborReportPDF(client, activeLaborNote);
+      
+      // Create a File object from the blob
+      const timestamp = new Date().toISOString().split('T')[0];
+      const fileName = `active-labor-notes-${timestamp}.pdf`;
+      const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+      
+      // Upload to Firebase Storage
+      const uploadResult = await uploadClientDocument(pdfFile, client.id, "Active Labor Notes");
+      
+      // Create document metadata
+      const newDocument = {
+        id: Date.now().toString(),
+        name: "Active Labor Notes",
+        fileName: uploadResult.fileName,
+        fileType: uploadResult.fileType,
+        fileSize: uploadResult.fileSize,
+        folder: "client-forms" as const,
+        uploadDate: new Date().toISOString(),
+        downloadURL: uploadResult.url,
+        storagePath: uploadResult.path
+      };
+      
+      // Update client documents
+      const updatedDocuments = [...(client.documents || []), newDocument];
+      const updatedClient = { ...client, documents: updatedDocuments };
+      await updateClient(updatedClient);
+      
+      toast({
+        title: "PDF Saved Successfully",
+        description: `Active labor report saved to ${client.name}'s documents.`,
+      });
+      
+    } catch (error) {
+      console.error('Error saving PDF:', error);
+      toast({
+        title: "Error Saving PDF",
+        description: "Failed to save the active labor report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   if (!hasAnyData) {
     return (
@@ -205,8 +262,28 @@ export const ActiveLaborReportView: React.FC<ActiveLaborReportViewProps> = ({
         </div>
       )}
 
-      {/* Edit Button */}
-      <div className="pt-3 sm:pt-4 border-t border-border">
+      {/* Action Buttons */}
+      <div className="pt-3 sm:pt-4 border-t border-border space-y-2">
+        <Button 
+          onClick={handleSaveAsPDF} 
+          variant="default" 
+          size="sm" 
+          className="w-full text-xs sm:text-sm"
+          disabled={isGeneratingPDF}
+        >
+          {isGeneratingPDF ? (
+            <>
+              <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-spin" />
+              Generating PDF...
+            </>
+          ) : (
+            <>
+              <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              📄 Save as PDF to Documents
+            </>
+          )}
+        </Button>
+        
         <Button onClick={onEdit} variant="outline" size="sm" className="w-full text-xs sm:text-sm">
           <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
           Edit Report
