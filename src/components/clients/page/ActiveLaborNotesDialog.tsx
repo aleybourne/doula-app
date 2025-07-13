@@ -16,17 +16,17 @@ import { ActiveLaborReportView } from "./ActiveLaborReportView";
 
 // Form validation schema
 const activeLaborFormSchema = z.object({
-  admissionTime: z.string().min(1, "Admission time is required"),
-  hospitalLocation: z.string().min(1, "Hospital/birth location is required"),
-  cervicalExam: z.string().min(1, "Cervical exam is required"),
-  contractionPattern: z.string().min(1, "Contraction pattern is required"),
-  clientEmotionalState: z.string().min(1, "Client emotional state is required"),
-  painManagement: z.array(z.string()).min(1, "Please select at least one pain management option"),
+  admissionTime: z.string().optional(),
+  hospitalLocation: z.string().optional(),
+  cervicalExam: z.string().optional(),
+  contractionPattern: z.string().optional(),
+  clientEmotionalState: z.string().optional(),
+  painManagement: z.array(z.string()).optional(),
   painManagementOther: z.string().optional(),
-  clientMobility: z.string().min(1, "Client mobility information is required"),
-  supportOffered: z.string().min(1, "Support offered information is required"),
+  clientMobility: z.string().optional(),
+  supportOffered: z.string().optional(),
   staffInteractions: z.string().optional(),
-  laborProgress: z.string().min(1, "Labor progress is required"),
+  laborProgress: z.string().optional(),
   additionalNotes: z.string().optional(),
 });
 
