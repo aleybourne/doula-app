@@ -136,46 +136,46 @@ const ClientJournal: React.FC<ClientJournalProps> = ({ client, isOpen, onClose }
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+              
+              {/* Folder Filter Buttons */}
+              <div className="flex gap-1 mt-4 pb-1">
+                <Button
+                  variant={selectedFolder === null ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setSelectedFolder(null)}
+                  className={`h-8 px-3 rounded-lg font-medium text-xs ${
+                    selectedFolder === null 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-muted hover:bg-muted/80'
+                  }`}
+                >
+                  All Notes
+                </Button>
+                {folders.map((folder) => {
+                  const Icon = folder.icon;
+                  const isActive = selectedFolder === folder.id;
+                  return (
+                    <Button
+                      key={folder.id}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedFolder(folder.id)}
+                      className={`h-8 px-3 rounded-lg font-medium text-xs border transition-all ${
+                        isActive 
+                          ? `${folder.activeColor} border-primary/30 text-foreground shadow-sm` 
+                          : `${folder.color} border-transparent hover:border-primary/20 text-foreground/80`
+                      }`}
+                    >
+                      <Icon className="h-3 w-3 mr-1.5" />
+                      {folder.label}
+                    </Button>
+                  );
+                })}
+              </div>
             </DialogHeader>
 
             <div className="flex flex-col h-full">
               <div className="p-4 border-b shrink-0">
-                {/* Folder Filter Buttons */}
-                <div className="flex gap-1 mb-4">
-                  <Button
-                    variant={selectedFolder === null ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setSelectedFolder(null)}
-                    className={`h-8 px-3 rounded-lg font-medium text-xs ${
-                      selectedFolder === null 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted hover:bg-muted/80'
-                    }`}
-                  >
-                    All Notes
-                  </Button>
-                  {folders.map((folder) => {
-                    const Icon = folder.icon;
-                    const isActive = selectedFolder === folder.id;
-                    return (
-                      <Button
-                        key={folder.id}
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedFolder(folder.id)}
-                        className={`h-8 px-3 rounded-lg font-medium text-xs border transition-all ${
-                          isActive 
-                            ? `${folder.activeColor} border-primary/30 text-foreground shadow-sm` 
-                            : `${folder.color} border-transparent hover:border-primary/20 text-foreground/80`
-                        }`}
-                      >
-                        <Icon className="h-3 w-3 mr-1.5" />
-                        {folder.label}
-                      </Button>
-                    );
-                  })}
-                </div>
-
                 <div className="flex gap-2 mb-3">
                   <Button
                     onClick={handleCreateEntry}
