@@ -2,6 +2,7 @@ import React from "react";
 import { Pin, PinOff, FolderOpen, Baby, Heart } from "lucide-react";
 import { JournalEntry } from "../types/ClientTypes";
 import { Button } from "../../ui/button";
+import { stripHtmlTags } from "../../../utils/textUtils";
 
 interface JournalListProps {
   entries: JournalEntry[];
@@ -65,7 +66,8 @@ const JournalList: React.FC<JournalListProps> = ({
 
   const EntryItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
     const isSelected = selectedEntry?.id === entry.id;
-    const preview = entry.content.substring(0, 100);
+    const cleanText = stripHtmlTags(entry.content);
+    const preview = cleanText.substring(0, 100);
     const categoryInfo = getCategoryInfo(entry.category);
     
     return (
@@ -109,7 +111,7 @@ const JournalList: React.FC<JournalListProps> = ({
         {preview && (
           <p className="text-xs text-muted-foreground line-clamp-2">
             {preview}
-            {entry.content.length > 100 && '...'}
+            {cleanText.length > 100 && '...'}
           </p>
         )}
       </div>
