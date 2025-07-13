@@ -35,19 +35,40 @@ export const addClient = async (client: ClientData): Promise<ClientData> => {
   console.log("Final client data with userId:", client);
   console.log(`Saving to: clients/${userId}/clients/${client.id}`);
   
+  
   try {
+    console.log("🔥 === STARTING CLIENT SAVE PROCESS ===");
+    
     // Add to Firestore first using new structure
+    console.log("📤 Step 1: Saving to Firestore...");
     await saveClientToFirestore(client);
+    console.log("✅ Step 1 complete: Client saved to Firestore");
     
     // Update local array
+    console.log("📋 Step 2: Adding to local array...");
+    console.log(`Local array before: ${clients.length} clients`);
     clients.unshift(client);
+    console.log(`Local array after: ${clients.length} clients`);
+    
+    // Log the added client details
+    console.log("📝 Added client details:");
+    console.log(`  - Name: ${client.name}`);
+    console.log(`  - ID: ${client.id}`);
+    console.log(`  - User ID: ${client.userId}`);
+    console.log(`  - Status: ${client.status}`);
+    console.log(`  - Birth Stage: ${client.birthStage}`);
     
     // Notify listeners
+    console.log("📢 Step 3: Notifying listeners...");
     notifyClientsChanged();
+    console.log("✅ Step 3 complete: Listeners notified");
     
+    console.log(`🎉 === CLIENT SAVE PROCESS COMPLETE ===`);
     console.log(`Successfully added client ${client.name} to new structure with userId: ${client.userId}`);
+    
     return client;
   } catch (error) {
+    console.error("❌ === CLIENT SAVE PROCESS FAILED ===");
     console.error("❌ Error adding client to new structure:", error);
     throw error;
   }

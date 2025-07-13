@@ -95,17 +95,41 @@ export const saveClientToFirestore = async (client: ClientData): Promise<void> =
       throw new Error("Cannot save client without userId");
     }
     
-    console.log(`Saving client ${client.name} to Firestore with new structure`);
-    console.log(`Path: clients/${client.userId}/clients/${client.id}`);
-    console.log("Full client object being saved:", JSON.stringify(client, null, 2));
+    console.log(`🚀 === SAVING CLIENT TO FIRESTORE ===`);
+    console.log(`👤 User ID: ${client.userId}`);
+    console.log(`📝 Client Name: ${client.name}`);
+    console.log(`🆔 Client ID: ${client.id}`);
+    console.log(`📁 Path: clients/${client.userId}/clients/${client.id}`);
+    console.log("📋 Full client object being saved:", JSON.stringify(client, null, 2));
     
     // Use the new nested collection structure: /clients/{userId}/clients/{clientId}
     const clientDocRef = doc(db, 'clients', client.userId, 'clients', client.id);
+    
+    console.log("💾 Attempting to save to Firestore...");
     await setDoc(clientDocRef, client);
     
-    console.log(`✅ Successfully saved client ${client.name} to Firestore at new path`);
+    console.log(`✅ SUCCESSFULLY SAVED CLIENT TO FIRESTORE`);
+    console.log(`✅ Client ${client.name} saved at: clients/${client.userId}/clients/${client.id}`);
+    
+    // Verify the save by reading it back
+    console.log("🔍 Verifying save by reading back...");
+    const savedDoc = await getDoc(clientDocRef);
+    if (savedDoc.exists()) {
+      console.log("✅ Verification successful - document exists in Firestore");
+      console.log("📋 Saved data:", savedDoc.data());
+    } else {
+      console.error("❌ Verification failed - document does not exist after save!");
+    }
+    
   } catch (error) {
-    console.error("❌ Error saving client to Firestore:", error);
+    console.error("❌ ERROR SAVING CLIENT TO FIRESTORE:", error);
+    console.error("🔍 Error details:", {
+      code: (error as any)?.code,
+      message: (error as any)?.message,
+      userId: client.userId,
+      clientId: client.id,
+      path: `clients/${client.userId}/clients/${client.id}`
+    });
     throw new Error(`Failed to save client: ${error.message}`);
   }
 };
