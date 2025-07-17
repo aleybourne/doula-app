@@ -61,9 +61,9 @@ const FormattingToolbar: React.FC<FormattingToolbarProps> = ({
   ];
 
   return (
-    <div className="flex items-center gap-1 p-2 bg-muted/30 rounded-lg border border-border/50 overflow-x-auto">
+    <div className="flex items-center gap-1 p-2 bg-muted/30 rounded-lg border border-border/50 overflow-x-auto min-w-0 w-full">
       {/* Formatting buttons */}
-      <div className="flex items-center gap-1 pr-2 border-r border-border/30">
+      <div className="flex items-center gap-1 pr-2 border-r border-border/30 flex-shrink-0">
         {formatButtons.map((button) => {
           const Icon = button.icon;
           const isActive = activeFormats.has(button.command);
@@ -87,7 +87,7 @@ const FormattingToolbar: React.FC<FormattingToolbarProps> = ({
       </div>
 
       {/* Utility buttons */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-shrink-0">
         {utilityButtons.map((button) => {
           const Icon = button.icon;
           

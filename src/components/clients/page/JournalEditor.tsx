@@ -82,7 +82,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 py-4 border-b">
+      <div className="px-3 py-4 border-b sm:px-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Button
@@ -131,7 +131,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
         {/* Category Selector */}
         <div className="mt-3">
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-48 h-8 text-xs">
+            <SelectTrigger className="w-full max-w-48 h-8 text-xs">
               <SelectValue placeholder="Select folder..." />
             </SelectTrigger>
             <SelectContent>
@@ -154,7 +154,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
 
       {/* Unsaved changes indicator - positioned right after header */}
       {hasChanges && (
-        <div className="px-6 py-3 bg-muted/30 border-b">
+        <div className="px-3 py-3 bg-muted/30 border-b sm:px-6">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">
               Unsaved changes
@@ -164,7 +164,7 @@ const JournalEditor: React.FC<JournalEditorProps> = ({
       )}
 
       {/* Content */}
-      <div className="flex-1 px-6 pb-6">
+      <div className="flex-1 px-3 pb-6 sm:px-6 overflow-hidden">
         <RichTextEditor
           value={content}
           onChange={setContent}
