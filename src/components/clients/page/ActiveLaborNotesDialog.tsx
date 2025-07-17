@@ -36,12 +36,14 @@ interface ActiveLaborNotesDialogProps {
   client: ClientData;
   onSave: (updatedClient: ClientData) => void;
   children: React.ReactNode;
+  existingNote?: ActiveLaborNote; // Add support for editing existing notes
 }
 
 export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
   client,
   onSave,
-  children
+  children,
+  existingNote
 }) => {
   const { toast } = useToast();
   const [open, setOpen] = React.useState(false);
@@ -50,20 +52,40 @@ export const ActiveLaborNotesDialog: React.FC<ActiveLaborNotesDialogProps> = ({
   const form = useForm<FormData>({
     resolver: zodResolver(activeLaborFormSchema),
     defaultValues: {
-      admissionTime: "",
-      hospitalLocation: "",
-      cervicalExam: "",
-      contractionPattern: "",
-      clientEmotionalState: "",
-      painManagement: [],
-      painManagementOther: "",
-      clientMobility: "",
-      supportOffered: "",
-      staffInteractions: "",
-      laborProgress: "",
-      additionalNotes: "",
+      admissionTime: existingNote?.admissionTime || "",
+      hospitalLocation: existingNote?.hospitalLocation || "",
+      cervicalExam: existingNote?.cervicalExam || "",
+      contractionPattern: existingNote?.contractionPattern || "",
+      clientEmotionalState: existingNote?.clientEmotionalState || "",
+      painManagement: existingNote?.painManagement || [],
+      painManagementOther: existingNote?.painManagementOther || "",
+      clientMobility: existingNote?.clientMobility || "",
+      supportOffered: existingNote?.supportOffered || "",
+      staffInteractions: existingNote?.staffInteractions || "",
+      laborProgress: existingNote?.laborProgress || "",
+      additionalNotes: existingNote?.additionalNotes || "",
     }
   });
+
+  // Reset form when dialog opens or existing note changes
+  React.useEffect(() => {
+    if (open) {
+      form.reset({
+        admissionTime: existingNote?.admissionTime || "",
+        hospitalLocation: existingNote?.hospitalLocation || "",
+        cervicalExam: existingNote?.cervicalExam || "",
+        contractionPattern: existingNote?.contractionPattern || "",
+        clientEmotionalState: existingNote?.clientEmotionalState || "",
+        painManagement: existingNote?.painManagement || [],
+        painManagementOther: existingNote?.painManagementOther || "",
+        clientMobility: existingNote?.clientMobility || "",
+        supportOffered: existingNote?.supportOffered || "",
+        staffInteractions: existingNote?.staffInteractions || "",
+        laborProgress: existingNote?.laborProgress || "",
+        additionalNotes: existingNote?.additionalNotes || "",
+      });
+    }
+  }, [open, existingNote, form]);
 
   const painManagementValues = form.watch('painManagement') || [];
 
@@ -100,50 +122,64 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
   const onSubmit = (data: FormData) => {
     const timestamp = new Date().toISOString();
     
-    // Create new active labor note
-    const newActiveLaborNote: ActiveLaborNote = {
-      id: uuidv4(),
-      timestamp,
-      admissionTime: data.admissionTime,
-      hospitalLocation: data.hospitalLocation,
-      cervicalExam: data.cervicalExam,
-      contractionPattern: data.contractionPattern,
-      clientEmotionalState: data.clientEmotionalState,
-      painManagement: data.painManagement,
-      painManagementOther: data.painManagementOther,
-      clientMobility: data.clientMobility,
-      supportOffered: data.supportOffered,
+    // Create or update active labor note
+    const activeLaborNote: ActiveLaborNote = {
+      id: existingNote?.id || uuidv4(),
+      timestamp: existingNote?.timestamp || timestamp,
+      admissionTime: data.admissionTime || "",
+      hospitalLocation: data.hospitalLocation || "",
+      cervicalExam: data.cervicalExam || "",
+      contractionPattern: data.contractionPattern || "",
+      clientEmotionalState: data.clientEmotionalState || "",
+      painManagement: data.painManagement || [],
+      painManagementOther: data.painManagementOther || "",
+      clientMobility: data.clientMobility || "",
+      supportOffered: data.supportOffered || "",
       staffInteractions: data.staffInteractions || "",
-      laborProgress: data.laborProgress,
+      laborProgress: data.laborProgress || "",
       additionalNotes: data.additionalNotes || "",
     };
 
-    // Create journal entry
+    // Update or create journal entry
+    const journalTitle = `Active Labor Notes – ${data.admissionTime || 'Update'}`;
     const journalEntry: JournalEntry = {
       id: uuidv4(),
-      title: `Active Labor Notes – ${data.admissionTime}`,
+      title: journalTitle,
       content: formatActiveNotesReport(data),
       timestamp,
       isPinned: false,
       category: "Labor & Birth",
     };
 
-    // Update client with new data
+    // Update client with data
+    let updatedActiveLaborNotes: ActiveLaborNote[];
+    if (existingNote) {
+      // Update existing note
+      updatedActiveLaborNotes = (client.activeLaborNotes || []).map(note =>
+        note.id === existingNote.id ? activeLaborNote : note
+      );
+    } else {
+      // Add new note
+      updatedActiveLaborNotes = [...(client.activeLaborNotes || []), activeLaborNote];
+    }
+
     const updatedClient: ClientData = {
       ...client,
-      activeLaborNotes: [...(client.activeLaborNotes || []), newActiveLaborNote],
+      activeLaborNotes: updatedActiveLaborNotes,
       journalEntries: [journalEntry, ...(client.journalEntries || [])],
     };
 
     onSave(updatedClient);
     
     toast({
-      title: "Active Labor Notes Saved",
-      description: "Notes have been saved and added to the journal.",
+      title: existingNote ? "Active Labor Notes Updated" : "Active Labor Notes Saved",
+      description: `Notes have been ${existingNote ? 'updated' : 'saved'} and added to the journal.`,
     });
 
-    form.reset();
-    setOpen(false);
+    if (!existingNote) {
+      form.reset();
+      setOpen(false);
+    }
   };
 
   const handleSaveAndViewReport = (data: FormData) => {
@@ -463,11 +499,20 @@ ${data.additionalNotes ? `**Additional Notes:**\n${data.additionalNotes}` : ''}
               Cancel
             </Button>
             <Button
+              type="button"
+              variant="outline"
+              onClick={form.handleSubmit(handleSaveAndViewReport)}
+              className="flex-1 sm:flex-none gap-2"
+            >
+              <Eye className="h-4 w-4" />
+              Save & View Report
+            </Button>
+            <Button
               type="submit"
               className="flex-1 sm:flex-none gap-2 bg-primary hover:bg-primary/90"
             >
               <Save className="h-4 w-4" />
-              Save Active Labor Notes
+              {existingNote ? 'Update' : 'Save'} Labor Notes
             </Button>
           </div>
         </form>
