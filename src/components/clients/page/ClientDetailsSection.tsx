@@ -12,6 +12,7 @@ import { BirthDetailsSection } from "./sections/BirthDetailsSection";
 import { AdministrativeSection } from "./sections/AdministrativeSection";
 import { NotesSection } from "./sections/NotesSection";
 import { updateClient } from "../clientsData";
+import { useToast } from "@/hooks/use-toast";
 
 interface ClientDetailsSectionProps {
   client: ClientData;
@@ -20,7 +21,9 @@ interface ClientDetailsSectionProps {
 const ClientDetailsSection: React.FC<ClientDetailsSectionProps> = ({ client }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { editingClient, handleChange } = useInlineEdit(client);
+  const { toast } = useToast();
   
   const form = useForm({
     defaultValues: {
@@ -28,11 +31,26 @@ const ClientDetailsSection: React.FC<ClientDetailsSectionProps> = ({ client }) =
     },
   });
 
-  const handleSave = () => {
-    // Save the updated client data
-    updateClient(editingClient);
-    setIsEditing(false);
-    setIsOpen(false);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateClient(editingClient);
+      toast({
+        title: "Success",
+        description: `${editingClient.name}'s profile has been updated.`,
+      });
+      setIsEditing(false);
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error saving client details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save client details. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -52,8 +70,8 @@ const ClientDetailsSection: React.FC<ClientDetailsSectionProps> = ({ client }) =
               </Button>
             )}
             {isOpen && isEditing && (
-              <Button variant="outline" size="sm" onClick={handleSave}>
-                Save & Close
+              <Button variant="outline" size="sm" onClick={handleSave} disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save & Close"}
               </Button>
             )}
           </div>
