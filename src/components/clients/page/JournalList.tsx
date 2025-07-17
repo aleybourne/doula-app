@@ -77,9 +77,9 @@ const JournalList: React.FC<JournalListProps> = ({
         }`}
         onClick={() => onSelectEntry(entry)}
       >
-        <div className="flex items-start justify-between mb-1">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <h4 className="font-medium text-sm truncate">{entry.title}</h4>
+        <div className="flex items-start justify-between mb-1 min-w-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+            <h4 className="font-medium text-sm truncate break-words">{entry.title}</h4>
             {categoryInfo && (
               <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs ${categoryInfo.color} shrink-0`}>
                 <categoryInfo.icon className="h-2.5 w-2.5" />
@@ -109,7 +109,7 @@ const JournalList: React.FC<JournalListProps> = ({
           </div>
         </div>
         {preview && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <p className="text-xs text-muted-foreground line-clamp-2 break-words overflow-wrap-anywhere">
             {preview}
             {cleanText.length > 100 && '...'}
           </p>
