@@ -10,7 +10,7 @@ import ClientTagsSection from "@/components/clients/ClientTagsSection";
 import ClientManagementDropdown from "./ClientManagementDropdown";
 import { EditClientForm } from "../EditClientForm";
 import { ClientData } from "../types/ClientTypes";
-import { clients } from "../clientsData";
+import { clients, updateClient } from "../clientsData";
 import { Tag } from "../clientsTagsData";
 
 interface ClientProgressProps {
@@ -50,12 +50,13 @@ const ClientProgress: React.FC<ClientProgressProps> = ({
   // Find the current client data
   const currentClient = clients.find(c => c.name === name);
   
-  const handleUpdateClient = (updatedClient: ClientData) => {
-    const clientIndex = clients.findIndex(c => c.name === name);
-    if (clientIndex !== -1) {
-      clients[clientIndex] = updatedClient;
-      localStorage.setItem('clients', JSON.stringify(clients));
+  const handleUpdateClient = async (updatedClient: ClientData) => {
+    try {
+      await updateClient(updatedClient);
+      setIsEditDialogOpen(false);
       navigate(`/clients/id/${updatedClient.id}`);
+    } catch (error) {
+      console.error("Error updating client:", error);
     }
   };
 
