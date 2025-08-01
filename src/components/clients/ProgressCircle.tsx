@@ -89,6 +89,7 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({
           fallbackSrc="/placeholder.svg"
           placeholderSrc="/placeholder.svg"
           showRetryButton={false}
+          showLoadingOverlay={false}
           maxRetries={2}
         />
       </ImageErrorBoundary>

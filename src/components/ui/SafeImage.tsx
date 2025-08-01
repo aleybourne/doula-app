@@ -11,6 +11,7 @@ interface SafeImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   className?: string;
   showRetryButton?: boolean;
   showNetworkStatus?: boolean;
+  showLoadingOverlay?: boolean;
   retryDelay?: number;
   maxRetries?: number;
 }
@@ -24,6 +25,7 @@ export const SafeImage = React.forwardRef<HTMLImageElement, SafeImageProps>(
     className,
     showRetryButton = true,
     showNetworkStatus = false,
+    showLoadingOverlay = true,
     retryDelay = 1000,
     maxRetries = 3,
     ...props
@@ -80,7 +82,7 @@ export const SafeImage = React.forwardRef<HTMLImageElement, SafeImageProps>(
     }, [src, isOnline]);
 
     const renderLoadingOverlay = () => {
-      if (imageState === 'loaded') return null;
+      if (imageState === 'loaded' || !showLoadingOverlay) return null;
 
       return (
         <div className={cn(
