@@ -39,6 +39,7 @@ export const SafeImage = React.forwardRef<HTMLImageElement, SafeImageProps>(
 
     // Reset state when src changes
     useEffect(() => {
+      console.log(`🖼️ SafeImage: Loading new image src: "${src}"`);
       setCurrentSrc(src);
       setImageState('loading');
       setRetryCount(0);
@@ -46,12 +47,13 @@ export const SafeImage = React.forwardRef<HTMLImageElement, SafeImageProps>(
     }, [src]);
 
     const handleImageLoad = useCallback(() => {
+      console.log(`✅ SafeImage: Successfully loaded image: "${currentSrc}"`);
       setImageState('loaded');
       setShowPlaceholder(false);
     }, []);
 
     const handleImageError = useCallback(() => {
-      console.log(`Image load error for: ${currentSrc}`);
+      console.error(`❌ SafeImage: Failed to load image: "${currentSrc}"`);
       
       if (retryCount < maxRetries && isOnline) {
         setImageState('retrying');

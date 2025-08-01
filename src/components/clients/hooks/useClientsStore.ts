@@ -65,13 +65,14 @@ export const useClientsStore = () => {
     const userClients = clients.filter(client => client.userId === currentUserId);
     console.log(`getCurrentUserClients: Found ${userClients.length} clients for user ${currentUserId}`);
     
-    // Debug each client's details
+    // Debug each client's details INCLUDING IMAGES
     userClients.forEach((client, index) => {
       console.log(`Client ${index + 1}: ${client.name}`);
       console.log(`  - ID: ${client.id}`);
       console.log(`  - Status: ${client.status || 'undefined'}`);
       console.log(`  - Created: ${client.createdAt || 'undefined'}`);
       console.log(`  - User ID: ${client.userId}`);
+      console.log(`  - IMAGE URL: "${client.image || 'NO IMAGE SET'}"`);
     });
     
     return userClients;

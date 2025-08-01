@@ -78,6 +78,7 @@ export const loadClientsFromFirestore = async (userId: string): Promise<ClientDa
         console.log(`✅ Client found: "${data.name}" (ID: ${doc.id})`);
         console.log(`   - Created: ${data.createdAt}`);
         console.log(`   - Birth Stage: ${data.birthStage || 'NOT SET'}`);
+        console.log(`   - IMAGE URL: "${data.image || 'NO IMAGE'}"`);
         
         return {
           ...data,

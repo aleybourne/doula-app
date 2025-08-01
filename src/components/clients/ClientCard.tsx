@@ -51,9 +51,6 @@ const ClientCard: React.FC<ClientCardProps> = ({
     ? postpartumProgress 
     : progress;
 
-  // Add cache-busting parameter to image URLs to prevent caching issues
-  const imageWithCacheBust = image ? `${image}${image.includes('?') ? '&' : '?'}t=${Date.now()}` : image;
-
   return (
     <button
       type="button"
@@ -71,7 +68,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
         <ImageErrorBoundary>
           <ProgressCircle 
             progress={displayProgress} 
-            avatarUrl={imageWithCacheBust} 
+            avatarUrl={image} 
             alt={name} 
             progressColor={getProgressColor()} 
           />

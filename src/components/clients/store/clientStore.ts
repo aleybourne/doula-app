@@ -136,6 +136,11 @@ export const loadClientsForCurrentUser = async () => {
     console.log(`Before update: ${clients.length} clients in memory`);
     console.log(`Loaded from Firestore: ${loadedClients.length} clients`);
     
+    // Log image data specifically for debugging
+    loadedClients.forEach(client => {
+      console.log(`📸 Client ${client.name}: image = "${client.image || 'NO IMAGE'}"`);
+    });
+    
     clients.length = 0;
     clients.push(...loadedClients);
     
