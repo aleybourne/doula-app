@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import ClientsHeader from "@/components/clients/ClientsHeader";
 import ClientsSearchBar from "@/components/clients/ClientsSearchBar";
 import ClientList from "@/components/clients/ClientList";
-import FirebaseImageDebug from "@/components/clients/debug/FirebaseImageDebug";
 import { useClientsStore } from "@/components/clients/hooks/useClientsStore";
 
 const BG_COLOR = "bg-white";
@@ -53,7 +52,6 @@ const Clients: React.FC = () => {
 
   return (
     <div className={`${BG_COLOR} min-h-screen pb-16 px-3`}>
-      <FirebaseImageDebug />
       <ClientsHeader title={filter ? getFilterTitle() : "Clients"} />
       {filter && (
         <div className="flex items-center justify-between text-lg font-medium mb-4 mt-2 text-gray-700">
