@@ -41,10 +41,17 @@ export function filterClientsByType(clients: ClientData[] = [], filter?: string 
   switch (filter) {
     case 'new':
       console.log(`=== NEW CLIENTS FILTER ===`);
-      // Clients added in the last 3 weeks
+      // Clients added in the last 3 weeks (excluding past/retired clients)
       const newClients = userClients.filter(client => {
         console.log(`Checking client ${client.name} for "new" filter:`);
         console.log(`  - createdAt: ${client.createdAt || 'undefined'}`);
+        console.log(`  - status: ${client.status || 'undefined'}`);
+        
+        // Exclude past/retired clients
+        if (client.status === 'past') {
+          console.log(`  - Client is past/retired, excluding from new clients`);
+          return false;
+        }
         
         if (!client.createdAt) {
           console.log(`  - No createdAt timestamp, excluding from new clients`);
