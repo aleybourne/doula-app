@@ -45,9 +45,14 @@ const Clients: React.FC = () => {
 
   // Generate appropriate title based on the active filter
   const getFilterTitle = () => {
-    if (filter === "new") return "New Clients (Last 3 Weeks)";
-    if (filter === "upcoming") return "Upcoming Births (30+ Weeks)";
-    return "All Clients";
+    switch (filter) {
+      case "new": return "New Clients (Last Week)";
+      case "upcoming": return "Upcoming Births";
+      case "due-date-asc": return "Due Date (Earliest First)";
+      case "due-date-desc": return "Due Date (Latest First)";
+      case "recently-added": return "Recently Added";
+      default: return "All Clients";
+    }
   };
 
   return (
@@ -55,10 +60,7 @@ const Clients: React.FC = () => {
       <ClientsHeader title={filter ? getFilterTitle() : "Clients"} />
       {filter && (
         <div className="flex items-center justify-between text-lg font-medium mb-4 mt-2 text-gray-700">
-          <span>
-            {filter === "new" && "New Clients (Last 3 Weeks)"}
-            {filter === "upcoming" && "Upcoming Births (30+ Weeks)"}
-          </span>
+          <span>{getFilterTitle()}</span>
           <Button
             variant="ghost"
             size="sm"

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { ClientData } from '../types/ClientTypes';
-import { filterClientsByType } from '../utils/clientFilters';
+import { sortAndFilterClients } from '../utils/clientFilters';
 
 export function useClientFiltering(
   clients: ClientData[] = [],
@@ -36,9 +36,9 @@ export function useClientFiltering(
       console.log(`  ${index + 1}. ${client.name} (ID: ${client.id}, userId: ${client.userId})`);
     });
 
-    // First apply type filter (new, upcoming, etc)
-    let filtered = filterClientsByType(clients, filter);
-    console.log(`After ${filter || "no"} filter: ${filtered.length} clients remain`);
+    // First apply type filter and sorting (new, upcoming, due date, etc)
+    let filtered = sortAndFilterClients(clients, filter);
+    console.log(`After ${filter || "no"} filter/sort: ${filtered.length} clients remain`);
     
     // Then apply search query filter
     if (searchQuery) {

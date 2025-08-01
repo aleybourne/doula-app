@@ -3,18 +3,18 @@ import { ClientData, ClientStatus } from '../types/ClientTypes';
 import { differenceInWeeks, isAfter, parseISO, isValid } from 'date-fns';
 import { getCurrentUserId } from '../store/clientStore';
 
-// Filter clients based on different criteria
-export function filterClientsByType(clients: ClientData[] = [], filter?: string | null): ClientData[] {
-  console.log(`=== filterClientsByType START ===`);
+// Filter and sort clients based on different criteria
+export function sortAndFilterClients(clients: ClientData[] = [], filter?: string | null): ClientData[] {
+  console.log(`=== sortAndFilterClients START ===`);
   console.log(`Input: ${clients?.length || 0} clients, filter: ${filter || 'none'}`);
   
   if (!clients || clients.length === 0) {
-    console.log(`filterClientsByType: No clients provided, returning empty array`);
+    console.log(`sortAndFilterClients: No clients provided, returning empty array`);
     return [];
   }
   
   const userId = getCurrentUserId();
-  console.log(`filterClientsByType: Current user ID: ${userId}`);
+  console.log(`sortAndFilterClients: Current user ID: ${userId}`);
   
   // First, filter by user ID
   const userClients = userId ? clients.filter(client => {
@@ -25,18 +25,18 @@ export function filterClientsByType(clients: ClientData[] = [], filter?: string 
     return belongsToUser;
   }) : [];
   
-  console.log(`filterClientsByType: Found ${userClients.length} clients for user ${userId}`);
+  console.log(`sortAndFilterClients: Found ${userClients.length} clients for user ${userId}`);
   userClients.forEach(client => {
     console.log(`User client: ${client.name} (ID: ${client.id}, status: ${client.status || 'undefined'})`);
   });
   
   if (!filter) {
-    console.log(`filterClientsByType: No filter applied, returning ${userClients.length} user clients`);
+    console.log(`sortAndFilterClients: No filter applied, returning ${userClients.length} user clients`);
     return userClients;
   }
   
   const now = new Date();
-  console.log(`filterClientsByType: Applying filter "${filter}" with current date: ${now.toISOString()}`);
+  console.log(`sortAndFilterClients: Applying filter "${filter}" with current date: ${now.toISOString()}`);
   
   switch (filter) {
     case 'new':
@@ -135,8 +135,53 @@ export function filterClientsByType(clients: ClientData[] = [], filter?: string 
       console.log(`=== UPCOMING BIRTHS FILTER END ===`);
       return upcomingClients;
       
+    case 'due-date-asc':
+      console.log(`=== DUE DATE ASCENDING SORT ===`);
+      // Sort by due date ascending (earliest first), exclude past clients
+      const dueDateAscClients = userClients
+        .filter(client => client.status !== 'past')
+        .sort((a, b) => {
+          if (!a.dueDateISO && !b.dueDateISO) return 0;
+          if (!a.dueDateISO) return 1;
+          if (!b.dueDateISO) return -1;
+          return new Date(a.dueDateISO).getTime() - new Date(b.dueDateISO).getTime();
+        });
+      console.log(`DUE DATE ASCENDING RESULT: ${dueDateAscClients.length} clients found`);
+      return dueDateAscClients;
+      
+    case 'due-date-desc':
+      console.log(`=== DUE DATE DESCENDING SORT ===`);
+      // Sort by due date descending (latest first), exclude past clients
+      const dueDateDescClients = userClients
+        .filter(client => client.status !== 'past')
+        .sort((a, b) => {
+          if (!a.dueDateISO && !b.dueDateISO) return 0;
+          if (!a.dueDateISO) return 1;
+          if (!b.dueDateISO) return -1;
+          return new Date(b.dueDateISO).getTime() - new Date(a.dueDateISO).getTime();
+        });
+      console.log(`DUE DATE DESCENDING RESULT: ${dueDateDescClients.length} clients found`);
+      return dueDateDescClients;
+      
+    case 'recently-added':
+      console.log(`=== RECENTLY ADDED SORT ===`);
+      // Sort by creation date descending (newest first), exclude past clients
+      const recentlyAddedClients = userClients
+        .filter(client => client.status !== 'past')
+        .sort((a, b) => {
+          if (!a.createdAt && !b.createdAt) return 0;
+          if (!a.createdAt) return 1;
+          if (!b.createdAt) return -1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+      console.log(`RECENTLY ADDED RESULT: ${recentlyAddedClients.length} clients found`);
+      return recentlyAddedClients;
+      
     default:
-      console.log(`filterClientsByType: Unknown filter "${filter}", returning all user clients`);
-      return userClients;
+      console.log(`sortAndFilterClients: Unknown filter "${filter}", returning all user clients`);
+      return userClients.filter(client => client.status !== 'past');
   }
 }
+
+// Keep the old function name for backward compatibility
+export const filterClientsByType = sortAndFilterClients;
