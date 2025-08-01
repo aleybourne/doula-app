@@ -9,6 +9,7 @@ import { Form } from "@/components/ui/form";
 import { DialogClose, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "./ImageUpload";
+import { deleteClientImage } from "./utils/firebaseStorage";
 import { PersonalInfoFields } from "./PersonalInfoFields";
 import { ClientData } from "./types/ClientTypes";
 import { PregnancyDetailsSection } from "./form-sections/PregnancyDetailsSection";
@@ -76,7 +77,27 @@ export const EditClientForm: React.FC<EditClientFormProps> = ({
     },
   });
 
-  const handleImageUpload = (imageUrl: string) => {
+  const handleImageUpload = async (imageUrl: string) => {
+    // Delete the old image if it exists and is not a placeholder
+    const currentImage = client.image;
+    if (currentImage && 
+        !currentImage.includes('placeholder') && 
+        !currentImage.includes('lovable-uploads') && 
+        currentImage.includes('firebase')) {
+      try {
+        // Extract the path from Firebase URL
+        const pathMatch = currentImage.match(/\/o\/(.+?)\?/);
+        if (pathMatch) {
+          const imagePath = decodeURIComponent(pathMatch[1]);
+          await deleteClientImage(imagePath);
+          console.log("Deleted old client image:", imagePath);
+        }
+      } catch (error) {
+        console.error("Failed to delete old image:", error);
+        // Continue with the upload even if deletion fails
+      }
+    }
+    
     setSelectedImage(imageUrl);
   };
 
