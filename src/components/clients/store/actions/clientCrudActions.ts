@@ -120,17 +120,27 @@ export const updateClient = async (updatedClient: ClientData) => {
   updatedClient.userId = userId;
   
   try {
-    console.log(`Updating client ${updatedClient.name} in new Firestore structure`);
+    console.log(`=== UPDATING CLIENT ${updatedClient.name} ===`);
+    console.log(`Image URL being saved: "${updatedClient.image || 'NO IMAGE'}"`);
     console.log(`Path: clients/${userId}/clients/${updatedClient.id}`);
     
     // Update in Firestore first using new structure
     await saveClientToFirestore(updatedClient);
+    console.log("✅ Successfully saved to Firestore");
     
-    // Update local array
+    // Update local array with enhanced logging
     clients[clientIndex] = updatedClient;
-    notifyClientsChanged();
+    console.log("✅ Updated local store");
+    console.log(`✅ Local client now has image: "${clients[clientIndex].image || 'NO IMAGE'}"`);
     
-    console.log(`Successfully updated client ${updatedClient.name} in new structure`);
+    // Force immediate and delayed notifications
+    notifyClientsChanged();
+    setTimeout(() => {
+      console.log("📢 Secondary notification for UI refresh");
+      notifyClientsChanged();
+    }, 100);
+    
+    console.log(`=== CLIENT UPDATE COMPLETE ===`);
   } catch (error) {
     console.error("Error updating client in new Firestore structure:", error);
     throw new Error(`Failed to update client: ${error.message}`);
