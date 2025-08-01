@@ -1,6 +1,7 @@
 
 import React from "react";
 import ProgressCircle from "./ProgressCircle";
+import { ImageErrorBoundary } from "@/components/ui/ImageErrorBoundary";
 
 const CARD_COLOR = "bg-[#f9f5f2]";
 
@@ -63,12 +64,14 @@ const ClientCard: React.FC<ClientCardProps> = ({
       onClick={onClick}
     >
       <div className="mr-6 flex-shrink-0" style={{ position: "relative" }}>
-        <ProgressCircle 
-          progress={displayProgress} 
-          avatarUrl={image} 
-          alt={name} 
-          progressColor={getProgressColor()} 
-        />
+        <ImageErrorBoundary>
+          <ProgressCircle 
+            progress={displayProgress} 
+            avatarUrl={image} 
+            alt={name} 
+            progressColor={getProgressColor()} 
+          />
+        </ImageErrorBoundary>
       </div>
       <div className="flex-1 min-w-0">
         <div className="font-sans font-normal text-[1.4rem] leading-[1.1] mb-0.5">

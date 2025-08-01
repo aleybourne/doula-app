@@ -3,6 +3,9 @@ import React, { useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { uploadClientImage, validateImageFile } from "./utils/firebaseStorage";
 import { toast } from "@/hooks/use-toast";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { ImageErrorBoundary } from "@/components/ui/ImageErrorBoundary";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 
 interface ImageUploadProps {
   selectedImage: string;
@@ -11,16 +14,22 @@ interface ImageUploadProps {
 }
 
 export const ImageUpload = ({ selectedImage, onImageUpload, clientId }: ImageUploadProps) => {
-  const [imageError, setImageError] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-
-  const handleImageError = () => {
-    setImageError(true);
-  };
+  const { isOnline } = useNetworkStatus();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // Check network connectivity
+    if (!isOnline) {
+      toast({
+        title: "No Internet Connection",
+        description: "Please check your connection and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate the file
     const validationError = validateImageFile(file);
@@ -47,12 +56,13 @@ export const ImageUpload = ({ selectedImage, onImageUpload, clientId }: ImageUpl
         description: "Image uploaded successfully!",
       });
       
-      setImageError(false);
     } catch (error) {
       console.error("Error uploading image:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
       toast({
         title: "Upload Failed",
-        description: "Failed to upload image. Please try again.",
+        description: !isOnline ? "Connection lost during upload. Please try again." : `Failed to upload image: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
@@ -65,22 +75,28 @@ export const ImageUpload = ({ selectedImage, onImageUpload, clientId }: ImageUpl
   return (
     <div className="flex justify-center mb-6">
       <div className="relative group cursor-pointer">
-        <img
-          src={imageError || !selectedImage ? "/placeholder.svg" : selectedImage}
-          alt="Client avatar"
-          onError={handleImageError}
-          className="w-24 h-24 rounded-full object-cover border-2 border-[#F499B7]"
-        />
+        <ImageErrorBoundary>
+          <SafeImage
+            src={selectedImage || "/placeholder.svg"}
+            alt="Client avatar"
+            className="w-24 h-24 rounded-full object-cover border-2 border-[#F499B7]"
+            fallbackSrc="/placeholder.svg"
+            placeholderSrc="/placeholder.svg"
+            showRetryButton={false}
+            showNetworkStatus={false}
+            maxRetries={2}
+          />
+        </ImageErrorBoundary>
         <label
           htmlFor="avatar-upload"
           className={`absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity ${
             isUploading ? 'opacity-100' : ''
-          }`}
+          } ${!isOnline ? 'cursor-not-allowed' : ''}`}
         >
           {isUploading ? (
             <Loader2 className="w-6 h-6 text-white animate-spin" />
           ) : (
-            <Upload className="w-6 h-6 text-white" />
+            <Upload className={`w-6 h-6 text-white ${!isOnline ? 'opacity-50' : ''}`} />
           )}
         </label>
         <input
@@ -89,8 +105,13 @@ export const ImageUpload = ({ selectedImage, onImageUpload, clientId }: ImageUpl
           accept="image/*"
           onChange={handleFileUpload}
           className="hidden"
-          disabled={isUploading}
+          disabled={isUploading || !isOnline}
         />
+        {!isOnline && (
+          <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-destructive whitespace-nowrap">
+            Offline
+          </div>
+        )}
       </div>
     </div>
   );

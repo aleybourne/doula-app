@@ -1,5 +1,7 @@
 
-import React, { useState } from "react";
+import React from "react";
+import { SafeImage } from "@/components/ui/SafeImage";
+import { ImageErrorBoundary } from "@/components/ui/ImageErrorBoundary";
 
 interface ProgressCircleProps {
   progress: number;
@@ -21,7 +23,6 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({
   alt,
   progressColor,
 }) => {
-  const [imageError, setImageError] = useState(false);
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   
@@ -32,12 +33,6 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({
   
   // Use provided color or default
   const actualProgressColor = progressColor || DEFAULT_PROGRESS_COLOR;
-
-  // Function to handle image loading errors
-  const handleImageError = () => {
-    console.log(`Failed to load image: ${avatarUrl}`);
-    setImageError(true);
-  };
 
   return (
     <div className="relative" style={{ width: size, height: size }}>
@@ -77,28 +72,10 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({
         />
       </svg>
       
-      {imageError ? (
-        <div
-          className="rounded-full flex items-center justify-center bg-white text-gray-500 overflow-hidden"
-          style={{
-            position: "absolute",
-            top: strokeWidth,
-            left: strokeWidth,
-            width: imgSize,
-            height: imgSize,
-            zIndex: 2,
-            fontSize: imgSize / 6,
-            textAlign: "center",
-            border: "2px solid white",
-          }}
-        >
-          {alt.split(" ").map(word => word[0]).join("")}
-        </div>
-      ) : (
-        <img
+      <ImageErrorBoundary>
+        <SafeImage
           src={avatarUrl}
           alt={alt}
-          onError={handleImageError}
           className="rounded-full object-cover border-2 border-white"
           style={{
             position: "absolute",
@@ -109,8 +86,12 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({
             zIndex: 2,
             background: "#fff",
           }}
+          fallbackSrc="/placeholder.svg"
+          placeholderSrc="/placeholder.svg"
+          showRetryButton={false}
+          maxRetries={2}
         />
-      )}
+      </ImageErrorBoundary>
     </div>
   );
 };
