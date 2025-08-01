@@ -48,8 +48,9 @@ export function calculateGestationAndTrimester(dueDateISO: string, birthStage?: 
   
   if (isPastDue && birthStage !== 'delivered') {
     const daysPastDue = Math.abs(daysUntilDue);
-    const weeks = Math.floor(daysPastDue / 7);
-    const days = daysPastDue % 7;
+    const totalGestationalDays = 280 + daysPastDue;
+    const weeks = Math.floor(totalGestationalDays / 7);
+    const days = totalGestationalDays % 7;
     
     return {
       gestation: `${weeks}w+${days}d past due`,
