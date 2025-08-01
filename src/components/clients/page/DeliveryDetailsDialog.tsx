@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import ConfettiExplosion from "react-confetti-explosion";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +35,7 @@ interface DeliveryDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: DeliveryDetailsFormData) => void;
+  onDeliverySaved?: () => void;
   defaultTime?: string;
 }
 
@@ -43,9 +43,9 @@ const DeliveryDetailsDialog: React.FC<DeliveryDetailsDialogProps> = ({
   open,
   onOpenChange,
   onSubmit,
+  onDeliverySaved,
   defaultTime,
 }) => {
-  const [showConfetti, setShowConfetti] = useState(false);
   
   const form = useForm<DeliveryDetailsFormData>({
     resolver: zodResolver(deliveryDetailsSchema),
@@ -61,43 +61,30 @@ const DeliveryDetailsDialog: React.FC<DeliveryDetailsDialogProps> = ({
     // Convert the datetime-local string to ISO string
     const deliveryTimeISO = new Date(data.deliveryTime).toISOString();
     
-    // Trigger confetti celebration
-    setShowConfetti(true);
-    
     // Call the onSubmit function
     onSubmit({
       ...data,
       deliveryTime: deliveryTimeISO,
     });
+
+    // Trigger confetti callback after successful submission
+    if (onDeliverySaved) {
+      onDeliverySaved();
+    }
     
-    // Close dialog after a brief delay to show confetti
-    setTimeout(() => {
-      onOpenChange(false);
-      form.reset();
-      setShowConfetti(false);
-    }, 2000);
+    // Close dialog immediately after submission
+    onOpenChange(false);
+    form.reset();
   };
 
   const handleCancel = () => {
     onOpenChange(false);
     form.reset();
-    setShowConfetti(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] relative">
-        {showConfetti && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
-            <ConfettiExplosion
-              force={0.8}
-              duration={2200}
-              particleCount={150}
-              width={1600}
-              colors={['#FFB6C1', '#87CEEB', '#FFE4B5', '#98FB98', '#DDA0DD', '#F0E68C']}
-            />
-          </div>
-        )}
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Baby className="h-5 w-5 text-green-500" />

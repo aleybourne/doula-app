@@ -11,9 +11,10 @@ import { formatTriageNoteForJournal, generateTriageNoteTitle } from "@/utils/tri
 
 interface ClientStageToggleProps {
   client: ClientData;
+  onTriggerConfetti?: () => void;
 }
 
-const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
+const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client, onTriggerConfetti }) => {
   const { toast } = useToast();
   const currentStage = client.birthStage || 'pregnant';
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false);
@@ -270,6 +271,12 @@ const ClientStageToggle: React.FC<ClientStageToggleProps> = ({ client }) => {
         open={showDeliveryDialog}
         onOpenChange={setShowDeliveryDialog}
         onSubmit={handleDeliverySubmit}
+        onDeliverySaved={() => {
+          // Trigger confetti after successful delivery save
+          if (onTriggerConfetti) {
+            onTriggerConfetti();
+          }
+        }}
         defaultTime={client.deliveryTime}
       />
 

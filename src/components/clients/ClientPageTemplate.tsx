@@ -1,5 +1,6 @@
 
 import React from "react";
+import ConfettiExplosion from "react-confetti-explosion";
 import { Tag } from "./clientsTagsData";
 import { ClientData } from "./types/ClientTypes";
 import ClientHeader from "./page/ClientHeader";
@@ -29,6 +30,13 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
   const [expanded, setExpanded] = React.useState(false);
   const [isJournalOpen, setIsJournalOpen] = React.useState(false);
   const [isDocumentsOpen, setIsDocumentsOpen] = React.useState(false);
+  const [showConfetti, setShowConfetti] = React.useState(false);
+
+  const triggerConfetti = () => {
+    setShowConfetti(true);
+    // Auto-hide confetti after animation completes
+    setTimeout(() => setShowConfetti(false), 4000);
+  };
   
   // Add safety check for clientInfo
   if (!clientInfo || !clientInfo.id) {
@@ -89,6 +97,7 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
       <ClientStatus 
         dueDateLabel={clientInfo.dueDateLabel}
         client={clientInfo}
+        onTriggerConfetti={triggerConfetti}
       />
 
       {/* Stage-specific content */}
@@ -120,6 +129,20 @@ const ClientPageTemplate: React.FC<ClientPageTemplateProps> = ({ clientInfo }) =
         isOpen={isDocumentsOpen}
         onClose={() => setIsDocumentsOpen(false)}
       />
+
+      {/* Full-page confetti celebration */}
+      {showConfetti && (
+        <div className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center">
+          <ConfettiExplosion
+            force={0.8}
+            duration={3500}
+            particleCount={200}
+            width={1600}
+            height={1200}
+            colors={['#FFB6C1', '#87CEEB', '#FFE4B5', '#98FB98', '#DDA0DD', '#F0E68C']}
+          />
+        </div>
+      )}
     </div>
   );
 };
