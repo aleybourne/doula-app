@@ -72,27 +72,29 @@ const ProgressCircle: React.FC<ProgressCircleProps> = ({
         />
       </svg>
       
-      <ImageErrorBoundary>
-        <SafeImage
-          src={avatarUrl}
-          alt={alt}
-          className="rounded-full object-cover border-2 border-white"
-          style={{
-            position: "absolute",
-            top: strokeWidth,
-            left: strokeWidth,
-            width: imgSize,
-            height: imgSize,
-            zIndex: 2,
-            background: "#fff",
-          }}
-          fallbackSrc="/placeholder.svg"
-          placeholderSrc="/placeholder.svg"
-          showRetryButton={false}
-          showLoadingOverlay={false}
-          maxRetries={2}
-        />
-      </ImageErrorBoundary>
+      <div 
+        className="absolute rounded-full overflow-hidden"
+        style={{
+          top: strokeWidth,
+          left: strokeWidth,
+          width: imgSize,
+          height: imgSize,
+          zIndex: 2,
+        }}
+      >
+        <ImageErrorBoundary>
+          <SafeImage
+            src={avatarUrl}
+            alt={alt}
+            className="w-full h-full object-cover"
+            fallbackSrc="/placeholder.svg"
+            placeholderSrc="/placeholder.svg"
+            showRetryButton={false}
+            showLoadingOverlay={false}
+            maxRetries={2}
+          />
+        </ImageErrorBoundary>
+      </div>
     </div>
   );
 };
