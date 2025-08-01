@@ -10,6 +10,8 @@ interface ActiveClientItemProps {
 }
 
 const ActiveClientItem: React.FC<ActiveClientItemProps> = ({ client, onClick }) => {
+  console.log(`ActiveClientItem for ${client.name} - image:`, client.image);
+  
   const { 
     gestation, 
     trimester, 

@@ -20,6 +20,8 @@ const ClientListSection: React.FC<ClientListSectionProps> = ({
   emptyMessage,
   showEmptyState = false,
 }) => {
+  console.log(`ClientListSection "${title}" rendering with ${clients.length} clients:`, 
+    clients.map(c => ({ name: c.name, image: c.image })));
   if (clients.length === 0) {
     if (showEmptyState) {
       return <EmptyClientsList />;

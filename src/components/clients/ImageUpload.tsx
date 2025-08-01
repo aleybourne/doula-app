@@ -47,9 +47,15 @@ export const ImageUpload = ({ selectedImage, onImageUpload, clientId }: ImageUpl
     try {
       console.log("Uploading image to Firebase Storage...");
       const result = await uploadClientImage(file, clientId);
+      console.log("Upload successful, new image URL:", result.url);
       
       // Call the callback with the Firebase Storage URL
       onImageUpload(result.url);
+      
+      // Force a small delay to ensure state propagates
+      setTimeout(() => {
+        console.log("Image upload callback completed, data should refresh");
+      }, 100);
       
       toast({
         title: "Success",

@@ -42,7 +42,11 @@ export const useClientsStore = () => {
     const unsubscribe = subscribeToClientChanges(() => {
       console.log("useClientsStore: Detected client change, updating...");
       console.log(`Current clients count after change: ${clients.length}`);
-      setForceUpdate(prev => prev + 1);
+      console.log("Client images in store:", clients.map(c => ({ name: c.name, image: c.image })));
+      setForceUpdate(prev => {
+        console.log("Force update triggered:", prev + 1);
+        return prev + 1;
+      });
     }, clients);
     return () => {
       console.log("useClientsStore: Cleaning up subscription");

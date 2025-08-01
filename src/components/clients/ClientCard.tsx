@@ -34,6 +34,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
   status,
   onClick,
 }) => {
+  console.log(`ClientCard for ${name} - image URL:`, image);
   // Determine the progress color based on client status
   const getProgressColor = () => {
     if (status === 'past') {
@@ -49,6 +50,9 @@ const ClientCard: React.FC<ClientCardProps> = ({
   const displayProgress = isPostpartum && postpartumProgress !== undefined 
     ? postpartumProgress 
     : progress;
+
+  // Add cache-busting parameter to image URLs to prevent caching issues
+  const imageWithCacheBust = image ? `${image}${image.includes('?') ? '&' : '?'}t=${Date.now()}` : image;
 
   return (
     <button
@@ -67,7 +71,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
         <ImageErrorBoundary>
           <ProgressCircle 
             progress={displayProgress} 
-            avatarUrl={image} 
+            avatarUrl={imageWithCacheBust} 
             alt={name} 
             progressColor={getProgressColor()} 
           />
