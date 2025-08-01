@@ -43,7 +43,7 @@ const SplashScreen: React.FC = () => {
             textShadow: '0px 0px 8px rgba(123, 97, 255, 0.2)'
           }}
         >
-          Push
+          Ovella
         </div>
         <div className="text-xl text-gray-600 mt-2">Your Birth Support Companion</div>
       </div>

@@ -71,7 +71,7 @@ const Auth: React.FC = () => {
     <div className="flex flex-col items-center justify-start min-h-screen bg-white p-6 pt-16">
       <div className="w-full max-w-md">
         <h1 className="text-4xl font-custom text-center mb-8">
-          {mode === 'login' ? 'Welcome to Push' : 'Join Push'}
+          {mode === 'login' ? 'Welcome to Ovella' : 'Join Ovella'}
         </h1>
 
         {authError && (

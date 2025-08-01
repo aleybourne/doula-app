@@ -53,7 +53,7 @@ const Onboarding: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-white p-6 pt-16">
       <div className="w-full max-w-md mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Welcome to Push!</h1>
+        <h1 className="text-3xl font-bold mb-2">Welcome to Ovella!</h1>
         <p className="text-gray-600 mb-8">Let's set up your doula profile</p>
 
         <Form {...form}>
