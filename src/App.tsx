@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useParams, Navigate } from "react-router-dom";
 import { MigrationRunner } from "@/components/migration/MigrationRunner";
+import { GlobalErrorBoundary } from "@/components/error/GlobalErrorBoundary";
+import { NetworkStatusIndicator } from "@/components/network/NetworkStatusIndicator";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Clients from "./pages/Clients";
@@ -63,6 +65,11 @@ const AppRoutes = () => {
   
   return (
     <div className="min-h-screen flex flex-col justify-between">
+      {/* Network Status Indicator */}
+      <div className="fixed top-4 left-4 z-50">
+        <NetworkStatusIndicator />
+      </div>
+      
       <div className="flex-1 flex flex-col">
         <Routes>
           {/* Public routes */}
@@ -159,14 +166,16 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppRoutes />
-        <MigrationRunner />
-      </BrowserRouter>
-    </AuthProvider>
+    <GlobalErrorBoundary>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppRoutes />
+          <MigrationRunner />
+        </BrowserRouter>
+      </AuthProvider>
+    </GlobalErrorBoundary>
   </QueryClientProvider>
 );
 

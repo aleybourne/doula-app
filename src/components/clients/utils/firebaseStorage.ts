@@ -2,6 +2,7 @@
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { app } from '../../../config/firebase';
 import { v4 as uuidv4 } from 'uuid';
+import { categorizeFirebaseError, createError, ErrorCodes } from '@/components/error/ErrorHandling';
 
 const storage = getStorage(app);
 
@@ -11,10 +12,16 @@ export interface ImageUploadResult {
 }
 
 /**
- * Upload an image file to Firebase Storage
+ * Upload an image file to Firebase Storage with enhanced error handling
  */
 export const uploadClientImage = async (file: File, clientId?: string): Promise<ImageUploadResult> => {
   try {
+    // Validate the file first
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      throw createError(ErrorCodes.INVALID_FILE_TYPE, validationError);
+    }
+
     // Generate a unique filename
     const fileExtension = file.name.split('.').pop() || 'jpg';
     const fileName = `${clientId || uuidv4()}-${Date.now()}.${fileExtension}`;
@@ -39,7 +46,10 @@ export const uploadClientImage = async (file: File, clientId?: string): Promise<
     };
   } catch (error) {
     console.error('Error uploading image to Firebase Storage:', error);
-    throw new Error(`Failed to upload image: ${error.message}`);
+    if (error.code) {
+      throw categorizeFirebaseError(error);
+    }
+    throw createError(ErrorCodes.FIREBASE_ERROR, error);
   }
 };
 

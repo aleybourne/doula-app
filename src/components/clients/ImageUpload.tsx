@@ -6,6 +6,9 @@ import { toast } from "@/hooks/use-toast";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { ImageErrorBoundary } from "@/components/ui/ImageErrorBoundary";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { useOfflineQueue } from "@/hooks/useOfflineQueue";
+import { useRetryableOperation } from "@/hooks/useRetryableOperation";
+import { ErrorDisplay, showErrorToast, createError, ErrorCodes } from "@/components/error/ErrorHandling";
 
 interface ImageUploadProps {
   selectedImage: string;
@@ -15,38 +18,63 @@ interface ImageUploadProps {
 
 export const ImageUpload = ({ selectedImage, onImageUpload, clientId }: ImageUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [currentFile, setCurrentFile] = useState<File | null>(null);
   const { isOnline } = useNetworkStatus();
+  const { addToQueue } = useOfflineQueue();
+  
+  const uploadOperation = useRetryableOperation(
+    async () => {
+      if (!currentFile) throw new Error('No file selected');
+      return await uploadClientImage(currentFile, clientId);
+    },
+    {
+      maxRetries: 3,
+      baseDelay: 2000,
+      retryCondition: (error, attempt) => {
+        // Don't retry validation errors
+        if (error.code === ErrorCodes.INVALID_FILE_TYPE || error.code === ErrorCodes.FILE_TOO_LARGE) {
+          return false;
+        }
+        return attempt < 3;
+      }
+    }
+  );
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Check network connectivity
-    if (!isOnline) {
-      toast({
-        title: "No Internet Connection",
-        description: "Please check your connection and try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate the file
+    // Validate the file first
     const validationError = validateImageFile(file);
     if (validationError) {
-      toast({
-        title: "Invalid File",
-        description: validationError,
-        variant: "destructive",
-      });
+      const error = createError(ErrorCodes.INVALID_FILE_TYPE, validationError);
+      showErrorToast(error);
       return;
     }
 
+    setCurrentFile(file);
     setIsUploading(true);
-    
+
     try {
-      console.log("Uploading image to Firebase Storage...");
-      const result = await uploadClientImage(file, clientId);
+      let result;
+      
+      if (isOnline) {
+        // Try upload immediately if online
+        console.log("Uploading image to Firebase Storage...");
+        result = await uploadOperation.execute();
+      } else {
+        // Queue for later if offline
+        console.log("Queueing image upload for when online...");
+        result = await addToQueue(
+          () => uploadClientImage(file, clientId),
+          {
+            description: `Upload image for ${clientId || 'client'}`,
+            priority: 1,
+            maxRetries: 3,
+          }
+        );
+      }
+      
       console.log("Upload successful, new image URL:", result.url);
       
       // Call the callback with the Firebase Storage URL
@@ -59,20 +87,20 @@ export const ImageUpload = ({ selectedImage, onImageUpload, clientId }: ImageUpl
       
       toast({
         title: "Success",
-        description: "Image uploaded successfully!",
+        description: isOnline ? "Image uploaded successfully!" : "Image queued for upload when online",
       });
       
     } catch (error) {
       console.error("Error uploading image:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      toast({
-        title: "Upload Failed",
-        description: !isOnline ? "Connection lost during upload. Please try again." : `Failed to upload image: ${errorMessage}`,
-        variant: "destructive",
+      showErrorToast(error, () => {
+        if (currentFile) {
+          const newEvent = { target: { files: [currentFile] } } as any;
+          handleFileUpload(newEvent);
+        }
       });
     } finally {
       setIsUploading(false);
+      setCurrentFile(null);
       // Reset the input so the same file can be uploaded again if needed
       event.target.value = '';
     }
