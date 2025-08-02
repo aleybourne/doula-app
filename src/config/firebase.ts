@@ -11,7 +11,12 @@ export const firebaseConfig = {
   projectId: "push-environment",
   storageBucket: "push-environment.firebasestorage.app",
   messagingSenderId: "440765036828",
-  appId: "1:440765036828:web:3a30d24500a254705422d9"
+  appId: "1:440765036828:web:3a30d24500a254705422d9",
+  // Production settings
+  ...(import.meta.env.PROD && {
+    persistence: true,
+    cacheSizeBytes: 40000000 // 40MB cache
+  })
 };
 
 // Initialize Firebase
